@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.20)
+project(watch_core C)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+include(sources.cmake)
+# 当前构建公共C模块静态库；可烧录Boot/App仍需芯片启动、HAL及链接配置。
+add_library(watch_core STATIC ${WATCH_CORE_SOURCES})
+target_include_directories(watch_core PUBLIC User Hardware System Application)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(watch_core PRIVATE -Wall -Wextra -Werror -Wmissing-prototypes)
+endif()

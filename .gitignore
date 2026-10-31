@@ -1,0 +1,45 @@
+# 只发布源码和项目复刻资料。
+/*
+!/.gitignore
+!/README.md
+!/code/
+!/plan/
+/plan/*
+!/plan/bom.xlsx
+!/plan/task.md
+!/plan/procurement.md
+!/plan/design/
+/plan/design/*
+!/plan/design/wiring.md
+!/plan/design/functions/
+/plan/design/functions/*
+!/plan/design/functions/F*.md
+
+# Agent指令与内部工作资料不进入仓库。
+AGENTS.md
+AGENTS.override.md
+agent.md
+registry.md
+**/.agents/
+**/.codex/
+
+# 构建产物与机器配置。
+code/Build/
+**/build/
+**/.gradle/
+**/.idea/
+**/local.properties
+*.o
+*.obj
+*.elf
+*.axf
+*.hex
+*.bin
+*.map
+*.lst
+*.log
+~$*
+.env
+*.jks
+*.keystore
+# 固件交付包应按冻结流程明确管理，不依赖本地编译产物提交。
