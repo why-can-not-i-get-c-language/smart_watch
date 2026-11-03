@@ -1,0 +1,13 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 显示屏/2d6897b35d99fb52923b3c5352a13e4f.pdf
+
+===== PDF PAGE 1 =====
+Unit:mm
+30
+25
+30 25 13.2
+23.75
+6.38
+2.54
+3.5 1
+R1.5

@@ -2,12 +2,20 @@
 /*
 !/.gitignore
 !/README.md
+!/registry.md
 !/code/
 !/plan/
 /plan/*
 !/plan/bom.xlsx
 !/plan/task.md
 !/plan/procurement.md
+!/plan/references/
+/plan/references/*
+!/plan/references/hardware_manual.md
+!/plan/references/sources.json
+!/plan/references/text/
+/plan/references/text/*
+!/plan/references/text/*.txt
 !/plan/design/
 /plan/design/*
 !/plan/design/wiring.md
@@ -15,11 +23,10 @@
 /plan/design/functions/*
 !/plan/design/functions/F*.md
 
-# Agent指令与内部工作资料不进入仓库。
+# 登记表和指定器件资料允许协作共享；其余Agent指令与内部资料仍留本地。
 AGENTS.md
 AGENTS.override.md
 agent.md
-registry.md
 **/.agents/
 **/.codex/
 

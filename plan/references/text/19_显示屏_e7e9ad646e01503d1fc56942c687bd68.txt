@@ -1,0 +1,4 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 显示屏/e7e9ad646e01503d1fc56942c687bd68.pdf
+
+===== PDF PAGE 1 =====

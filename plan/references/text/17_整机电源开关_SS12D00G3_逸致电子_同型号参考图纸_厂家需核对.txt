@@ -1,0 +1,7 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 整机电源开关/SS12D00G3_逸致电子_同型号参考图纸_厂家需核对.pdf
+
+===== PDF PAGE 1 =====
+深圳市逸致电子有限公司
+SS12D00G3
+Shenzhen Yizhi Electronics Co.,LTD

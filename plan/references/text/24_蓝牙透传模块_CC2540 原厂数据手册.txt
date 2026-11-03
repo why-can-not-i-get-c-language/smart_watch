@@ -1,0 +1,1824 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 蓝牙透传模块/CC2540 原厂数据手册.pdf
+
+===== PDF PAGE 1 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+2.4-GHzBluetooth®lowenergySystem-on-Chip
+Check for Samples: CC2540F128, CC2540F256
+1FEATURES A
+• TPS62730 Compatible
+23456• True Single-Chip BLE Solution: CC2540 Can
+Low Power in Active ModeRun Both Application and BLE Protocol Stack,
+Includes Peripherals to Interface With Wide – RX Down to 15.8 mA (3 V Supply)
+Range of Sensors, Etc. – TX (-6 dBm): 18.6 mA (3 V Supply)
+• 6-mm × 6-mm Package A
+• RF • Microcontroller
+– Bluetooth low energy technology – High-Performance and Low-Power 8051
+Compatible Microcontroller Core
+– Excellent Link Budget (up to 97 dB), – In-System-Programmable Flash, 128 KB or
+Enabling Long-Range Applications Without 256 KB
+External Front End – 8-KB SRAM
+– Accurate Digital Received Signal-Strength A
+Indicator (RSSI) • Peripherals
+– Suitable for Systems Targeting Compliance – 12-Bit ADC with Eight Channels and
+With Worldwide Radio Frequency Configurable Resolution
+Regulations: ETSI EN 300 328 and EN 300 – Integrated High-Performance Op-Amp and440 Class 2 (Europe), FCC CFR47 Part 15 Ultralow-Power Comparator(US), and ARIB STD-T66 (Japan) – General-Purpose Timers (One 16-Bit, Two• Layout 8-Bit)
+– Few External Components – 21 General-Purpose I/O Pins (19× 4 mA, 2×
+– Reference Design Provided 20 mA)
+– 6-mm × 6-mm QFN40 Package – 32-kHz Sleep Timer With Capture
+• Low Power – Two Powerful USARTs With Support for
+– Active Mode RX Down to 19.6 mA Several Serial Protocols
+– Active Mode TX (–6 dBm): 24 mA – Full-Speed USB Interface
+– Power Mode 1 (3-μs Wake-Up): 235 μA – IR Generation Circuitry
+– Power Mode 2 (Sleep Timer On): 0.9 μA – Powerful Five-Channel DMA
+– Power Mode 3 (External Interrupts): 0.4 μA – AES Security Coprocessor
+– Wide Supply Voltage Range (2 V–3.6 V) – Battery Monitor and Temperature Sensor
+– Full RAM and Register Retention in All – Each CC2540 Contains a Unique 48-bit
+Power Modes IEEE Address
+1
+Please be aware that an important notice concerning availability, standard warranty, and use in critical applications of
+Texas Instruments semiconductor products and disclaimers thereto appears at the end of this data sheet.
+2SmartRF is a trademark of Texas Instruments.
+3Bluetooth is a registered trademark of Bluetooth SIG, Inc.
+4Supported by IAR Embedded Workbench is a trademark of IAR Systems AB.
+5ZigBee is a registered trademark of ZigBee Alliance.
+6All other trademarks are the property of their respective owners.
+PRODUCTION DATA information is current as of publication date. Copyright © 2010–2013, Texas Instruments IncorporatedProducts conform to specifications per the terms of the Texas
+Instruments standard warranty. Production processing does not
+necessarily include testing of all parameters.
+===== PDF PAGE 2 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+SOFTWARE FEATURES APPLICATIONS
+• Bluetooth v4.0 Compliant Protocol Stack for • 2.4-GHz Bluetooth low energy Systems
+Single-Mode BLE Solution • Mobile Phone Accessories
+– Complete Power-Optimized Stack, • Sports and Leisure Equipment
+Including Controller and Host • Consumer Electronics
+– GAP – Central, Peripheral, Observer, or • Human Interface Devices (Keyboard, Mouse,Broadcaster (Including Combination Remote Control)Roles) • USB Dongles– ATT / GATT – Client and Server • Health Care and Medical– SMP – AES-128 Encryption and
+Decryption CC2540 WITH TPS62730
+– L2CAP • TPS62730 is a 2 MHz Step Down Converter– Sample Applications and Profiles with Bypass Mode
+– Generic Applications for GAP Central • Extends Battery Lifetime by up to 20%and Peripheral Roles • Reduced Current in TX and RX– Proximity, Accelerometer, Simple Keys, • 30 nA Bypass Mode Current to Support Lowand Battery GATT Services Power Modes– Multiple Configuration options • RF Performance Unchanged– Single-Chip Configuration, Allowing • Small Package Allows for Small Solution SizeApplication to Run on CC2540
+• CC2540 Controllable– Network Processor Interface for
+Applications Running on an External
+Microcontroller
+– BTool – Windows PC Application for
+Evaluation, Development, and Test
+• Development Tools
+– CC2540 Mini Development Kit
+– SmartRF™ Software
+– Supported by IAR Embedded Workbench™
+Software for 8051
+DESCRIPTION
+The CC2540 is a cost-effective, low-power, true system-on-chip (SoC) for Bluetooth low energy applications. It
+enables robust BLE master or slave nodes to be built with very low total bill-of-material costs. The CC2540
+combines an excellent RF transceiver with an industry-standard enhanced 8051 MCU, in-system programmable
+flash memory, 8-KB RAM, and many other powerful supporting features and peripherals. The CC2540 is suitable
+for systems where very low power consumption is required. Very low-power sleep modes are available. Short
+transition times between operating modes further enable low power consumption.
+The CC2540 comes in two different versions: CC2540F128/F256, with 128 and 256 KB of flash memory,
+respectively.
+Combined with the Bluetooth low energy protocol stack from Texas Instruments, the CC2540F128/F256 forms
+the market’s most flexible and cost-effective single-mode Bluetooth low energy solution.
+2 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 3 =====
+RESET WATCHDOG
+TIMER
+IRQ CTRL FLASH CTRL
+DEBUG
+INTERFACE
+CLOCK MUX
+and
+CALIBRATION
+DMA
+8051 CPU
+CORE
+32-MHz
+CRYSTAL OSC
+OP-AMP
+32.768-kHz
+CRYSTAL OSC
+HIGH-
+SPEED
+RC-OSC POWER MANAGEMENT CONTROLLER
+USART 0
+USB
+USART 1
+TIMER 1 (16-Bit)
+TIMER 3 (8-Bit)
+TIMER 4 (8-Bit)
+TIMER 2
+(BLE LL TIMER)
+FLASH
+FIFOCTRL 1 KB SRAM
+ON-CHIP VOLTAGE
+REGULATOR
+POWER-ON RESET
+BROWN OUT
+VDD (2 V–3.6 V)
+DCOUPL
+RESET_N
+XOSC_Q2
+XOSC_Q1
+P2_4
+P1_7
+P0_7
+P2_3
+P1_6
+P0_6
+P2_2
+P1_5
+P0_5
+P1_2
+P0_2
+P2_1
+P1_4
+P0_4
+P1_1
+P0_1
+P2_0
+P1_3
+P0_3
+P1_0
+P0_0
+MODULATORDEMODULA TOR
+RECEIVE TRANSMIT
+FREQUENCYSYNTHESIZER
+SYNTH
+RF_P RF_N
+B0301-05
+RADIO REGISTERS
+SFR Bus
+SFR Bus
+/c68/c83
+ADC
+AUDIO/DC
+AES
+ENCRYPTION
+AND
+DECRYPTION
+MEMORY
+ARBITRATOR FLASH
+UNIFIED
+SFR
+IRAM
+XRAM
+PDATA
+SLEEP TIMER
+32-kHz
+RC-OSC
+I/O CONTROLLER
+DIGITAL
+ANALOG
+MIXED
+ANALOG COMPARATOR
+USB_N
+USB_P
+Radio Arbiter
+Link Layer Engine
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 3
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 4 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+This integrated circuit can be damaged by ESD. Texas Instruments recommends that all integrated circuits be handled with
+appropriate precautions. Failure to observe proper handling and installation procedures can cause damage.
+ESD damage can range from subtle performance degradation to complete device failure. Precision integrated circuits may be more
+susceptible to damage because very small parametric changes could cause the device not to meet its published specifications.
+ABSOLUTE MAXIMUM RATINGS(1)
+MIN MAX UNIT
+Supply voltage All supply pins must have the same voltage –0.3 3.9 V
+–0.3 VDD + 0.3,Voltage on any digital pin V≤ 3.9
+Input RF level 10 dBm
+Storage temperature range –40 125 °C
+All pads, according to human-body model, JEDEC STD 22, method A114 2 kV
+ESD(2)
+According to charged-device model, JEDEC STD 22, method C101 750 V
+(1) Stresses beyond those listed under Absolute Maximum Ratings may cause permanent damage to the device. These are stress ratings
+only, and functional operation of the device at these or any other conditions beyond those indicated under Recommended Operating
+Conditions is not implied. Exposure to absolute-maximum-rated conditions for extended periods may affect device reliability.
+(2) CAUTION: ESD sensitive device. Precautions should be used when handing the device in order to prevent permanent damage.
+RECOMMENDED OPERATING CONDITIONS
+MIN MAX UNIT
+Operating ambient temperature range, TA –40 85 °C
+Operating supply voltage 2 3.6 V
+ELECTRICAL CHARACTERISTICS
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Power mode 1. Digital regulator on; 16-MHz RCOSC and 32-
+MHz crystal oscillator off; 32.768-kHz XOSC, POR, BOD and 235
+sleep timer active; RAM and register retention
+Power mode 2. Digital regulator off; 16-MHz RCOSC and 32- µAMHz crystal oscillator off; 32.768-kHz XOSC, POR, and sleep 0.9
+Icore Core current consumption timer active; RAM and register retention
+Power mode 3. Digital regulator off; no clocks; POR active; 0.4RAM and register retention
+Low MCU activity: 32-MHz XOSC running. No radio or 6.7 mAperipherals. No flash access, no RAM access.
+Timer 1. Timer running, 32-MHz XOSC used 90 μA
+Timer 2. Timer running, 32-MHz XOSC used 90 μA
+Peripheral current consumption Timer 3. Timer running, 32-MHz XOSC used 60 μA
+Iperi (Adds to core current Icore for each
+Timer 4. Timer running, 32-MHz XOSC used 70 μAperipheral unit activated)
+Sleep timer, including 32.753-kHz RCOSC 0.6 μA
+ADC, when converting 1.2 mA
+4 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 5 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+GENERAL CHARACTERISTICS
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+WAKE-UP AND TIMING
+Digital regulator on, 16-MHz RCOSC and 32-MHz crystalPower mode 1 → Active 4 μsoscillator off. Start-up of 16-MHz RCOSC
+Digital regulator off, 16-MHz RCOSC and 32-MHz crystalPower mode 2 or 3 → Active 120 μsoscillator off. Start-up of regulator and 16-MHz RCOSC
+Crystal ESR = 16 Ω. Initially running on 16-MHz RCOSC, 410 μswith 32-MHz XOSC OFFActive → TX or RX
+With 32-MHz XOSC initially on 160 μs
+RX/TX turnaround 150 μs
+RADIO PART
+RF frequency range Programmable in 2-MHz steps 2402 2480 MHz
+Data rate and modulation format 1 Mbps, GFSK, 250 kHz deviation
+RF RECEIVE SECTION
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C, VDD = 3 V, fc = 2440 MHz
+1 Mbps, GFSK, 250-kHz deviation, Bluetooth low energy mode, and 0.1% BER(1)
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Receiver sensitivity(2) High-gain mode –93 dBm
+Receiver sensitivity(2) Standard mode –87 dBm
+Saturation(3) 6 dBm
+Co-channel rejection(3) –5 dB
+Adjacent-channel rejection(3) ±1 MHz –5 dB
+Alternate-channel rejection(3) ±2 MHz 30 dB
+Blocking(3) –30 dBm
+Frequency error tolerance(4) Including both initial tolerance and drift –250 250 kHz
+Symbol rate error tolerance(5) –80 80 ppm
+Conducted measurement with a 50-Ω single-ended load.Spurious emission. Only largest spurious Complies with EN 300 328, EN 300 440 class 2, FCC CFR47, –75 dBmemission stated within each band. Part 15 and ARIB STD-T-66
+RX mode, standard mode, no peripherals active, low MCU 19.6activity, MCU at 250 kHz
+Current consumption mA
+RX mode, high-gain mode, no peripherals active, low MCU 22.1activity, MCU at 250 kHz
+(1) 0.1% BER maps to 30.8% PER
+(2) The receiver sensitivity setting is programmable using a TI BLE stack vendor-specific API command. The default value is standard
+mode.
+(3) Results based on standard gain mode
+(4) Difference between center frequency of the received RF signal and local oscillator frequency
+(5) Difference between incoming symbol rate and the internally generated symbol rate
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 5
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 6 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+RF TRANSMIT SECTION
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C, VDD = 3 V and fc = 2440 MHz
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Delivered to a single-ended 50-Ω load through a balun using 4maximum recommended output power setting
+Output power dBm
+Delivered to a single-ended 50-Ω load through a balun using minimum –23recommended output power setting
+Programmable output power Delivered to a single-ended 50 Ω load through a balun 27 dB
+range
+Conducted measurement with a 50-Ω single-ended load. Complies
+Spurious emissions with EN 300 328, EN 300 440 class 2, FCC CFR47, Part 15 and ARIB –41 dBm
+STD-T-66(1)
+TX mode, –23-dBm output power, no peripherals active, low MCU 21.1activity, MCU at 250 kHz
+TX mode, –6-dBm output power, no peripherals active, low MCU 23.8activity, MCU at 250 kHz
+Current consumption mA
+TX mode, 0-dBm output power, no peripherals active, low MCU 27activity, MCU at 250 kHz
+TX mode, 4-dBm output power, no peripherals active, low MCU 31.6activity, MCU at 250 kHz
+Differential impedance as seen from the RF port (RF_P and RF_N)Optimum load impedance 70 + j30 Ωtoward the antenna
+(1) Designs with antenna connectors that require conducted ETSI compliance at 64 MHz should insert an LC resonator in front of the
+antenna connector. Use a 1.6-nH inductor in parallel with a 1.8-pF capacitor. Connect both from the signal trace to a good RF ground.
+CURRENT CONSUMPTION WITH TPS62730
+Measured on Texas Instruments CC2540TPS62730 EM reference design with TA = 25°C, VDD = 3 V, and fc = 2440 MHZ.
+1 Mbps, GFSK, 250 kHz deviation, Bluetooth™ low energy mode, 1% BER(1)
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+RX mode, standard mode, no peripherals active, low MCU activity, MCU at 1 15.8MHZ
+RX mode, high-gain mode, no peripherals active, low MCU activity, MCU at 1 17.8MHZ
+TX mode, -23 dBm output power, no peripherals active, low MCU activity, 16.5MCU at 1 MHZ
+Current Consumption mA
+TX mode, -6 dBm output power, no peripherals active, low MCU activity, 18.6MCU at 1 MHZ
+TX mode, 0 dBm output power, no peripherals active, low MCU activity, 21MCU at 1 MHZ
+TX mode, 4 dBm output power, no peripherals active, low MCU activity, 24.6MCU at 1 MHZ
+(1) 0.1% BER maps to 30.8% PER
+6 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 7 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+32-MHz CRYSTAL OSCILLATOR
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Crystal frequency 32 MHz
+Crystal frequency accuracy –40 40 ppmrequirement(1)
+ESR Equivalent series resistance 6 60 Ω
+C0 Crystal shunt capacitance 1 7 pF
+CL Crystal load capacitance 10 16 pF
+Start-up time 0.25 ms
+The crystal oscillator must be in power down for a
+guard time before it is used again. This
+Power-down guard time requirement is valid for all modes of operation. The 3 ms
+need for power-down guard time can vary with
+crystal type and load.
+(1) Including aging and temperature dependency, as specified by [1]
+32.768-kHz CRYSTAL OSCILLATOR
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Crystal frequency 32.768 kHz
+Crystal frequency accuracy –40 40 ppmrequirement(1)
+ESR Equivalent series resistance 40 130 kΩ
+C0 Crystal shunt capacitance 0.9 2 pF
+CL Crystal load capacitance 12 16 pF
+Start-up time 0.4 s
+(1) Including aging and temperature dependency, as specified by [1]
+32-kHz RC OSCILLATOR
+Measured on Texas Instruments CC2540 EM reference design with Tω = 25°C and VDD = 3 V.
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Calibrated frequency(1) 32.753 kHz
+Frequency accuracy after calibration ±0.2%
+Temperature coefficient(2) 0.4 %/°C
+Supply-voltage coefficient(3) 3 %/V
+Calibration time(4) 2 ms
+(1) The calibrated 32-kHz RC oscillator frequency is the 32-MHz XTAL frequency divided by 977.
+(2) Frequency drift when temperature changes after calibration
+(3) Frequency drift when supply voltage changes after calibration
+(4) When the 32-kHz RC oscillator is enabled, it is calibrated when a switch from the 16-MHz RC oscillator to the 32-MHz crystal oscillator
+is performed while SLEEPCMD.OSC32K_CALDIS is set to 0.
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 7
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 8 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+16-MHz RC OSCILLATOR
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Frequency(1) 16 MHz
+Uncalibrated frequency accuracy ±18%
+Calibrated frequency accuracy ±0.6%
+Start-up time 10 μs
+Initial calibration time(2) 50 μs
+(1) The calibrated 16-MHz RC oscillator frequency is the 32-MHz XTAL frequency divided by 2.
+(2) When the 16-MHz RC oscillator is enabled, it is calibrated when a switch from the 16-MHz RC oscillator to the 32-MHz crystal oscillator
+is performed while SLEEPCMD.OSC_PD is set to 0.
+RSSI CHARACTERISTICS
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+High-gain mode –99 to –44
+Useful RSSI range(1) dBm
+Standard mode –90 to –35
+Absolute uncalibrated RSSI accuracy(1) High-gain mode ±4 dB
+Step size (LSB value) 1 dB
+(1) Assuming CC2540 EM reference design. Other RF designs give an offset from the reported value.
+FREQUENCY SYNTHESIZER CHARACTERISTICS
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C, VDD = 3 V and fc = 2440 MHz
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+At ±1-MHz offset from carrier –109
+Phase noise, unmodulated At ±3-MHz offset from carrier –112 dBc/Hzcarrier
+At ±5-MHz offset from carrier –119
+ANALOG TEMPERATURE SENSOR
+Measured on Texas Instruments CC2540 EM reference design with TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Output 1480 12-bit
+Temperature coefficient 4.5 /1°C
+Voltage coefficient 1 / 0.1 VMeasured using integrated ADC, internal band-gap voltage
+reference, and maximum resolutionInitial accuracy without calibration ±10 °C
+Accuracy using 1-point calibration ±5 °C
+Current consumption when enabled 0.5 mA
+8 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 9 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+OP-AMP CHARACTERISTICS
+TA = 25°C, VDD = 3 V, . All measurement results are obtained using the CC2540 reference designs post-calibration.
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Chopping Configuration, Register APCFG = 0x07, OPAMPMC = 0x03, OPAMPC = 0x01
+Output maximum voltage VDD – 0.1 V
+Output minimum voltage 0.1 V
+Open-loop gain 108 dB
+Gain-bandwidth product 2 MHz
+Slew rate 2.6 V/μs
+Input maximum voltage VDD V
+Intput minimum voltage 0 mV
+Input offset voltage 40 μV
+CMRR Common-mode rejection ratio 90 dB
+Supply current 0.4 mA
+f = 0.01 Hz to 1 Hz 1.1
+Input noise voltage nV/√(Hz)
+f = 0.1 Hz to 10 Hz 1.7
+Non-Chopping Configuration, Register APCFG = 0x07, OPAMPMC = 0x00, OPAMPC = 0x01
+Output maximum voltage VDD – 0.1 V
+Output minimum voltage 0.1 V
+Open-loop gain 108 dB
+Gain-bandwidth product 2 MHz
+Slew rate 2.6 V/μs
+Input maximum voltage VDD V
+Intput minimum voltage 0 mV
+Input offset voltage 3.2 mV
+CMRR Common-mode rejection ratio 90 dB
+Supply current 0.4 mA
+f = 0.01 Hz to 1 Hz 60
+Input noise voltage nV/√(Hz)
+f = 0.1 Hz to 10 Hz 65
+COMPARATOR CHARACTERISTICS
+TA = 25°C, VDD = 3 V. All measurement results are obtained using the CC2540 reference designs, post-calibration.
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Common-mode maximum voltage VDD V
+Common-mode minimum voltage –0.3
+Input offset voltage 1 mV
+Offset vs temperature 16 µV/°C
+Offset vs operating voltage 4 mV/V
+Supply current 230 nA
+Hysteresis 0.15 mV
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 9
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 10 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+ADC CHARACTERISTICS
+TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Input voltage VDD is voltage on AVDD5 pin 0 VDD V
+External reference voltage VDD is voltage on AVDD5 pin 0 VDD V
+External reference voltage differential VDD is voltage on AVDD5 pin 0 VDD V
+Input resistance, signal Simulated using 4-MHz clock speed 197 kΩ
+Full-scale signal(1) Peak-to-peak, defines 0 dBFS 2.97 V
+Single-ended input, 7-bit setting 5.7
+Single-ended input, 9-bit setting 7.5
+Single-ended input, 10-bit setting 9.3
+Single-ended input, 12-bit setting 10.3
+Differential input, 7-bit setting 6.5
+ENOB(1) Effective number of bits bits
+Differential input, 9-bit setting 8.3
+Differential input, 10-bit setting 10
+Differential input, 12-bit setting 11.5
+10-bit setting, clocked by RCOSC 9.7
+12-bit setting, clocked by RCOSC 10.9
+Useful power bandwidth 7-bit setting, both single and differential 0–20 kHz
+Single ended input, 12-bit setting, –6 –75.2dBFS(1)
+THD Total harmonic distortion dB
+Differential input, 12-bit setting, –6 –86.6dBFS(1)
+Single-ended input, 12-bit setting(1) 70.2
+Differential input, 12-bit setting(1) 79.3
+Single-ended input, 12-bit setting, –6Signal to nonharmonic ratio dB78.8dBFS(1)
+Differential input, 12-bit setting, –6 88.9dBFS(1)
+Differential input, 12-bit setting, 1-kHzCMRR Common-mode rejection ratio >84 dBsine (0 dBFS), limited by ADC resolution
+Single ended input, 12-bit setting, 1-kHzCrosstalk >84 dBsine (0 dBFS), limited by ADC resolution
+Offset Midscale –3 mV
+Gain error 0.68%
+12-bit setting, mean(1) 0.05
+DNL Differential nonlinearity LSB
+12-bit setting, maximum(1) 0.9
+12-bit setting, mean(1) 4.6
+12-bit setting, maximum(1) 13.3
+INL Integral nonlinearity LSB
+12-bit setting, mean, clocked by RCOSC 10
+12-bit setting, max, clocked by RCOSC 29
+Single ended input, 7-bit setting(1) 35.4
+Single ended input, 9-bit setting(1) 46.8
+Single ended input, 10-bit setting(1) 57.5
+Single ended input, 12-bit setting(1) 66.6SINAD Signal-to-noise-and-distortion dB(–THD+N) Differential input, 7-bit setting(1) 40.7
+Differential input, 9-bit setting(1) 51.6
+Differential input, 10-bit setting(1) 61.8
+Differential input, 12-bit setting(1) 70.8
+(1) Measured with 300-Hz sine-wave input and VDD as reference.
+10 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 11 =====
+RESET _N
+Px.n
+T0299-01
+1 2
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+ADC CHARACTERISTICS (continued)
+TA = 25°C and VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+7-bit setting 20
+9-bit setting 36
+Conversion time μs
+10-bit setting 68
+12-bit setting 132
+Power consumption 1.2 mA
+Internal reference VDD coefficient 4 mV/V
+Internal reference temperature coefficient 0.4 mV/10°C
+Internal reference voltage 1.24 V
+CONTROL INPUT AC CHARACTERISTICS
+TA = –40°C to 85°C, VDD = 2 V to 3.6 V.
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+The undivided system clock is 32 MHz when crystal oscillator is used.System clock, fSYSCLK The undivided system clock is 16 MHz when calibrated 16-MHz RC 16 32 MHztSYSCLK = 1/ fSYSCLK oscillator is used.
+See item 1, Figure 1. This is the shortest pulse that is recognized as
+a complete reset pin request. Note that shorter pulses may beRESET_N low duration 1 µsrecognized but do not lead to complete reset of all modules within the
+chip.
+See item 2, Figure 1.This is the shortest pulse that is recognized asInterrupt pulse duration 20 nsan interrupt request.
+Figure 1. Control Input AC Characteristics
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 11
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 12 =====
+SCK
+SSN
+MOSI
+MISO
+D0 D1X
+D0X
+t2
+t4
+t6 t7
+t5
+t3
+X
+T0478-01
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+SPI AC CHARACTERISTICS
+TA = –40°C to 85°C, VDD = 2 V to 3.6 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Master, RX and TX 250
+t1 SCK period ns
+Slave, RX and TX 250
+SCK duty cycle Master 50%
+Master 63
+t2 SSN low to SCK ns
+Slave 63
+Master 63
+t3 SCK to SSN high ns
+Slave 63
+t4 MOSI early out Master, load = 10 pF 7 ns
+t5 MOSI late out Master, load = 10 pF 10 ns
+t6 MISO setup Master 90 ns
+t7 MISO hold Master 10 ns
+SCK duty cycle Slave 50% ns
+t10 MOSI setup Slave 35 ns
+t11 MOSI hold Slave 10 ns
+t9 MISO late out Slave, load = 10 pF 95 ns
+Master, TX only 8
+Master, RX and TX 4
+Operating frequency MHz
+Slave, RX only 8
+Slave, RX and TX 4
+Figure 2. SPI Master AC Characteristics
+12 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 13 =====
+T0479-01
+SCK
+SSN
+MOSI
+MISO D0 D1X
+D0X
+t2 t3
+X
+t8
+t10 t11
+t9
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+Figure 3. SPI Slave AC Characteristics
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 13
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 14 =====
+RESET _N
+Time
+DEBUG _ CLK
+P2_2
+t3 t4 t5
+T0437-01
+Time
+DEBUG _ CLK
+P2_2
+t1 t2
+1/fclk_dbg
+T0436-01
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+DEBUG INTERFACE AC CHARACTERISTICS
+TA = –40°C to 85°C, VDD = 2 V to 3.6 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+fclk_dbg Debug clock frequency (see Figure 4) 12 MHz
+t1 Allowed high pulse on clock (see Figure 4) 35 ns
+t2 Allowed low pulse on clock (see Figure 4) 35 ns
+EXT_RESET_N low to first falling edge on debugt3 167 nsclock (see Figure 6)
+Falling edge on clock to EXT_RESET_N high (seet4 83 nsFigure 6)
+EXT_RESET_N high to first debug command (seet5 83 nsFigure 6)
+t6 Debug data setup (see Figure 5) 2 ns
+t7 Debug data hold (see Figure 5) 4 ns
+t8 Clock-to-data delay (see Figure 5) Load = 10 pF 30 ns
+Figure 4. Debug Clock – Basic Timing
+Figure 5. Debug Enable Timing
+14 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 15 =====
+Time
+DEBUG _ CLK
+P2_2
+DEBUG _DATA
+(to□CC2540)
+P2_1
+DEBUG _DATA
+(from□CC2540)
+P2_1
+T0438-02
+t6 t8t7
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+Figure 6. Data Setup and Hold Timing
+TIMER INPUTS AC CHARACTERISTICS
+TA = –40°C to 85°C, VDD = 2 V to 3.6 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Synchronizers determine the shortest input pulse that can be
+Input capture pulse duration recognized. The synchronizers operate at the current system clock rate 1.5 tSYSCLK
+(16 MHz or 32 MHz).
+DC CHARACTERISTICS
+TA = 25°C, VDD = 3 V
+PARAMETER TEST CONDITIONS MIN TYP MAX UNIT
+Logic-0 input voltage 0.5 V
+Logic-1 input voltage 2.5 V
+Logic-0 input current Input equals 0 V –50 50 nA
+Logic-1 input current Input equals VDD –50 50 nA
+I/O-pin pullup and pulldown resistors 20 kΩ
+Logic-0 output voltage, 4- mA pins Output load 4 mA 0.5 V
+Logic-1 output voltage, 4-mA pins Output load 4 mA 2.4 V
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 15
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 16 =====
+CC2540
+RHA Package
+(Top View)
+P0_1
+RESET_N
+P2_3 / XOSC32K_Q2
+AVDD6
+DVDD_USB
+R_BIAS
+P0_2 P0_0
+AVDD4
+P0_3
+AVDD1
+P0_4
+AVDD2
+P0_5
+RF_N
+P0_6
+RF_P
+P0_7
+AVDD3
+XOSC_Q1
+P1_0
+XOSC_Q2
+AVDD5
+P2_2
+P2_4 / XOSC32K_Q1
+USB_P
+P2_1
+USB_N
+P2_0
+DGND_USB
+P1_7
+P1_5
+P1_6
+P1_4
+DVDD1
+P1_3
+P1_1
+DCOUPL
+P1_2
+DVDD2
+P0076-05
+301
+292
+283
+274
+265
+256
+24
+22
+7
+9
+23
+21
+8
+10
+18 20
+33 31
+17 19
+34 32
+16
+35
+15
+36
+14
+37
+13
+38
+12
+39
+11
+40
+GND
+Ground Pad
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+DEVICE INFORMATION
+PIN DESCRIPTIONS
+The CC2540 pinout is shown in Figure 7 and a short description of the pins follows.
+NOTE: The exposed ground pad must be connected to a solid ground plane, as this is the ground connection for the chip.
+Figure 7. Pinout Top View
+16 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 17 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+PIN DESCRIPTIONS
+PIN NAME PIN PIN TYPE DESCRIPTION
+AVDD1 28 Power (analog) 2-V–3.6-V analog power-supply connection
+AVDD2 27 Power (analog) 2-V–3.6-V analog power-supply connection
+AVDD3 24 Power (analog) 2-V–3.6-V analog power-supply connection
+AVDD4 29 Power (analog) 2-V–3.6-V analog power-supply connection
+AVDD5 21 Power (analog) 2-V–3.6-V analog power-supply connection
+AVDD6 31 Power (analog) 2-V–3.6-V analog power-supply connection
+DCOUPL 40 Power (digital) 1.8-V digital power-supply decoupling. Do not use for supplying external circuits.
+DGND_USB 1 Ground pin Connect to GND
+DVDD_USB 4 Power (digital) 2-V–3.6-V digital power-supply connection
+DVDD1 39 Power (digital) 2-V–3.6-V digital power-supply connection
+DVDD2 10 Power (digital) 2-V–3.6-V digital power-supply connection
+GND — Ground The ground pad must be connected to a solid ground plane.
+P0_0 19 Digital I/O Port 0.0
+P0_1 18 Digital I/O Port 0.1
+P0_2 17 Digital I/O Port 0.2
+P0_3 16 Digital I/O Port 0.3
+P0_4 15 Digital I/O Port 0.4
+P0_5 14 Digital I/O Port 0.5
+P0_6 13 Digital I/O Port 0.6
+P0_7 12 Digital I/O Port 0.7
+P1_0 11 Digital I/O Port 1.0 – 20-mA drive capability
+P1_1 9 Digital I/O Port 1.1 – 20-mA drive capability
+P1_2 8 Digital I/O Port 1.2
+P1_3 7 Digital I/O Port 1.3
+P1_4 6 Digital I/O Port 1.4
+P1_5 5 Digital I/O Port 1.5
+P1_6 38 Digital I/O Port 1.6
+P1_7 37 Digital I/O Port 1.7
+P2_0 36 Digital I/O Port 2.0
+P2_1 35 Digital I/O Port 2.1
+P2_2 34 Digital I/O Port 2.2
+P2_3/ 33 Digital I/O, Port 2.3/32.768 kHz XOSC
+XOSC32K_Q2 Analog I/O
+P2_4/ 32 Digital I/O, Port 2.4/32.768 kHz XOSC
+XOSC32K_Q1 Analog I/O
+RBIAS 30 Analog I/O External precision bias resistor for reference current
+RESET_N 20 Digital input Reset, active-low
+RF_N 26 RF I/O Negative RF input signal to LNA during RX
+Negative RF output signal from PA during TX
+RF_P 25 RF I/O Positive RF input signal to LNA during RX
+Positive RF output signal from PA during TX
+USB_N 3 Digital I/O USB N
+USB_P 2 Digital I/O USB P
+XOSC_Q1 22 Analog I/O 32-MHz crystal oscillator pin 1 or external-clock input
+XOSC_Q2 23 Analog I/O 32-MHz crystal oscillator pin 2
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 17
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 18 =====
+RESET WATCHDOG
+TIMER
+IRQ CTRL FLASH CTRL
+DEBUG
+INTERFACE
+CLOCK MUX
+and
+CALIBRATION
+DMA
+8051 CPU
+CORE
+32-MHz
+CRYSTAL OSC
+OP-AMP
+32.768-kHz
+CRYSTAL OSC
+HIGH-
+SPEED
+RC-OSC POWER MANAGEMENT CONTROLLER
+USART 0
+USB
+USART 1
+TIMER 1 (16-Bit)
+TIMER 3 (8-Bit)
+TIMER 4 (8-Bit)
+TIMER 2
+(BLE LL TIMER)
+FLASH
+FIFOCTRL 1 KB SRAM
+ON-CHIP VOLTAGE
+REGULATOR
+POWER-ON RESET
+BROWN OUT
+VDD (2 V–3.6 V)
+DCOUPL
+RESET_N
+XOSC_Q2
+XOSC_Q1
+P2_4
+P1_7
+P0_7
+P2_3
+P1_6
+P0_6
+P2_2
+P1_5
+P0_5
+P1_2
+P0_2
+P2_1
+P1_4
+P0_4
+P1_1
+P0_1
+P2_0
+P1_3
+P0_3
+P1_0
+P0_0
+MODULATORDEMODULA TOR
+RECEIVE TRANSMIT
+FREQUENCYSYNTHESIZER
+SYNTH
+RF_P RF_N
+B0301-05
+RADIO REGISTERS
+SFR Bus
+SFR Bus
+/c68/c83
+ADC
+AUDIO/DC
+AES
+ENCRYPTION
+AND
+DECRYPTION
+MEMORY
+ARBITRATOR FLASH
+UNIFIED
+SFR
+IRAM
+XRAM
+PDATA
+SLEEP TIMER
+32-kHz
+RC-OSC
+I/O CONTROLLER
+DIGITAL
+ANALOG
+MIXED
+ANALOG COMPARATOR
+USB_N
+USB_P
+Radio Arbiter
+Link Layer Engine
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+BLOCK DIAGRAM
+A block diagram of the CC2540 is shown in Figure 8. The modules can be roughly divided into one of three
+categories: CPU-related modules; modules related to power, test, and clock distribution; and radio-related
+modules. In the following subsections, a short description of each module is given.
+Figure 8. CC2540 Block Diagram
+18 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 19 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+BLOCK DESCRIPTIONS
+CPU and Memory
+The 8051 CPU core is a single-cycle 8051-compatible core. It has three different memory access busses (SFR,
+DATA, and CODE/XDATA), a debug interface, and an 18-input extended interrupt unit.
+The memory arbiter is at the heart of the system, as it connects the CPU and DMA controller with the physical
+memories and all peripherals through the SFR bus. The memory arbiter has four memory-access points, access
+of which can map to one of three physical memories: an SRAM, flash memory, and XREG/SFR registers. It is
+responsible for performing arbitration and sequencing between simultaneous memory accesses to the same
+physical memory.
+The SFR bus is drawn conceptually in Figure 8 as a common bus that connects all hardware peripherals to the
+memory arbiter. The SFR bus in the block diagram also provides access to the radio registers in the radio
+register bank, even though these are indeed mapped into XDATA memory space.
+The 8-KB SRAM maps to the DATA memory space and to parts of the XDATA memory spaces. The SRAM is
+an ultralow-power SRAM that retains its contents even when the digital part is powered off (power modes 2 and
+3).
+The 128/256 KB flash block provides in-circuit programmable non-volatile program memory for the device, and
+maps into the CODE and XDATA memory spaces.
+Peripherals
+Writing to the flash block is performed through a flash controller that allows page-wise erasure and 4-bytewise
+programming. See User Guide for details on the flash controller.
+A versatile five-channel DMA controller is available in the system, accesses memory using the XDATA memory
+space, and thus has access to all physical memories. Each channel (trigger, priority, transfer mode, addressing
+mode, source and destination pointers, and transfer count) is configured with DMA descriptors that can be
+located anywhere in memory. Many of the hardware peripherals (AES core, flash controller, USARTs, timers,
+ADC interface, etc.) can be used with the DMA controller for efficient operation by performing data transfers
+between a single SFR or XREG address and flash/SRAM.
+Each CC2540 contains a unique 48-bit IEEE address that can be used as the public device address for a
+Bluetooth device. Designers are free to use this address, or provide their own, as described in the Bluetooth
+specfication.
+The interrupt controller services a total of 18 interrupt sources, divided into six interrupt groups, each of which
+is associated with one of four interrupt priorities. I/O and sleep timer interrupt requests are serviced even if the
+device is in a sleep mode (power modes 1 and 2) by bringing the CC2540 back to the active mode.
+The debug interface implements a proprietary two-wire serial interface that is used for in-circuit debugging.
+Through this debug interface, it is possible to erase or program the entire flash memory, control which oscillators
+are enabled, stop and start execution of the user program, execute instructions on the 8051 core, set code
+breakpoints, and single-step through instructions in the code. Using these techniques, it is possible to perform in-
+circuit debugging and external flash programming elegantly.
+The I/O controller is responsible for all general-purpose I/O pins. The CPU can configure whether peripheral
+modules control certain pins or whether they are under software control, and if so, whether each pin is configured
+as an input or output and if a pullup or pulldown resistor in the pad is connected. Each peripheral that connects
+to the I/O pins can choose between two different I/O pin locations to ensure flexibility in various applications.
+The sleep timer is an ultralow-power timer that can either use an external 32.768-kHz crystal oscillator or an
+internal 32.753-kHz RC oscillator. The sleep timer runs continuously in all operating modes except power mode
+3. Typical applications of this timer are as a real-time counter or as a wake-up timer to get out of power modes 1
+or 2.
+A built-in watchdog timer allows the CC2540 to reset itself if the firmware hangs. When enabled by software,
+the watchdog timer must be cleared periodically; otherwise, it resets the device when it times out.
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 19
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 20 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+Timer 1 is a 16-bit timer with timer/counter/PWM functionality. It has a programmable prescaler, a 16-bit period
+value, and five individually programmable counter/capture channels, each with a 16-bit compare value. Each of
+the counter/capture channels can be used as a PWM output or to capture the timing of edges on input signals. It
+can also be configured in IR generation mode, where it counts timer 3 periods and the output is ANDed with the
+output of timer 3 to generate modulated consumer IR signals with minimal CPU interaction.
+Timer 2 is a 40-bit timer used by the Bluetooth low energy stack. It has a 16-bit counter with a configurable timer
+period and a 24-bit overflow counter that can be used to keep track of the number of periods that have
+transpired. A 40-bit capture register is also used to record the exact time at which a start-of-frame delimiter is
+received/transmitted or the exact time at which transmission ends. There are two 16-bit timer-compare registers
+and two 24-bit overflow-compare registers that can be used to give exact timing for start of RX or TX to the radio
+or general interrupts.
+Timer 3 and timer 4 are 8-bit timers with timer/counter/PWM functionality. They have a programmable prescaler,
+an 8-bit period value, and one programmable counter channel with an 8-bit compare value. Each of the counter
+channels can be used as PWM output.
+USART 0 and USART 1 are each configurable as either an SPI master/slave or a UART. They provide double
+buffering on both RX and TX and hardware flow control and are thus well suited to high-throughput full-duplex
+applications. Each USART has its own high-precision baud-rate generator, thus leaving the ordinary timers free
+for other uses. When configured as SPI slaves, the USARTs sample the input signal using SCK directly instead
+of using some oversampling scheme, and are thus well-suited for high data rates.
+The AES encryption/decryption core allows the user to encrypt and decrypt data using the AES algorithm with
+128-bit keys. The AES core also supports ECB, CBC, CFB, OFB, CTR, and CBC-MAC, as well as hardware
+support for CCM.
+The ADC supports 7 to 12 bits of resolution with a corresponding range of bandwidths from 30-kHz to 4-kHz,
+respectively. DC and audio conversions with up to eight input channels (I/O controller pins) are possible. The
+inputs can be selected as single-ended or differential. The reference voltage can be internal, AVDD, or a single-
+ended or differential external signal. The ADC also has a temperature-sensor input channel. The ADC can
+automate the process of periodic sampling or conversion over a sequence of channels.
+The operational amplifier is intended to provide front-end buffering and gain for the ADC. Both inputs as well as
+the output are available on pins, so the feedback network is fully customizable. A chopper-stabilized mode is
+available for applications that need good accuracy with high gain.
+The ultralow-power analog comparator enables applications to wake up from PM2 or PM3 based on an analog
+signal. Both inputs are brought out to pins; the reference voltage must be provided externally. The comparator
+output is connected to the I/O controller interrupt detector and can be treated by the MCU as a regular I/O pin
+interrupt.
+20 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 21 =====
+Supply Voltage (V)
+Current (mA)
+2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6
+19.5
+19.52
+19.54
+19.56
+19.58
+19.6
+19.62
+19.64
+19.66
+19.68
+19.7
+G005
+Gain = Standard Setting
+Input = -70 dBm
+TA = 25°C
+Supply Voltage (V)
+Current (mA)
+2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6
+31
+31.1
+31.2
+31.3
+31.4
+31.5
+31.6
+31.7
+31.8
+31.9
+32
+G006
+TA = 25°C
+TX Power Setting = 4 dBm
+Temperature (°C)
+Level (dBm)
+-40 -20 0 20 40 60 80
+-92
+-91
+-90
+-89
+-88
+-87
+-86
+-85
+-84
+-83
+G003
+Gain = Standard Setting
+VCC = 3 V
+Temperature (°C)
+Level (dBm)
+-40 -20 0 20 40 60 80
+0
+1
+2
+3
+4
+5
+6
+7
+G004
+TX Power Setting = 4 dBm
+VCC = 3 V
+Temperature (°C)
+Current (mA)
+-40 -20 0 20 40 60 80
+18.5
+19
+19.5
+20
+20.5
+G001
+Gain = Standard Setting
+Input = -70 dBm
+VCC = 3 V
+Temperature (°C)
+Current (mA)
+-40 -20 0 20 40 60 80
+30.5
+31
+31.5
+32
+32.5
+G002
+TX Power Setting = 4 dBm
+VCC = 3 V
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+TYPICAL CHARACTERISTICS
+RX CURRENT IN WAIT FOR SYNC TX CURRENT
+vs vs
+TEMPERATURE TEMPERATURE
+Figure 9. Figure 10.
+RX SENSITIVITY TX POWER
+vs vs
+TEMPERATURE TEMPERATURE
+Figure 11. Figure 12.
+RX CURRENT IN WAIT FOR SYNC TX CURRENT
+vs vs
+SUPPLY VOLTAGE SUPPLY VOLTAGE
+Figure 13. Figure 14.
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 21
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 22 =====
+Frequency (MHz)
+Level (dBm)
+3
+3.2
+3.4
+3.6
+3.8
+4
+4.2
+4.4
+4.6
+4.8
+5
+2400 2410 2420 2430 2440 2450 2460 2470 2480
+G011
+TA = 25°C
+TX Power Setting = 4 dBm
+VCC = 3 V
+Frequency (MHz)
+Level (dBm)
+-89
+-88.8
+-88.6
+-88.4
+-88.2
+-88
+-87.8
+-87.6
+-87.4
+-87.2
+-87
+2400 2410 2420 2430 2440 2450 2460 2470 2480
+G009
+Gain = Standard Setting
+TA = 25°C
+VCC = 3 V
+Frequency (MHz)
+Rejection (dB)
+-10
+0
+10
+20
+30
+40
+50
+60
+2400 2410 2420 2430 2440 2450 2460 2470 2480
+G010
+Gain = Standard Setting
+TA = 25°C
+VCC = 3 V
+Wanted Signal at 2426 MHz
+    with -67 dBm Level
+Supply Voltage (V)
+Level (dBm)
+2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6
+-89
+-88.8
+-88.6
+-88.4
+-88.2
+-88
+-87.8
+-87.6
+-87.4
+-87.2
+-87
+G007
+Gain = Standard Setting
+TA = 25°C
+Supply Voltage (V)
+Level (dBm)
+2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6
+3
+3.2
+3.4
+3.6
+3.8
+4
+4.2
+4.4
+4.6
+4.8
+5
+G008
+TA = 25°C
+TX Power Setting = 4 dBm
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+TYPICAL CHARACTERISTICS (continued)
+RX SENSITIVITY TX POWER
+vs vs
+SUPPLY VOLTAGE SUPPLY VOLTAGE
+Figure 15. Figure 16.
+RX SENSITIVITY RX INTERFERER REJECTION (SELECTIVITY)
+vs vs
+FREQUENCY INTERFERER FREQUENCY
+Figure 17. Figure 18.
+TX POWER
+vs
+FREQUENCY
+Figure 19.
+22 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 23 =====
+CC2540 Current Consumption
+RX SG CLKCONMOD0x80
+0
+5
+10
+15
+20
+25
+2.1 2.4 2.7 3 3.3 3.6
+Supply (V)
+Current (mA)
+0
+5
+10
+15
+20
+25
+30
+35
+40
+Current Savings (%)
+DC/DC ON
+DC/DC OFF
+Current Savings
+CC2540 Current Consumption
+TX 4dBm
+0
+5
+10
+15
+20
+25
+30
+35
+2.1 2.4 2.7 3 3.3 3.6
+Supply (V)
+Current (mA)
+0
+5
+10
+15
+20
+25
+30
+35
+40
+Current Savings (%)
+DC/DC ON
+DC/DC OFF
+% Current Savings
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+TYPICAL CHARACTERISTICS (continued)
+Table 1. Output Power and Current Consumption(1)(2)
+Typical Current Consumption WithTypical Output Power (dBm) Typical Current Consumption (mA) TPS62730 (mA)
+4 32 24.6
+0 27 21
+–6 24 18.5
+–23 21 16.5
+(1) Measured on Texas Instruments CC2540 EM reference design with TA = 25°C, VDD = 3 V and fc = 2440 MHz. See SWRU191 for
+recommended register settings
+(2) Measured on Texas Instruments CC2540TPS62730 EM reference design with TA = 25°C, VDD = 3 V and fc = 2440 MHz. See
+SWRU191 for recommended register settings
+TYPICAL CURRENT SAVINGS
+Figure 20. Current Savings in TX at Room Temperature Figure 21. Current Savings in RX at Room Temperature
+The application note (SWRA365) has information regarding the CC2540 and TPS62730 como board and the
+current savings that can be achieved using the como board.
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 23
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 24 =====
+DGND_USB
+USB_P
+USB_N
+DVDD_USB
+P1_5
+DVDD2
+P1_1
+P1_2
+P1_3
+P1_4
+2-V to 3.6-V Power Supply
+R301
+C251
+C261
+C262
+C253
+C252
+L251
+L261
+L252 L253
+XTAL1
+C221 C231
+XTAL2
+C321
+C331
+C401
+32-kHz Crystal
+(1)
+CC2540
+DIE ATTACH PAD
+RBIAS
+AVDD4
+AVDD1
+AVDD2
+RF_N
+AVDD5
+XOSC_Q1
+XOSC_Q2
+AVDD3
+RF_P
+P1_0 P0_7 P0_6 P0_5 P0_4 RESET_NP0_0P0_1P0_2P0_3
+DCOUPL
+DVDD1
+P1_6P1_7P2_0
+AVDD6
+P2_4/XOSC32K_Q1P2_3/XOSC32K_Q2
+P2_2P2_1
+Antenna
+(50 )/c87
+S0383-03
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11 12 13 14 15 16 17 18 19 20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31323334353637383940
+Power Supply Decoupling Capacitors are Not Shown
+Digital I/O Not Connected
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+APPLICATION INFORMATION
+Few external components are required for the operation of the CC2540. A typical application circuit is shown in
+Figure 22.
+(1) 32-kHz crystal is mandatory when running the chip in low-power modes, except if the link layer is in the standby
+state (Vol. 6 Part B Section 1.1 in [1]).
+NOTE: Different antenna alternatives will be provided as reference designs.
+Figure 22. CC2540 Application Circuit
+Table 2. Overview of External Components (Excluding Supply Decoupling Capacitors)
+Component Description Value
+C221 32-MHz xtal loading capacitor 12 pF
+C231 32-MHz xtal loading capacitor 12 pF
+C251 Part of the RF matching network 18 pF
+C252 Part of the RF matching network 1 pF
+C253 Part of the RF matching network 1 pF
+C261 Part of the RF matching network 18 pF
+C262 Part of the RF matching network 1 pF
+C321 32-kHz xtal loading capacitor 15 pF
+C331 32-kHz xtal loading capacitor 15 pF
+24 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 25 =====
+L parasitic
+321 331
+1C C 1 1
+C C
+/c61 /c43
+/c43
+L parasitic
+221 231
+1C C 1 1
+C C
+/c61 /c43
+/c43
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+Table 2. Overview of External Components (Excluding Supply Decoupling Capacitors) (continued)
+Component Description Value
+C401 Decoupling capacitor for the internal digital regulator 1 µF
+L251 Part of the RF matching network 2 nH
+L252 Part of the RF matching network 1 nH
+L253 Part of the RF matching network 3 nH
+L261 Part of the RF matching network 2 nH
+R301 Resistor used for internal biasing 56 kΩ
+Input/Output Matching
+When using an unbalanced antenna such as a monopole, a balun should be used to optimize performance. The
+balun can be implemented using low-cost discrete inductors and capacitors. The recommended balun shown
+consists of C262, L261, C252, and L252.
+Crystal
+An external 32-MHz crystal, XTAL1, with two loading capacitors (C221 and C231) is used for the 32-MHz crystal
+oscillator. See 32-MHz CRYSTAL OSCILLATOR for details. The load capacitance seen by the 32-MHz crystal is
+given by:
+(1)
+XTAL2 is an optional 32.768-kHz crystal, with two loading capacitors (C321 and C331) used for the 32.768-kHz
+crystal oscillator. The 32.768-kHz crystal oscillator is used in applications where both very low sleep-current
+consumption and accurate wake-up times are needed. The load capacitance seen by the 32.768-kHz crystal is
+given by:
+(2)
+A series resistor may be used to comply with the ESR requirement.
+On-Chip 1.8-V Voltage Regulator Decoupling
+The 1.8-V on-chip voltage regulator supplies the 1.8-V digital logic. This regulator requires a decoupling capacitor
+(C401) for stable operation.
+Power-Supply Decoupling and Filtering
+Proper power-supply decoupling must be used for optimum performance. The placement and size of the
+decoupling capacitors and the power supply filtering are very important to achieve the best performance in an
+application. TI provides a compact reference design that should be followed very closely.
+References
+1. Bluetooth® Core Technical Specification document, version 4.0
+http://www.bluetooth.com/SiteCollectionDocuments/Core_V40.zip
+2. CC253x System-on-Chip Solution for 2.4-GHz IEEE 802.15.4 and ZigBee® Applications/CC2540 System-on-
+Chip Solution for 2.4-GHz Bluetooth low energy Applications (SWRU191)
+3. Current Savings in CC254x Using the TPS62730 (SWRA365)
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 25
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 26 =====
+CC2540F128, CC2540F256
+SWRS084F –OCTOBER 2010–REVISED JUNE 2013 www.ti.com
+Additional Information
+Texas Instruments offers a wide selection of cost-effective, low-power RF solutions for proprietary and standard-
+based wireless applications for use in industrial and consumer applications. Our selection includes RF
+transceivers, RF transmitters, RF front ends, and System-on-Chips as well as various software solutions for the
+sub-1- and 2.4-GHz frequency bands.
+In addition, Texas Instruments provides a large selection of support collateral such as development tools,
+technical documentation, reference designs, application expertise, customer support, third-party and university
+programs.
+The Low-Power RF E2E Online Community provides technical support forums, videos and blogs, and the chance
+to interact with fellow engineers from all over the world.
+With a broad selection of product solutions, end application possibilities, and a range of technical support, Texas
+Instruments offers the broadest low-power RF portfolio. We make RF easy!
+The following subsections point to where to find more information.
+Texas Instruments Low-Power RF Web Site
+• Forums, videos, and blogs
+• RF design help
+• E2E interaction
+Join us today at www.ti.com/lprf-forum.
+Texas Instruments Low-Power RF Developer Network
+Texas Instruments has launched an extensive network of low-power RF development partners to help customers
+speed up their application development. The network consists of recommended companies, RF consultants, and
+independent design houses that provide a series of hardware module products and design services, including:
+• RF circuit, low-power RF, and ZigBee® design services
+• Low-power RF and ZigBee module solutions and development tools
+• RF certification services and RF circuit manufacturing
+Need help with modules, engineering services or development tools?
+Search the Low-Power RF Developer Network tool to find a suitable partner.
+www.ti.com/lprfnetwork
+Low-Power RF eNewsletter
+The Low-Power RF eNewsletter keeps the user up-to-date on new products, news releases, developers’ news,
+and other news and events associated with low-power RF products from TI. The Low-Power RF eNewsletter
+articles include links to get more online information.
+Sign up today on
+www.ti.com/lprfnewsletter
+26 Submit Documentation Feedback Copyright © 2010–2013, Texas Instruments Incorporated
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 27 =====
+CC2540F128, CC2540F256
+www.ti.com SWRS084F –OCTOBER 2010–REVISED JUNE 2013
+REVISION HISTORY
+Changes from Revision Original (October 2010) to Revision A Page
+• Changed several items in Features list ................................................................................................................................ 1
+• Changed upper limit of storage temperature range .............................................................................................................. 4
+• Changed ESD rating for charged-device model ................................................................................................................... 4
+• Changed adjacent-channel rejection from 5 dB to –5 dB ..................................................................................................... 5
+Changes from Revision A (May 2011) to Revision B Page
+• Added the TPS62730 Compatible Features List .................................................................................................................. 1
+• Added the CC2540 WITH TPS62730 Applications .............................................................................................................. 2
+• Added CURRENT CONSUMPTION WITH TPS62730 characteristics ................................................................................ 6
+• Changed Table 1 ................................................................................................................................................................ 23
+• Added the TYPICAL CURRENT SAVINGS section ........................................................................................................... 23
+Changes from Revision B (July 2011) to Revision C Page
+• Changed on page 2, under CC2540...item 2 from Application Run Time to Battery Lifetime .............................................. 2
+• Corrected block diagram ....................................................................................................................................................... 3
+• In the OP-AMP CHARACTERISTICS table, changed several values in the TYP column ................................................... 9
+Changes from Revision C (November 2011) to Revision D Page
+• Changed the Temperature coefficient Unit value From: mV/°C To: / 0.1°C ......................................................................... 8
+• Changed Figure 22 text From: Optional 32-kHz Crystal To: 32-kHz Crystal ..................................................................... 24
+Changes from Revision D (August 2012) to Revision E Page
+• Changed the "Internal reference voltage" TYP value From 1.15 V To: 1.24 V .................................................................. 11
+Changes from Revision E (November 2012) to Revision F Page
+• Changed the RF TRANSMIT SECTION, Output power TYP value From: –20 To: –23 ....................................................... 6
+• Changed the RF TRANSMIT SECTION, Programmable output power range TYP value From: 24 To: 27 ........................ 6
+Copyright © 2010–2013, Texas Instruments Incorporated Submit Documentation Feedback 27
+Product Folder Links: CC2540F128 CC2540F256
+===== PDF PAGE 28 =====
+PACKAGE OPTION ADDENDUM
+www.ti.com 11-Nov-2025
+PACKAGING INFORMATION
+Orderable part number Status
+(1)
+Material type
+(2)
+Package | Pins Package qty | Carrier RoHS
+(3)
+Lead finish/
+Ball material
+(4)
+MSL rating/
+Peak reflow
+(5)
+Op temp (°C) Part marking
+(6)
+CC2540F128RHAR Active Production VQFN (RHA) | 40 2500 | LARGE T&R Yes NIPDAU | NIPDAUAG Level-3-260C-168 HR -40 to 85 CC2540
+F128
+CC2540F128RHAR.A Active Production VQFN (RHA) | 40 2500 | LARGE T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F128
+CC2540F128RHAR.B Active Production VQFN (RHA) | 40 2500 | LARGE T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F128
+CC2540F128RHAT Active Production VQFN (RHA) | 40 250 | SMALL T&R Yes NIPDAU | NIPDAUAG Level-3-260C-168 HR -40 to 85 CC2540
+F128
+CC2540F128RHAT.A Active Production VQFN (RHA) | 40 250 | SMALL T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F128
+CC2540F128RHAT.B Active Production VQFN (RHA) | 40 250 | SMALL T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F128
+CC2540F256RHAR Active Production VQFN (RHA) | 40 2500 | LARGE T&R Yes NIPDAU | NIPDAUAG Level-3-260C-168 HR -40 to 85 CC2540
+F256
+CC2540F256RHAR.A Active Production VQFN (RHA) | 40 2500 | LARGE T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F256
+CC2540F256RHAR.B Active Production VQFN (RHA) | 40 2500 | LARGE T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F256
+CC2540F256RHAT Active Production VQFN (RHA) | 40 250 | SMALL T&R Yes NIPDAU | NIPDAUAG Level-3-260C-168 HR -40 to 85 CC2540
+F256
+CC2540F256RHAT.A Active Production VQFN (RHA) | 40 250 | SMALL T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F256
+CC2540F256RHAT.B Active Production VQFN (RHA) | 40 250 | SMALL T&R Yes NIPDAU Level-3-260C-168 HR -40 to 85 CC2540
+F256
+
+(1) Status:  For more details on status, see our product life cycle.
+
+(2) Material type:  When designated, preproduction parts are prototypes/experimental devices, and are not yet approved or released for full production. Testing and final process, including without limitation quality assurance,
+reliability performance testing, and/or process qualification, may not yet be complete, and this item is subject to further changes or possible discontinuation. If available for ordering, purchases will be subject to an additional
+waiver at checkout, and are intended for early internal evaluation purposes only. These items are sold without warranties of any kind.
+
+(3) RoHS values:  Yes, No, RoHS Exempt. See the TI RoHS Statement for additional information and value definition.
+
+Addendum-Page 1
+===== PDF PAGE 29 =====
+PACKAGE OPTION ADDENDUM
+www.ti.com 11-Nov-2025
+(4) Lead finish/Ball material:  Parts may have multiple material finish options. Finish options are separated by a vertical ruled line. Lead finish/Ball material values may wrap to two lines if the finish value exceeds the maximum
+column width.
+
+(5) MSL rating/Peak reflow:  The moisture sensitivity level ratings and peak solder (reflow) temperatures. In the event that a part has multiple moisture sensitivity ratings, only the lowest level per JEDEC standards is shown.
+Refer to the shipping label for the actual reflow temperature that will be used to mount the part to the printed circuit board.
+
+(6) Part marking:  There may be an additional marking, which relates to the logo, the lot trace code information, or the environmental category of the part.
+
+Multiple part markings will be inside parentheses. Only one part marking contained in parentheses and separated by a "~" will appear on a part. If a line is indented then it is a continuation of the previous line and the two
+combined represent the entire part marking for that device.
+
+Important Information and Disclaimer:The information provided on this page represents TI's knowledge and belief as of the date that it is provided. TI bases its knowledge and belief on information provided by third parties, and
+makes no representation or warranty as to the accuracy of such information. Efforts are underway to better integrate information from third parties. TI has taken and continues to take reasonable steps to provide representative
+and accurate information but may not have conducted destructive testing or chemical analysis on incoming materials and chemicals. TI and TI suppliers consider certain information to be proprietary, and thus CAS numbers
+and other limited information may not be available for release.
+
+In no event shall TI's liability arising out of such information exceed the total purchase price of the TI part(s) at issue in this document sold by TI to Customer on an annual basis.
+
+Addendum-Page 2
+===== PDF PAGE 30 =====
+PACKAGE MATERIALS INFORMATION
+
+www.ti.com 4-Sep-2026
+TRAY
+
+
+L - Outer tray length without tabs KO -
+Outer
+tray
+height
+W -
+Outer
+tray
+width
+P1 - Tray unit pocket pitch
+CW - Measurement for tray edge (Y direction) to corner pocket center
+CL - Measurement for tray edge (X direction) to corner pocket center
+Text
+
+
+Chamfer on Tray corner indicates Pin 1 orientation of packed units.
+
+
+*All dimensions are nominal
+Device Package
+Name
+Package
+Type
+Pins SPQ Unit array
+matrix
+Max
+temperature
+(°C)
+L (mm) W
+(mm)
+K0
+(µm)
+P1
+(mm)
+CL
+(mm)
+CW
+(mm)
+CC2540F128RHAR RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAR RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAR.A RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAR.A RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAR.B RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAR.B RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAT RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAT RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAT.A RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAT.A RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAT.B RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F128RHAT.B RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAR RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAR.A RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAR.B RHA VQFN 40 2500 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAT RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAT RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+Pack Materials-Page 1
+===== PDF PAGE 31 =====
+PACKAGE MATERIALS INFORMATION
+
+www.ti.com 4-Sep-2026
+Device Package
+Name
+Package
+Type
+Pins SPQ Unit array
+matrix
+Max
+temperature
+(°C)
+L (mm) W
+(mm)
+K0
+(µm)
+P1
+(mm)
+CL
+(mm)
+CW
+(mm)
+CC2540F256RHAT.A RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAT.A RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAT.B RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+CC2540F256RHAT.B RHA VQFN 40 250 35 X 14 150 315 135.9 7620 8.8 7.9 8.15
+Pack Materials-Page 2
+===== PDF PAGE 32 =====
+www.ti.com
+GENERIC PACKAGE VIEW
+This image is a representation of the package family, actual package may vary.
+Refer to the product data sheet for package details.
+VQFN - 1 mm max heightRHA 40
+PLASTIC QUAD FLATPACK - NO LEAD6 x 6, 0.5 mm pitch
+4225870/A
+===== PDF PAGE 33 =====
+www.ti.com
+PACKAGE OUTLINE
+C
+40X 0.3
+0.2
+4.5 0.1
+40X 0.5
+0.3
+1 MAX
+(0.2) TYP
+0.05
+0.0036X 0.5
+2X
+4.5
+2X 4.5
+A 6.1
+5.9
+B
+6.1
+5.9
+0.3
+0.2
+0.5
+0.3
+(0.1)
+VQFN - 1 mm max heightRHA0040H
+PLASTIC QUAD FLATPACK - NO LEAD
+4219055/B   08/22/2019
+PIN 1 INDEX AREA
+0.08 C
+SEATING PLANE
+1
+10 21
+30
+11 20
+40 31
+(OPTIONAL)
+PIN 1 ID 0.1 C A B
+0.05
+EXPOSED
+THERMAL PAD
+DETAIL
+SEE TERMINAL
+SYMM
+SYMM
+NOTES:
+
+1. All linear dimensions are in millimeters. Any dimensions in parenthesis are for reference only. Dimensioning and tolerancing
+    per ASME Y14.5M.
+2. This drawing is subject to change without notice.
+3. The package thermal pad must be soldered to the printed circuit board for thermal and mechanical performance.
+41
+SEE SIDE WALL
+DETAIL
+SCALE  2.200
+DETAIL
+OPTIONAL TERMINAL
+TYPICAL
+SIDE WALL DETAIL
+OPTIONAL METAL THICKNESS
+===== PDF PAGE 34 =====
+www.ti.com
+EXAMPLE BOARD LAYOUT
+0.07 MIN
+ALL AROUND
+0.07 MAX
+ALL AROUND
+40X (0.25)
+40X (0.6)
+( 0.2) TYP
+VIA
+36X (0.5)
+(5.8)
+(5.8)
+( 4.5)
+(R0.05)
+TYP
+4X
+(1.46)
+4X
+(1.27)
+(0.73) TYP
+4X (1.27)
+(0.73)
+TYP
+4X (1.46)
+VQFN - 1 mm max heightRHA0040H
+PLASTIC QUAD FLATPACK - NO LEAD
+4219055/B   08/22/2019
+SYMM
+1
+10
+11 20
+21
+30
+3140
+SYMM
+LAND PATTERN EXAMPLE
+EXPOSED METAL SHOWN
+SCALE:12X
+41
+NOTES: (continued)
+
+4. This package is designed to be soldered to a thermal pad on the board. For more information, see Texas Instruments literature
+    number SLUA271 (www.ti.com/lit/slua271).
+5. Vias are optional depending on application, refer to device data sheet. If any vias are implemented, refer to their locations shown
+    on this view. It is recommended that vias under paste be filled, plugged or tented.
+SOLDER MASK
+OPENING
+METAL UNDER
+SOLDER MASK
+SOLDER MASK
+DEFINED
+EXPOSED METALMETAL
+SOLDER MASK
+OPENING
+SOLDER MASK DETAILS
+NON SOLDER MASK
+DEFINED
+(PREFERRED)
+EXPOSED METAL
+===== PDF PAGE 35 =====
+www.ti.com
+EXAMPLE STENCIL DESIGN
+40X (0.6)
+40X (0.25)
+36X (0.5)
+(5.8)
+(5.8)
+9X ( 1.26)
+(1.46)
+TYP
+(1.46) TYP
+(R0.05) TYP
+VQFN - 1 mm max heightRHA0040H
+PLASTIC QUAD FLATPACK - NO LEAD
+4219055/B   08/22/2019
+NOTES: (continued)
+
+6. Laser cutting apertures with trapezoidal walls and rounded corners may offer better paste release. IPC-7525 may have alternate
+   design recommendations.
+
+SYMM
+METAL
+TYP
+SOLDER PASTE EXAMPLE
+BASED ON 0.125 mm THICK STENCIL
+
+EXPOSED PAD 41:
+70% PRINTED SOLDER COVERAGE BY AREA
+SCALE:15X
+SYMM
+1
+10
+11 20
+21
+30
+3140
+41
+===== PDF PAGE 36 =====
+IMPORTANT NOTICE AND DISCLAIMER
+TI PROVIDES TECHNICAL AND RELIABILITY DATA (INCLUDING DATASHEETS), DESIGN RESOURCES (INCLUDING REFERENCE
+DESIGNS), APPLICATION OR OTHER DESIGN ADVICE, WEB TOOLS, SAFETY INFORMATION, AND OTHER RESOURCES “AS IS”
+AND WITH ALL FAULTS, AND DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT OF THIRD
+PARTY INTELLECTUAL PROPERTY RIGHTS.
+These resources are intended for skilled developers designing with TI products. You are solely responsible for (1) selecting the appropriate
+TI products for your application, (2) designing, validating and testing your application, and (3) ensuring your application meets applicable
+standards, and any other safety, security, regulatory or other requirements.
+These resources are subject to change without notice. TI grants you permission to use these resources only for development of an
+application that uses the TI products described in the resource. Other reproduction and display of these resources is prohibited. No license
+is granted to any other TI intellectual property right or to any third party intellectual property right. TI disclaims responsibility for, and you fully
+indemnify TI and its representatives against any claims, damages, costs, losses, and liabilities arising out of your use of these resources.
+TI’s products are provided subject to TI’s Terms of Sale, TI’s General Quality Guidelines, or other applicable terms available either on
+ti.com or provided in conjunction with such TI products. TI’s provision of these resources does not expand or otherwise alter TI’s applicable
+warranties or warranty disclaimers for TI products. Unless TI explicitly designates a product as custom or customer-specified, TI products
+are standard, catalog, general purpose devices.
+TI objects to and rejects any additional or different terms you may propose.
+IMPORTANT NOTICE
+Copyright © 2026, Texas Instruments Incorporated
+Last updated 10/2025

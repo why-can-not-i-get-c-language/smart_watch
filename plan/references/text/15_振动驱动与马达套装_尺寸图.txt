@@ -1,0 +1,8 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 振动驱动与马达套装/尺寸图.pdf
+
+===== PDF PAGE 1 =====
+22
+mm3.2 mm12mm30mm15mm
+PCB InformationBoard_Size2025-05-29DRI0056-V1.0.0-1.6mm-2Layer-22x30mmTopSolderMask:BlackBottomSolderMask:BlackTopSilkscreen:WhiteBottomSilkscreen:White
++ C-D+-

@@ -1,0 +1,4 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: Type-C充电板/尺寸图.pdf
+
+===== PDF PAGE 1 =====

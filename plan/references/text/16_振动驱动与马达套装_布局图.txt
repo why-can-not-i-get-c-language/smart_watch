@@ -1,0 +1,6 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 振动驱动与马达套装/布局图.pdf
+
+===== PDF PAGE 1 =====
+PCB InformationTop_Location2025-05-29DRI0056-V1.0.0-1.6mm-2Layer-22x30mmTopSolderMask:BlackBottomSolderMask:BlackTopSilkscreen:WhiteBottomSilkscreen:White
++ C-D+-R2D21TP2FID2FID1C2D19R1D20D22J2J1C1H1U2TP1H2D23

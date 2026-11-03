@@ -1,0 +1,889 @@
+SOURCE_ARCHIVE: originals.zip
+SOURCE_ENTRY: 连接与焊接材料包/JST PH 系列连接器参考.pdf
+
+===== PDF PAGE 1 =====
+2
+3
+4
+5
+6
+PH CONNECTOR
+2.0mm pitch/Disconnectable Crimp style connectors
+Emboss Tape
+П<U+0001><U+0011><U+000F><U+0018>
+ʴ<U+0001><U+0011><U+000F><U+0012>
+ɹ<U+0001><U+0011>
+<U+0013><U+000F><U+0011>
+ʶ<U+0001><U+0011><U+000F><U+0011><U+0016>
+П<U+0001><U+0011><U+000F><U+0018>ɹ<U+0001><U+0011>
+<U+0013><U+000F><U+0011>
+ʶ<U+0001><U+0011><U+000F><U+0011><U+0016>
+ʴ<U+0001><U+0011><U+000F><U+0012>
+ʶ<U+0011><U+000F><U+0012><U+0014><U+000F><U+0015>
+<U+0011><U+000F><U+0013>
+<U+0016><U+000F><U+0016>NBY
+<U+001A><U+000F><U+0011>NJO
+ʶ<U+0011><U+000F><U+0012><U+0012><U+000F><U+0016>
+ʶ<U+0011><U+000F><U+0012><U+0012><U+000F><U+0017> ʶ<U+0011><U+000F><U+0011><U+0016><U+0013><U+000F><U+0011>
+<U+0012><U+000F><U+0011>NJO
+End face of wafer
+on the mating side
+Circuit
+No.1
+<U+0012><U+000F><U+0011>
+ʶ<U+0011><U+000F><U+0012><U+0012><U+000F><U+0017>ʶ<U+0011><U+000F><U+0012><U+0014><U+000F><U+0011>
+ʶ<U+0011><U+000F><U+0012><U+0012><U+000F><U+0017> ʶ<U+0011><U+000F><U+0011><U+0016><U+0013><U+000F><U+0011>
+<U+0012><U+000F><U+0011>NJO
+<U+0013><U+000F><U+0011>NBY
+<U+0018><U+000F><U+0016>NJO
+End face of wafer
+on the mating side
+Circuit
+No.1
+<U+0016><U+000F><U+0011> ʢ<U+0013><U+000F><U+0011>ʣ<U+0001>
+<U+0019><U+000F><U+0017>
+<U+0017><U+000F><U+0017>
+<U+0015><U+000F><U+0016>
+<U+0019><U+000F><U+0011>
+<U+0017><U+000F><U+0011>
+<U+0018><U+000F><U+0017>
+<U+001A><U+000F><U+0017>
+<U+0015><U+000F><U+0019>
+<U+0017><U+000F><U+0013><U+0016>
+<U+0018><U+000F><U+0017>
+<U+001A><U+000F><U+0017> <U+0012><U+000F><U+0011>
+<U+0016><U+000F><U+0016>
+This is a thin, low-profile 2.0mm pitch
+connector 8.0mm in height after mounting
+and 4.5mm in width.  It is designed to meet
+the demand for high-density connection of
+internal wires to printed circuit boards.  It
+is compact, highly reliable and low in cost.
+• Reliable contact
+• Fully shrouded header
+• Printed circuit board retention mechanism
+• Surface mount model (SMT)
+Specifications –––––––––––––––––––
+• Current rating: 2A AC, DC (AWG #24)
+• Voltage rating: 100V AC, DC
+• Temperature range:
+-25˚C to +85˚C
+(including temperature rise in applying
+electrical current)
+• Contact resistance: Initial value/10m Ω max.
+After environmental testing/20m Ω max.
+• Insulation resistance: 1,000M Ω min.
+• Withstanding voltage: 800V AC/minute
+• Applicable wire: AWG #32 to #24
+• Applicable PC board thickness: 0.8 to 1.6mm
+*R oHS compliant products are published.
+* Refer to "General Instruction and Notice when using
+Terminals and Connectors" at the end of this catalog.
+* Contact JST for details.
+Standards ––––––––––––––––––––––
+0 Recognized E60389
+1Certified LR20812
+2R75087
+ʪThrough-hole type (viewed from soldering side) ʫ
+Note: 1. Tolerances are non-cumulative: ±0.05mm for all centers.
+2. Hole dimensions differ according to the kind of PC board and piercing method. If PC boards made of hard material are used, the hole dimensions should
+be larger. The dimensions above should serve as a guideline. Contact JST for details.
+Side entry typeTop entry type
+Side entry typeSM4 type
+Top entry type
+ʪSMT type (viewed from component side) ʫ
+Note: 1. Tolerances are non-cumulative: ±0.05mm for all centers.
+2. The dimensions above should serve as a guideline.  Contact JST for details.
+PC board layout and Assembly layout
+21
+===== PDF PAGE 2 =====
+<U+0012><U+000F><U+0011>
+<U+0013><U+000F><U+0011><U+0019>
+<U+0012><U+000F><U+0016>
+<U+0016><U+000F><U+0018>
+<U+0013><U+000F><U+0019><U+0016> <U+0013><U+000F><U+0011><U+0016> Model No. Applicable wire
+mm2 AWG # Insulation O.D. (mm)
+Q'ty /
+reel
+Material and Finish
+Phosphor bronze, tin-plated (reflow treatment)
+SPH-002T-P0.5S
+SPH-002T-P0.5L
+SPH-004T-P0.5S
+<U+0011><U+000F><U+0011><U+0016><U+0001>ʙ<U+0001><U+0011><U+000F><U+0013><U+0013><U+0001>
+<U+0011><U+000F><U+0011><U+0019><U+0001>ʙ<U+0001><U+0011><U+000F><U+0013><U+0013><U+0001>
+<U+0011><U+000F><U+0011><U+0014><U+0013>ʙ<U+0011><U+000F><U+0011><U+0019>
+<U+0014><U+0011>ʙ<U+0013><U+0015><U+0001>
+<U+0013><U+0019>ʙ<U+0013><U+0015><U+0001>
+<U+0014><U+0013>ʙ<U+0013><U+0019>
+<U+0011><U+000F><U+001A>ʙ<U+0012><U+000F><U+0016><U+0001>
+<U+0011><U+000F><U+0019>ʙ<U+0012><U+000F><U+0016><U+0001>
+<U+0011><U+000F><U+0016>ʙ<U+0011><U+000F><U+001A>
+<U+0019>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012><U+0011>
+<U+0011><U+0011><U+0011>
+<U+0013><U+000F><U+0011>
+<U+0012><U+000F><U+001A> "
+#
+<U+0015><U+000F><U+0016>
+<U+0011><U+000F><U+0016><U+0017><U+000F><U+0014><U+0016>
+<U+0011><U+000F><U+0017>
+)<U+0001><U+0001>+45
+<U+0019>
+Circuit
+No.1
+Cir-
+cuits Model No.
+PHR-2
+PHR-3
+PHR-4
+PHR-5
+PHR-6
+PHR-7
+PHR-8
+PHR-9
+PHR-10
+PHR-11
+PHR-12
+PHR-13
+PHR-14
+PHR-15
+PHR-16
+Dimensions (mm) Q'ty /
+box"#
+Material
+PA 66, UL94V-0, natural (white)
+<U+0001><U+0001><U+0013><U+0001>
+<U+0001><U+0001><U+0014><U+0001>
+<U+0001><U+0001><U+0015><U+0001>
+<U+0001><U+0001><U+0016><U+0001>
+<U+0001><U+0001><U+0017><U+0001>
+<U+0001><U+0001><U+0018><U+0001>
+<U+0001><U+0001><U+0019><U+0001>
+<U+0001><U+0001><U+001A><U+0001>
+<U+0012><U+0011><U+0001>
+<U+0012><U+0012><U+0001>
+<U+0012><U+0013><U+0001>
+<U+0012><U+0014><U+0001>
+<U+0012><U+0015><U+0001>
+<U+0012><U+0016><U+0001>
+<U+0012><U+0017>
+<U+0001><U+0001><U+0013><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0015><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0017><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0019><U+000F><U+0011><U+0001>
+<U+0012><U+0011><U+000F><U+0011><U+0001>
+<U+0012><U+0013><U+000F><U+0011><U+0001>
+<U+0012><U+0015><U+000F><U+0011><U+0001>
+<U+0012><U+0017><U+000F><U+0011><U+0001>
+<U+0012><U+0019><U+000F><U+0011><U+0001>
+<U+0013><U+0011><U+000F><U+0011><U+0001>
+<U+0013><U+0013><U+000F><U+0011><U+0001>
+<U+0013><U+0015><U+000F><U+0011><U+0001>
+<U+0013><U+0017><U+000F><U+0011><U+0001>
+<U+0013><U+0019><U+000F><U+0011><U+0001>
+<U+0014><U+0011><U+000F><U+0011>
+<U+0001><U+0001><U+0016><U+000F><U+0019><U+0001>
+<U+0001><U+0001><U+0018><U+000F><U+0019><U+0001>
+<U+0001><U+0001><U+001A><U+000F><U+0019><U+0001>
+<U+0012><U+0012><U+000F><U+0019><U+0001>
+<U+0012><U+0014><U+000F><U+0019><U+0001>
+<U+0012><U+0016><U+000F><U+0019><U+0001>
+<U+0012><U+0018><U+000F><U+0019><U+0001>
+<U+0012><U+001A><U+000F><U+0019><U+0001>
+<U+0013><U+0012><U+000F><U+0019><U+0001>
+<U+0013><U+0014><U+000F><U+0019><U+0001>
+<U+0013><U+0016><U+000F><U+0019><U+0001>
+<U+0013><U+0018><U+000F><U+0019><U+0001>
+<U+0013><U+001A><U+000F><U+0019><U+0001>
+<U+0014><U+0012><U+000F><U+0019><U+0001>
+<U+0014><U+0014><U+000F><U+0019>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011>
+Circuits Model No. Dimensions (mm)
+"#
+Material and Finish
+Top entry typeTop entry type Side entry type Side entry type
+Q'ty / box
+<U+0001><U+0001><U+0013><U+0001>
+<U+0001><U+0001><U+0014><U+0001>
+<U+0001><U+0001><U+0015><U+0001>
+<U+0001><U+0001><U+0016><U+0001>
+<U+0001><U+0001><U+0017><U+0001>
+<U+0001><U+0001><U+0018><U+0001>
+<U+0001><U+0001><U+0019><U+0001>
+<U+0001><U+0001><U+001A><U+0001>
+<U+0012><U+0011><U+0001>
+<U+0012><U+0012><U+0001>
+<U+0012><U+0013><U+0001>
+<U+0012><U+0014><U+0001>
+<U+0012><U+0015><U+0001>
+<U+0012><U+0016><U+0001>
+<U+0012><U+0017>
+S2B-PH-K-S
+S3B-PH-K-S
+S4B-PH-K-S
+S5B-PH-K-S
+S6B-PH-K-S
+S7B-PH-K-S
+S8B-PH-K-S
+S9B-PH-K-S
+S10B-PH-K-S
+S11B-PH-K-S
+S12B-PH-K-S
+S13B-PH-K-S
+S14B-PH-K-S
+S15B-PH-K-S
+S16B-PH-K-S
+<U+0001><U+0001><U+0013><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0015><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0017><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0019><U+000F><U+0011><U+0001>
+<U+0012><U+0011><U+000F><U+0011><U+0001>
+<U+0012><U+0013><U+000F><U+0011><U+0001>
+<U+0012><U+0015><U+000F><U+0011><U+0001>
+<U+0012><U+0017><U+000F><U+0011><U+0001>
+<U+0012><U+0019><U+000F><U+0011><U+0001>
+<U+0013><U+0011><U+000F><U+0011><U+0001>
+<U+0013><U+0013><U+000F><U+0011><U+0001>
+<U+0013><U+0015><U+000F><U+0011><U+0001>
+<U+0013><U+0017><U+000F><U+0011><U+0001>
+<U+0013><U+0019><U+000F><U+0011><U+0001>
+<U+0014><U+0011><U+000F><U+0011>
+<U+0001><U+0001><U+0016><U+000F><U+001A><U+0001>
+<U+0001><U+0001><U+0018><U+000F><U+001A><U+0001>
+<U+0001><U+0001><U+001A><U+000F><U+001A><U+0001>
+<U+0012><U+0012><U+000F><U+001A><U+0001>
+<U+0012><U+0014><U+000F><U+001A><U+0001>
+<U+0012><U+0016><U+000F><U+001A><U+0001>
+<U+0012><U+0018><U+000F><U+001A><U+0001>
+<U+0012><U+001A><U+000F><U+001A><U+0001>
+<U+0013><U+0012><U+000F><U+001A><U+0001>
+<U+0013><U+0014><U+000F><U+001A><U+0001>
+<U+0013><U+0016><U+000F><U+001A><U+0001>
+<U+0013><U+0018><U+000F><U+001A><U+0001>
+<U+0013><U+001A><U+000F><U+001A><U+0001>
+<U+0014><U+0012><U+000F><U+001A><U+0001>
+<U+0014><U+0014><U+000F><U+001A>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0015><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0011><U+0011>
+B2B-PH-K-S
+B3B-PH-K-S
+B4B-PH-K-S
+B5B-PH-K-S
+B6B-PH-K-S
+B7B-PH-K-S
+B8B-PH-K-S
+B9B-PH-K-S
+B10B-PH-K-S
+B11B-PH-K-S
+B12B-PH-K-S
+B13B-PH-K-S
+B14B-PH-K-S
+B15B-PH-K-S
+B16B-PH-K-S
+Post: Brass, copper-undercoated, tin-plated (reflow treatment)
+Wafer: PA 66, UL94V-0, natural (white)
+<U+0017><U+000F><U+0011><U+0014><U+000F><U+0015>
+<U+0015><U+000F><U+0016>
+<U+0012><U+000F><U+0018>#
+<U+0011><U+000F><U+0016><U+0013><U+000F><U+0011>
+"<U+0012><U+000F><U+001A><U+0016>
+<U+0001>
+Circuit
+No.1
+#
+"<U+0012><U+000F><U+001A><U+0016>
+<U+0015><U+000F><U+0016>
+<U+0012><U+000F><U+0018>
+<U+0017><U+000F><U+0011><U+0014><U+000F><U+0015>
+<U+0011><U+000F><U+0016>
+Circuit
+No.1
+Circuit
+No.1
+#
+<U+0015><U+000F><U+0019>
+<U+0012><U+000F><U+0018>
+<U+0017><U+000F><U+0013><U+0016>
+<U+0014><U+000F><U+0015>
+<U+0017><U+000F><U+0011><U+0012><U+000F><U+0017><U+0011><U+000F><U+0016>
+<U+0012><U+000F><U+001A><U+0016> "
+<U+0013><U+000F><U+0011>
+PH CONNECTOR
+SPH-002T-P0.5S
+SPH-002T-P0.5L
+SPH-004T-P0.5S
+"1<U+000E>,<U+0013>/
+.,4<U+000E>-4ɾ.,4<U+000E>-
+<U+000B>.,4<U+000E>4$
+.,<U+0010>41)<U+000E><U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>4
+4$<U+0010>41)<U+000E><U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>4
+.,4<U+000E>-4ɾ.,4<U+000E>-
+<U+000B>.,4<U+000E>4$
+.,4<U+000E>-<U+000E><U+0012><U+0011>
+<U+000B>.,4<U+000E>4$<U+000E><U+0012><U+0011>
+.,<U+0010>41)<U+000E><U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>-
+4$<U+0010>41)<U+000E><U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>-
+.,<U+0010>41)<U+000E><U+0011><U+0011><U+0015><U+000E><U+0011><U+0016>4
+4$<U+0010>41)<U+000E><U+0011><U+0011><U+0015><U+000E><U+0011><U+0016>4
+$POUBDU $SJNQ<U+0001>BQQMJDBUPS%JFT $SJNQ<U+0001>BQQMJDBUPS<U+0001>XJUI<U+0001>EJFT
+"QQMJDBUPS$SJNQJOH
+NBDIJOF
+"1-.,<U+0001>41)<U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>4
+"1-4$<U+0001>41)<U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>4
+"1-.,<U+0001>41)<U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>-
+"1-4$<U+0001>41)<U+0011><U+0011><U+0013><U+000E><U+0011><U+0016>-
+"1-.,<U+0001>41)<U+0011><U+0011><U+0015><U+000E><U+0011><U+0016>4
+"1-4$<U+0001>41)<U+0011><U+0011><U+0015><U+000E><U+0011><U+0016>4
+RoHS compliance
+Note:
+1. Contact JST for gold-plated products.
+2. SPH-002T-P0.5L is low-insertion force type contact, for easier insertion/
+withdrawal, which would be less resistant to the vibration. The crimp height
+is different from the standard.
+3. Contact JST for details.
+Contact
+Housing
+<For reference> As the color identification,
+the following alphabet shall be put in the underlined part.
+For availability, delivery and minimum order quantity, contact JST.
+ex. PHR-2-oo-
+(blank)…natural (white)
+BK…black R…red TR…tomato red BL…blue Y…yellow
+L…lemon yellow M…green D…orange N…brown
+P…purple PK…pink H…gray LE…light blue
+FY…vivid yellow   DPK...dark pink RoHS compliance
+Through-hole type shrouded header
+RoHS compliance This product displays (LF)(SN) on a label.
+<For reference> As the color identification,
+the following alphabet shall be put in the underlined part.
+For availability, delivery and minimum order quantity, contact JST.
+ex. B2B-PH-K-oo-
+S…natural (white)
+K…black R…red TR…tomato red
+E…blue Y…yellow L…lemon yellow M…green
+O…orange N…brown P…purple PK…pink H…gray
+LE…light blue FY…vivid yellow (blank)…ivory
+Side entry type
+Top entry type
+(2 circuits) (3 circuits or more)
+Note: *Strip-crimp applicator
+22
+===== PDF PAGE 3 =====
+PH CONNECTOR
+"#
+<U+0001><U+0001><U+0013><U+0001>
+<U+0001><U+0001><U+0014><U+0001>
+<U+0001><U+0001><U+0015><U+0001>
+<U+0001><U+0001><U+0016><U+0001>
+<U+0001><U+0001><U+0017><U+0001>
+<U+0001><U+0001><U+0018><U+0001>
+<U+0001><U+0001><U+0019><U+0001>
+<U+0001><U+0001><U+001A><U+0001>
+<U+0012><U+0011><U+0001>
+<U+0012><U+0012><U+0001>
+<U+0012><U+0013><U+0001>
+<U+0012><U+0014><U+0001>
+<U+0012><U+0015><U+0001>
+<U+0012><U+0016><U+0001>
+<U+0012><U+0017>
+S2B-PH-KL
+S3B-PH-KL
+S4B-PH-KL
+S5B-PH-KL
+S6B-PH-KL
+S7B-PH-KL
+S8B-PH-KL
+S9B-PH-KL
+S10B-PH-KL
+S11B-PH-KL
+S12B-PH-KL
+S13B-PH-KL
+S14B-PH-KL
+S15B-PH-KL
+S16B-PH-KL
+<U+0001><U+0001><U+0013><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0015><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0017><U+000F><U+0011><U+0001>
+<U+0001><U+0001><U+0019><U+000F><U+0011><U+0001>
+<U+0012><U+0011><U+000F><U+0011><U+0001>
+<U+0012><U+0013><U+000F><U+0011><U+0001>
+<U+0012><U+0015><U+000F><U+0011><U+0001>
+<U+0012><U+0017><U+000F><U+0011><U+0001>
+<U+0012><U+0019><U+000F><U+0011><U+0001>
+<U+0013><U+0011><U+000F><U+0011><U+0001>
+<U+0013><U+0013><U+000F><U+0011><U+0001>
+<U+0013><U+0015><U+000F><U+0011><U+0001>
+<U+0013><U+0017><U+000F><U+0011><U+0001>
+<U+0013><U+0019><U+000F><U+0011><U+0001>
+<U+0014><U+0011><U+000F><U+0011>
+<U+0001><U+0001><U+0016><U+000F><U+001A><U+0001>
+<U+0001><U+0001><U+0018><U+000F><U+001A><U+0001>
+<U+0001><U+0001><U+001A><U+000F><U+001A><U+0001>
+<U+0012><U+0012><U+000F><U+001A><U+0001>
+<U+0012><U+0014><U+000F><U+001A><U+0001>
+<U+0012><U+0016><U+000F><U+001A><U+0001>
+<U+0012><U+0018><U+000F><U+001A><U+0001>
+<U+0012><U+001A><U+000F><U+001A><U+0001>
+<U+0013><U+0012><U+000F><U+001A><U+0001>
+<U+0013><U+0014><U+000F><U+001A><U+0001>
+<U+0013><U+0016><U+000F><U+001A><U+0001>
+<U+0013><U+0018><U+000F><U+001A><U+0001>
+<U+0013><U+001A><U+000F><U+001A><U+0001>
+<U+0014><U+0012><U+000F><U+001A><U+0001>
+<U+0014><U+0014><U+000F><U+001A>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0015><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0016><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0016><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0011><U+0011><U+0001>
+<U+0001><U+0001><U+0001><U+0013><U+0011><U+0011>
+B2B-PH-KL
+B3B-PH-KL
+B4B-PH-KL
+B5B-PH-KL
+B6B-PH-KL
+B7B-PH-KL
+B8B-PH-KL
+B9B-PH-KL
+B10B-PH-KL
+B11B-PH-KL
+B12B-PH-KL
+B13B-PH-KL
+B14B-PH-KL
+B15B-PH-KL
+B16B-PH-KL
+Material and Finish
+Post: Copper alloy, copper-undercoated, tin-plated (reflow treatment)
+Wafer: PA 66, UL94V-0, gray
+Circuits Model No. Dimensions (mm)
+Top entry typeTop entry type Side entry type Side entry type
+Q'ty / box
+Top entry type
+Side entry type
+"
+#
+<U+0013><U+000F><U+001A><U+0018><U+0016>
+<U+0013><U+000F><U+0011> <U+0012><U+000F><U+001A>
+<U+0016><U+000F><U+0011> ʢ<U+0013><U+000F><U+0011>ʣ<U+0001>
+<U+0017><U+000F><U+0017>
+<U+0012><U+000F><U+0015> <U+0013><U+000F><U+0013>Circuit No.1
+"
+#
+<U+0013><U+000F><U+001A><U+0016>
+<U+0013><U+000F><U+0011>
+<U+0016><U+000F><U+0016>
+<U+0013><U+000F><U+0015>
+<U+0012><U+000F><U+0017>
+ʢ<U+0001><U+0013><U+000F><U+0017> ʣ<U+0001><U+0017><U+000F><U+0011>
+Circuit
+No.1
+<U+0017><U+000F><U+0011><U+0014><U+000F><U+0015>
+<U+0015><U+000F><U+0016>
+<U+0012><U+000F><U+0018>#
+<U+0011><U+000F><U+0016><U+0013><U+000F><U+0011>
+"<U+0012><U+000F><U+001A><U+0016>
+Circuit
+No.1
+#
+"<U+0012><U+000F><U+001A><U+0016>
+<U+0015><U+000F><U+0016>
+<U+0012><U+000F><U+0018>
+<U+0017><U+000F><U+0011><U+0014><U+000F><U+0015>
+<U+0011><U+000F><U+0016>
+Circuit
+No.1
+Side entry type
+Circuit
+No.1
+#
+<U+0015><U+000F><U+0019>
+<U+0012><U+000F><U+0018>
+<U+0017><U+000F><U+0013><U+0016>
+<U+0014><U+000F><U+0015>
+<U+0017><U+000F><U+0011><U+0012><U+000F><U+0017><U+0011><U+000F><U+0016>
+<U+0012><U+000F><U+001A><U+0016> "
+<U+0013><U+000F><U+0011>
+Top entry type
+" #Top entry type Side entry type Top entry type Side entry type
+Model No. Dimensions (mm)
+<U+0013><U+0001>
+<U+0014><U+0001>
+<U+0015><U+0001>
+<U+0016><U+0001>
+<U+0017><U+0001>
+<U+0018><U+0001>
+<U+0019><U+0001>
+<U+001A><U+0001>
+<U+0012><U+0011><U+0001>
+<U+0012><U+0012><U+0001>
+<U+0012><U+0013><U+0001>
+<U+0012><U+0014><U+0001>
+<U+0012><U+0015><U+0001>
+<U+0012><U+0016><U+0001>
+<U+0012><U+0017>
+B2B-PH-SM4-TB
+B3B-PH-SM4-TB
+B4B-PH-SM4-TB
+B5B-PH-SM4-TB
+B6B-PH-SM4-TB
+B7B-PH-SM4-TB
+B8B-PH-SM4-TB
+B9B-PH-SM4-TB
+B10B-PH-SM4-TB
+B11B-PH-SM4-TB
+B12B-PH-SM4-TB
+B13B-PH-SM4-TB
+B14B-PH-SM4-TB
+B15B-PH-SM4-TB
+B16B-PH-SM4-TB
+S2B-PH-SM4-TB
+S3B-PH-SM4-TB
+S4B-PH-SM4-TB
+S5B-PH-SM4-TB
+S6B-PH-SM4-TB
+S7B-PH-SM4-TB
+S8B-PH-SM4-TB
+S9B-PH-SM4-TB
+S10B-PH-SM4-TB
+S11B-PH-SM4-TB<U+0001>
+S12B-PH-SM4-TB
+S13B-PH-SM4-TB
+S14B-PH-SM4-TB
+S15B-PH-SM4-TB
+ʕ<U+0001>
+<U+0013><U+000F><U+0011><U+0001>
+<U+0015><U+000F><U+0011><U+0001>
+<U+0017><U+000F><U+0011><U+0001>
+<U+0019><U+000F><U+0011><U+0001>
+<U+0012><U+0011><U+000F><U+0011><U+0001>
+<U+0012><U+0013><U+000F><U+0011><U+0001>
+<U+0012><U+0015><U+000F><U+0011><U+0001>
+<U+0012><U+0017><U+000F><U+0011><U+0001>
+<U+0012><U+0019><U+000F><U+0011><U+0001>
+<U+0013><U+0011><U+000F><U+0011><U+0001>
+<U+0013><U+0013><U+000F><U+0011><U+0001>
+<U+0013><U+0015><U+000F><U+0011><U+0001>
+<U+0013><U+0017><U+000F><U+0011><U+0001>
+<U+0013><U+0019><U+000F><U+0011><U+0001>
+<U+0014><U+0011><U+000F><U+0011>
+<U+0018><U+000F><U+001A><U+0016><U+0001>
+<U+001A><U+000F><U+001A><U+0016><U+0001>
+<U+0012><U+0012><U+000F><U+001A><U+0016><U+0001>
+<U+0012><U+0014><U+000F><U+001A><U+0016><U+0001>
+<U+0012><U+0016><U+000F><U+001A><U+0016><U+0001>
+<U+0012><U+0018><U+000F><U+001A><U+0016><U+0001>
+<U+0012><U+001A><U+000F><U+001A><U+0016><U+0001>
+<U+0013><U+0012><U+000F><U+001A><U+0016><U+0001>
+<U+0013><U+0014><U+000F><U+001A><U+0016><U+0001>
+<U+0013><U+0016><U+000F><U+001A><U+0016><U+0001>
+<U+0013><U+0018><U+000F><U+001A><U+0016><U+0001>
+<U+0013><U+001A><U+000F><U+001A><U+0016><U+0001>
+<U+0014><U+0012><U+000F><U+001A><U+0016><U+0001>
+<U+0014><U+0014><U+000F><U+001A><U+0016><U+0001>
+<U+0014><U+0016><U+000F><U+001A><U+0016>
+<U+0018><U+000F><U+001A><U+0001>
+<U+001A><U+000F><U+001A><U+0001>
+<U+0012><U+0012><U+000F><U+001A><U+0001>
+<U+0012><U+0014><U+000F><U+001A><U+0001>
+<U+0012><U+0016><U+000F><U+001A><U+0001>
+<U+0012><U+0018><U+000F><U+001A><U+0001>
+<U+0012><U+001A><U+000F><U+001A><U+0001>
+<U+0013><U+0012><U+000F><U+001A><U+0001>
+<U+0013><U+0014><U+000F><U+001A><U+0001>
+<U+0013><U+0016><U+000F><U+001A><U+0001>
+<U+0013><U+0018><U+000F><U+001A><U+0001>
+<U+0013><U+001A><U+000F><U+001A><U+0001>
+<U+0014><U+0012><U+000F><U+001A><U+0001>
+<U+0014><U+0014><U+000F><U+001A><U+0001>
+–
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011><U+0001>
+<U+0012>
+<U+0011><U+0011><U+0011>
+Cir-
+cuits
+Q'ty /
+ reel
+Material and Finish
+Post: Copper alloy, copper-undercoated, tin-plated (reflow treatment)
+Wafer: PA, UL94V-0, natural (ivory)
+Solder tab: Brass, copper-undercoated, tin-plated (reflow treatment)
+(2 circuits) (3 circuits or more)
+Through-hole type shrouded headerʪLow insertion force typeʫ
+RoHS compliance This product displays (LF)(SN) on a label.
+<For reference> As the color identification,
+the following alphabet shall be put in the underlined part.
+For availability, delivery and minimum order quantity, contact JST.
+ex. B2B-PH-KL-oo-
+(blank)…gray
+R…red E…blue S…natural (white)
+SMT type shrouded header
+RoHS compliance This product displays (LF)(SN) on a label.
+Note: Contact JST for the top entry type headers with suction cap.
+<For reference> As the color identification,
+the following alphabet shall be put in the underlined part.
+For availability, delivery and minimum order quantity, contact JST.
+ex. B2B-PH-SM4-oo-TB
+(blank)…natural (ivory)
+R…red   E…blue   M…green   L…lemon yellow   K…black
+DPK...dark pink
+23
+===== PDF PAGE 4 =====
+PH CONNECTOR
+Taping specifications ––––––––––––––––––––––––––––––––––––––––––––––––––––––
+Feeding direction
+(П13)
+W1
++2.5
+–1.0
+П380±2.0
+2.0±0.5
+F±0.1
+W±0.3
+Feeding direction
+1.75±0.1П1.55±0.05
+Cover tape
+Carrier tape
+12.0±0.1
+Feeding direction
+F±0.1
+W±0.3
+1.75±0.1
+S±0.1
+Cover tape
+Carrier tape
+F±0.1
+W±0.3
+1.75±0.1
+Feeding direction
+Cover tape
+Carrier tape
+Feeding direction
+F±0.1
+W±0.3
+1.75±0.1
+S±0.1
+Carrier tape
+Cover tape
+Feeding direction
+Cover tape leaderCarrier tape
+The end part
+160min.
+Connectormounting part 400min.
+Leader part
+100min.
+4.0±0.1 2.0 ±0.1
+12.0±0.1
+П1.55±0.05
+4.0±0.1 2.0 ±0.1
+П1.55±0.05
+4.0±0.1 2.0 ±0.1
+12.0±0.1
+12.0±0.1
+2.0±0.14.0±0.1
+П1.55±0.05
+Top entry type
+(2 to 6 circuits)
+Top entry type
+(7 to 16 circuits)
+Note:
+1. Specifications conform to JIS C 0806.  The tape width, connector
+loading recess square hole dimensions, etc. are determined by the
+number of circuits and external shape of the connector to be loaded.
+2. Specifications are subject to change without prior notice.17.5
+25.5
+33.5
+45.5
+57.5
+17.5
+25.5
+33.5
+45.5
+57.5
+1,000
+1,000
+1,000
+1,000
+1,000
+1,000
+1,000
+1,000
+1,000
+1,000
+FS W W 1
+16.0
+24.0
+32.0
+44.0
+56.0
+16.0
+24.0
+32.0
+44.0
+56.0
+–
+–
+28.4
+40.4
+52.4
+–
+–
+28.4
+40.4
+52.4
+7.5
+11.5
+14.2
+20.2
+26.2
+7.5
+11.5
+14.2
+20.2
+26.2
+2 to 3
+4 to 6
+7 to 9
+10 to 14
+15 to 16
+2 to 3
+4 to 6
+7 to 9
+10 to 14
+15
+Circuits
+Taping dimensions (mm) Q'ty /
+ reel
+Reel dimensions
+(mm)
+Top entry
+type
+Side entry
+ type
+Side entry type
+(2 to 6 circuits)
+Side entry type
+(7 to 15 circuits)
