@@ -39,6 +39,28 @@ PA13/PA14保留SWD；PA4～PA7保留板载Flash；PA8不分配。电源和总线
 
 验收记录（2026-11-05）：用户报告3V3为3.28V，确认本版本烧录完成、首启现象正确；按复位键及完全断电重上电均各至少3次，现象一致，明确验收通过。对应源码基线`a87b91a5f7ce462d7f4e17a04c7bf7bd81246f3d`，BIN SHA256为`a2f86276242d92b881a40d2cb808c0f2cd12787f0c89d304f40ee6c20440ab3a`。未收到主控/Flash丝印照片或线路变更；不据此推定外部Flash、电池供电/充电、外部晶振或其他外设已经验证。
 
+## P02 构建与SWD调试
+
+P01、P02是计划任务编号，F系列是最终功能编号。日常开发沿用同一个工程、同一个`smart_watch`编译目标，功能源码按F系列分组逐步加入；当前仍只集成首启代码。
+
+已验证的构建环境为Keil uVision 5.43.1.0、Arm Compiler 6.24、Keil.STM32F4xx_DFP 3.1.1。在`code`目录，以本机`UV4.exe`的完整路径执行：
+
+```text
+UV4.exe -r smart_watch.uvprojx -t smart_watch -o Build/keil_build.log
+```
+
+构建完成后，`code/Build/Objects/smart_watch.axf`为ELF格式调试镜像，同目录生成`smart_watch.hex`；BIN由同工具链执行`fromelf.exe --bin --output Build/Objects/smart_watch.bin Build/Objects/smart_watch.axf`生成。日志和中间文件检查后清理，尚待用户验收的镜像保留。P01验收时的`smart_watch_p01.*`为历史临时文件，验收结束后清理；版本及哈希以本页记录为准。
+
+2026-11-05软件检查：上述目标构建0错误0警告；13个目标源码与`sources.cmake`的`WATCH_FIRMWARE_SOURCES`一致，启动向量及ELF格式已检查。P02只调整构建与下载配置，生成BIN与P01已验收镜像逐字节一致，固件版本仍为`P01-20261105-01`，不新增功能代码。
+
+接线沿用P01。工程默认下载器已配置为ST-LINK，本机已有调试设置仍应在Keil中核对：
+
+1. 重新加载工程，在`Options for Target → Debug`选择`ST-Link Debugger`，打开`Settings`；端口使用SWD，核对能识别目标。
+2. `Flash Download`页使用`STM32F4xx_512`内部Flash算法，地址`0x08000000`、大小`0x80000`；不得选择Option Bytes算法。按实物连接核对下载器电源与公共地。
+3. 用户用当前工程重新构建、下载后，进入调试会话，应能停在`main`；完成`board_init`后查看`SystemCoreClock`为16000000，继续运行后LED应与P01一致。既有重启结果仅对应上方已记录的同版本镜像，SWD调试操作仍待本次用户确认。
+
+P02实物调试验收：等待用户反馈，尚未标记通过。
+
 资料：
 - [WeAct核心板官方资料](https://github.com/WeActStudio/WeActStudio.MiniSTM32F4x1)
 - [DFR0650官方说明](https://wiki.dfrobot.com/dfr0650/)
