@@ -32,6 +32,10 @@ agent.md
 
 # 构建产物与机器配置。
 code/Build/
+*.uvoptx
+*.uvguix.*
+code/DebugConfig/
+code/RTE/Device/**/*.dbgconf*
 **/build/
 **/.gradle/
 **/.idea/
