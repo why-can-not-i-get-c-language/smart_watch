@@ -1,9 +1,10 @@
 # 本文件与project/config/source_manifest.json同步维护。
 
-# 手表固件源码列表；后续功能按实际集成进度追加。
+# 手表完整源码框架；功能骨架已加入编译，是否运行由应用调用决定。
 set(WATCH_STARTUP_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/Start/startup_stm32f411xe.s"
     "${CMAKE_CURRENT_LIST_DIR}/Start/system_stm32f4xx.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Start/stm32f4xx_it.c"
 )
 
 set(WATCH_HAL_SOURCES
@@ -15,15 +16,21 @@ set(WATCH_HAL_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_flash.c"
     "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_flash_ex.c"
     "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_pwr.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_pwr_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_exti.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_dma.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_dma_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_adc.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_adc_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_i2c.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_i2c_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_spi.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_uart.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_rtc.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_rtc_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_tim.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_tim_ex.c"
 )
-
-set(WATCH_BOARD_SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/Hardware/board_port.c"
-    "${CMAKE_CURRENT_LIST_DIR}/User/main.c"
-    "${CMAKE_CURRENT_LIST_DIR}/Start/stm32f4xx_it.c"
-)
-
-set(WATCH_FIRMWARE_SOURCES ${WATCH_STARTUP_SOURCES} ${WATCH_HAL_SOURCES} ${WATCH_BOARD_SOURCES})
 
 # 主机公共模块检查所用源码；不等于当前目标固件的集成范围。
 set(WATCH_CORE_SOURCES
@@ -60,3 +67,6 @@ set(WATCH_CORE_SOURCES
 )
 set(WATCH_APP_ENTRY "${CMAKE_CURRENT_LIST_DIR}/User/main.c")
 set(WATCH_BOOT_SOURCES "${CMAKE_CURRENT_LIST_DIR}/User/bootloader.c")
+
+# Boot源码单独登记，不混入当前App链接；Android由手机端工程编译。
+set(WATCH_FIRMWARE_SOURCES ${WATCH_STARTUP_SOURCES} ${WATCH_HAL_SOURCES} ${WATCH_CORE_SOURCES} ${WATCH_APP_ENTRY})

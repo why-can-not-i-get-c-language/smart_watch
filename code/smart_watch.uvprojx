@@ -337,7 +337,7 @@
               <MiscControls>-std=c11 -Werror -Wno-unused-parameter</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F411xE,WATCH_TARGET_STM32</Define>
               <Undefine/>
-              <IncludePath>.\User;.\Hardware;.\System;.\Library</IncludePath>
+              <IncludePath>.\User;.\Hardware;.\System;.\Application;.\Start;.\Library</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -379,140 +379,887 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>M00_核心板与工程基础</GroupName>
+          <GroupName>F00_工程基础</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\User\main.c</FilePath>
+              <FilePath>User\main.c</FilePath>
             </File>
             <File>
               <FileName>board_port.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Hardware\board_port.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>公共_启动与中断</GroupName>
-          <Files>
-            <File>
-              <FileName>startup_stm32f411xe.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Start\startup_stm32f411xe.s</FilePath>
+              <FilePath>Hardware\board_port.c</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Start\system_stm32f4xx.c</FilePath>
+              <FileName>board_port.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\board_port.h</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_it.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Start\stm32f4xx_it.c</FilePath>
+              <FilePath>Start\stm32f4xx_it.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>公共_HAL</GroupName>
-          <Files>
+            <File>
+              <FileName>startup_stm32f411xe.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>Start\startup_stm32f411xe.s</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Start\system_stm32f4xx.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c_bus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\i2c_bus.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c_bus.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\i2c_bus.h</FilePath>
+            </File>
+            <File>
+              <FileName>spi_bus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\spi_bus.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi_bus.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\spi_bus.h</FilePath>
+            </File>
+            <File>
+              <FileName>uart_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\uart_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_port.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\uart_port.h</FilePath>
+            </File>
+            <File>
+              <FileName>buttons.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\buttons.c</FilePath>
+            </File>
+            <File>
+              <FileName>buttons.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\buttons.h</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\ssd1306.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\ssd1306.h</FilePath>
+            </File>
+            <File>
+              <FileName>crc32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>System\crc32.c</FilePath>
+            </File>
+            <File>
+              <FileName>crc32.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\crc32.h</FilePath>
+            </File>
+            <File>
+              <FileName>scheduler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>System\scheduler.c</FilePath>
+            </File>
+            <File>
+              <FileName>scheduler.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\scheduler.h</FilePath>
+            </File>
+            <File>
+              <FileName>settings.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>System\settings.c</FilePath>
+            </File>
+            <File>
+              <FileName>settings.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\settings.h</FilePath>
+            </File>
+            <File>
+              <FileName>watch_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\watch_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>watch_app.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\watch_app.h</FilePath>
+            </File>
+            <File>
+              <FileName>watch_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\watch_ui.c</FilePath>
+            </File>
+            <File>
+              <FileName>watch_ui.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\watch_ui.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmsis_armcc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\cmsis_armcc.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmsis_armclang.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\cmsis_armclang.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmsis_compiler.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\cmsis_compiler.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmsis_gcc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\cmsis_gcc.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmsis_version.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\cmsis_version.h</FilePath>
+            </File>
+            <File>
+              <FileName>core_cm4.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\core_cm4.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_hal_legacy.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\Legacy\stm32_hal_legacy.h</FilePath>
+            </File>
+            <File>
+              <FileName>LICENSE_CMSIS_CORE.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\LICENSE_CMSIS_CORE.txt</FilePath>
+            </File>
+            <File>
+              <FileName>LICENSE_ST_DEVICE.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\LICENSE_ST_DEVICE.txt</FilePath>
+            </File>
+            <File>
+              <FileName>LICENSE_ST_HAL.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\LICENSE_ST_HAL.txt</FilePath>
+            </File>
+            <File>
+              <FileName>LICENSE_ST_HAL_UPSTREAM.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\LICENSE_ST_HAL_UPSTREAM.md</FilePath>
+            </File>
+            <File>
+              <FileName>mpu_armv7.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\mpu_armv7.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f411xe.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f411xe.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx.h</FilePath>
+            </File>
             <File>
               <FileName>stm32f4xx_hal.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal.c</FilePath>
+              <FilePath>Library\stm32f4xx_hal.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_adc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_adc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_adc_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_adc_ex.h</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_cortex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_cortex.c</FilePath>
+              <FilePath>Library\stm32f4xx_hal_cortex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_rcc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_rcc.c</FilePath>
+              <FileName>stm32f4xx_hal_cortex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_cortex.h</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_rcc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_rcc_ex.c</FilePath>
+              <FileName>stm32f4xx_hal_def.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_def.h</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_gpio.c</FileName>
+              <FileName>stm32f4xx_hal_dma.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_gpio.c</FilePath>
+              <FilePath>Library\stm32f4xx_hal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_dma.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_dma.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_dma_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_dma_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_exti.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_exti.h</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_flash.c</FilePath>
+              <FilePath>Library\stm32f4xx_hal_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_flash.h</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_flash_ex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_flash_ex.c</FilePath>
+              <FilePath>Library\stm32f4xx_hal_flash_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_flash_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_flash_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_flash_ramfunc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_flash_ramfunc.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_gpio.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_gpio.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_gpio_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_gpio_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_i2c.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_i2c.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_i2c_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_i2c_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_i2c_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_i2c_ex.h</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_pwr.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Library\stm32f4xx_hal_pwr.c</FilePath>
+              <FilePath>Library\stm32f4xx_hal_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_pwr.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_pwr.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_pwr_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_pwr_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_pwr_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_pwr_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rcc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_rcc.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rcc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_rcc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rcc_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_rcc_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rtc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_rtc.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rtc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_rtc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_rtc_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_rtc_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_spi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_spi.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_tim.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_tim.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_tim_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_tim_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_tim_ex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_tim_ex.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Library\stm32f4xx_hal_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_uart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_hal_uart.h</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\system_stm32f4xx.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_ll_adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Library\stm32f4xx_ll_adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>board_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>User\board_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_conf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>User\stm32f4xx_hal_conf.h</FilePath>
+            </File>
+            <File>
+              <FileName>watch_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\watch_types.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f411_flash.sct</FileName>
+              <FileType>5</FileType>
+              <FilePath>Start\stm32f411_flash.sct</FilePath>
+            </File>
+            <File>
+              <FileName>sources.cmake</FileName>
+              <FileType>5</FileType>
+              <FilePath>sources.cmake</FilePath>
+            </File>
+            <File>
+              <FileName>CMakeLists.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>CMakeLists.txt</FilePath>
+            </File>
+            <File>
+              <FileName>task.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\task.md</FilePath>
+            </File>
+            <File>
+              <FileName>wiring.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\wiring.md</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>F01_时间与日期</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>time_service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>System\time_service.c</FilePath>
+            </File>
+            <File>
+              <FileName>time_service.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\time_service.h</FilePath>
+            </File>
+            <File>
+              <FileName>F01.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F01.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F02_定时振动提醒</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>tm6605.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\tm6605.c</FilePath>
+            </File>
+            <File>
+              <FileName>tm6605.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\tm6605.h</FilePath>
+            </File>
+            <File>
+              <FileName>reminder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\reminder.c</FilePath>
+            </File>
+            <File>
+              <FileName>reminder.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\reminder.h</FilePath>
+            </File>
+            <File>
+              <FileName>F02.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F02.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F03_步数统计</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>mpu6050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\mpu6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>mpu6050.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\mpu6050.h</FilePath>
+            </File>
+            <File>
+              <FileName>pedometer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\pedometer.c</FilePath>
+            </File>
+            <File>
+              <FileName>pedometer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\pedometer.h</FilePath>
+            </File>
+            <File>
+              <FileName>F03.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F03.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F04_抬腕亮屏</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>wrist_wake.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\wrist_wake.c</FilePath>
+            </File>
+            <File>
+              <FileName>wrist_wake.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\wrist_wake.h</FilePath>
+            </File>
+            <File>
+              <FileName>F04.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F04.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F05_持续低活动提醒</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>activity.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\activity.c</FilePath>
+            </File>
+            <File>
+              <FileName>activity.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\activity.h</FilePath>
+            </File>
+            <File>
+              <FileName>F05.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F05.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F06_蓝牙同步与设置</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>ble_link.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\ble_link.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_link.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\ble_link.h</FilePath>
+            </File>
+            <File>
+              <FileName>ble_protocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>System\ble_protocol.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_protocol.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\ble_protocol.h</FilePath>
+            </File>
+            <File>
+              <FileName>phone_sync.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\phone_sync.c</FilePath>
+            </File>
+            <File>
+              <FileName>phone_sync.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\phone_sync.h</FilePath>
+            </File>
+            <File>
+              <FileName>BleClient.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\BleClient.kt</FilePath>
+            </File>
+            <File>
+              <FileName>PacketCodec.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\PacketCodec.kt</FilePath>
+            </File>
+            <File>
+              <FileName>WatchRepository.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\WatchRepository.kt</FilePath>
+            </File>
+            <File>
+              <FileName>WatchScreens.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\WatchScreens.kt</FilePath>
+            </File>
+            <File>
+              <FileName>F06.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F06.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F07_历史记录</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>w25q64.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\w25q64.c</FilePath>
+            </File>
+            <File>
+              <FileName>w25q64.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\w25q64.h</FilePath>
+            </File>
+            <File>
+              <FileName>record_store.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>System\record_store.c</FilePath>
+            </File>
+            <File>
+              <FileName>record_store.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>System\record_store.h</FilePath>
+            </File>
+            <File>
+              <FileName>HistoryExporter.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\HistoryExporter.kt</FilePath>
+            </File>
+            <File>
+              <FileName>F07.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F07.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F08_电量估算与低电提醒</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>battery_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\battery_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>battery_adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\battery_adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>battery_service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\battery_service.c</FilePath>
+            </File>
+            <File>
+              <FileName>battery_service.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\battery_service.h</FilePath>
+            </File>
+            <File>
+              <FileName>F08.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F08.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F09_低功耗管理</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>power_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\power_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>power_manager.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\power_manager.h</FilePath>
+            </File>
+            <File>
+              <FileName>F09.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F09.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F13_静止心率测量</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>max30102.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Hardware\max30102.c</FilePath>
+            </File>
+            <File>
+              <FileName>max30102.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Hardware\max30102.h</FilePath>
+            </File>
+            <File>
+              <FileName>health.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\health.c</FilePath>
+            </File>
+            <File>
+              <FileName>health.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\health.h</FilePath>
+            </File>
+            <File>
+              <FileName>F13.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F13.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F14_血氧估算</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>F14.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F14.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F16_手动SOS</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>safety.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\safety.c</FilePath>
+            </File>
+            <File>
+              <FileName>safety.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\safety.h</FilePath>
+            </File>
+            <File>
+              <FileName>SosCoordinator.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\SosCoordinator.kt</FilePath>
+            </File>
+            <File>
+              <FileName>F16.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F16.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F17_疑似跌倒与人工确认</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>F17.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F17.md</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>F19_无线固件升级</GroupName>
-          <Files/>
+          <Files>
+            <File>
+              <FileName>ota.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\ota.c</FilePath>
+            </File>
+            <File>
+              <FileName>ota.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\ota.h</FilePath>
+            </File>
+            <File>
+              <FileName>bootloader.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>User\bootloader.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>0</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>0</AlwaysBuild>
+                  <GenerateAssemblyFile>0</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>0</AssembleAssemblyFile>
+                  <PublicsOnly>0</PublicsOnly>
+                  <StopOnExitCode>3</StopOnExitCode>
+                  <CustomArgument/>
+                  <IncludeLibraryModules/>
+                  <ComprImg>0</ComprImg>
+                </CommonProperty>
+              </FileOption>
+            </File>
+            <File>
+              <FileName>bootloader.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>User\bootloader.h</FilePath>
+            </File>
+            <File>
+              <FileName>OtaSender.kt</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\android\OtaSender.kt</FilePath>
+            </File>
+            <File>
+              <FileName>F19.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\plan\design\functions\F19.md</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>
