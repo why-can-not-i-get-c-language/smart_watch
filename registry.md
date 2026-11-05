@@ -25,11 +25,11 @@
 | A03 | README.md | 面向读者的项目说明，仅保存简要功能介绍及后续正式版本更新；不保存工作入口、目录、规则、排期或开发状态 | 有效 |
 | A04 | project/agents/workflow.md | 分工、任务准入、执行检查、状态流转、硬件验收及GitHub保存规则 | 有效 |
 | A05 | project/memory/context.md | 当前事实、已确认项目约束、仓库信息与下一任务入口；不复制工作流或完整进度 | 有效 |
-| A06 | project/memory/structure.md | 目录与文件职责的唯一完整说明 | 有效 |
+| A06 | project/memory/structure.md | 物理目录、Keil的F分组、共用文件归属与F/P编号关系的唯一完整说明；不复制实施步骤或进度 | 有效 |
 | A07 | plan/task.md | 功能定义与范围，以及手机端交接功能表和双方接口约定；不复制实施计划、接线或Agent工作流 | 有效 |
 | A08 | plan/procurement.md | 采购状态解释与使用边界；不复制BOM明细 | 有效 |
 | A09 | plan/bom.xlsx | 器件型号、数量、价格口径、采购状态与来源的权威明细 | 有效 |
-| A10 | plan/progress/development_plan.xlsx | 当前任务与进度的权威记录；依赖及模块完成比例按硬件验收和Git保存闭环计算 | 有效 |
+| A10 | plan/progress/development_plan.xlsx | Fxx-Pyy步骤、依赖、验收与进度的权威记录；含旧任务验收迁移，F组完成比例按硬件验收和Git保存闭环计算 | 有效 |
 | A11 | plan/design/wiring.md | 共享总线、供电与引脚的统一设计分配 | 有效 |
 | A12 | plan/design/functions/F01.md | 时间日期功能的接线范围及该功能实物验收信息 | 有效 |
 | A13 | plan/design/functions/F02.md | 定时振动提醒的接线范围及该功能实物验收信息 | 有效 |
@@ -46,7 +46,7 @@
 | A24 | plan/design/functions/F17.md | 疑似跌倒确认的接线范围及该功能实物验收信息 | 有效 |
 | A25 | plan/design/functions/F19.md | 无线升级的接线范围及该功能实物验收信息 | 有效 |
 | A26 | project/config/source_manifest.json | 工程配置入口索引；不复制源码名单 | 有效 |
-| A27 | code/sources.cmake | CMake读取的唯一源码名单；不承担当目录说明 | 有效 |
+| A27 | code/sources.cmake | CMake读取的源码集合及Keil编译输入核对依据；不承担工程树或任务说明 | 有效 |
 | A28 | code/CMakeLists.txt | CMake构建规则；引用源码名单，不另建相同构建入口 | 有效 |
 | A29 | .gitignore | Git上传范围与本地文件排除规则；不复制Agent工作流 | 有效 |
 | A30 | plan/references/hardware_manual.md | 器件原始资料的阅读入口、可追溯技术摘录和适用性分析；不替代功能、接线及进度权威文件 | 有效 |
