@@ -4,7 +4,7 @@
   <Header>### uVision Project, (C) Keil Software</Header>
   <Targets>
     <Target>
-      <TargetName>P01</TargetName>
+      <TargetName>smart_watch</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>6240000::V6.24::ARMCLANG</pCCUsed>
@@ -379,7 +379,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>M00_核心板首启</GroupName>
+          <GroupName>M00_核心板与工程基础</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
