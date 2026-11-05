@@ -7,7 +7,7 @@
       <TargetName>P01</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pArmCC/><pCCUsed>6240000::V6.24::ARMCLANG</pCCUsed>
+      <pCCUsed>6240000::V6.24::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -134,7 +134,7 @@
             <DriverSelection>4101</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
-          <Flash2>BIN\UL2V8M.DLL</Flash2>
+          <Flash2>BIN\UL2CM3.DLL</Flash2>
           <Flash3/>
           <Flash4/>
           <pFcarmOut/>
@@ -379,7 +379,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>P01</GroupName>
+          <GroupName>M00_核心板首启</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
@@ -391,15 +391,10 @@
               <FileType>1</FileType>
               <FilePath>.\Hardware\board_port.c</FilePath>
             </File>
-            <File>
-              <FileName>stm32f4xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Start\stm32f4xx_it.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Start</GroupName>
+          <GroupName>公共_启动与中断</GroupName>
           <Files>
             <File>
               <FileName>startup_stm32f411xe.s</FileName>
@@ -411,10 +406,15 @@
               <FileType>1</FileType>
               <FilePath>.\Start\system_stm32f4xx.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Start\stm32f4xx_it.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>HAL</GroupName>
+          <GroupName>公共_HAL</GroupName>
           <Files>
             <File>
               <FileName>stm32f4xx_hal.c</FileName>
@@ -458,7 +458,68 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>F01_时间与日期</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F02_定时振动提醒</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F03_步数统计</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F04_抬腕亮屏</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F05_持续低活动提醒</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F06_蓝牙同步与设置</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F07_历史记录</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F08_电量估算与低电提醒</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F09_低功耗管理</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F13_静止心率测量</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F14_血氧估算</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F16_手动SOS</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F17_疑似跌倒与人工确认</GroupName>
+          <Files/>
+        </Group>
+        <Group>
+          <GroupName>F19_无线固件升级</GroupName>
+          <Files/>
+        </Group>
       </Groups>
     </Target>
   </Targets>
-  </Project>
+  <RTE>
+    <apis/>
+    <components/>
+    <files/>
+  </RTE>
+</Project>
