@@ -1,0 +1,15 @@
+; STM32F411CEU6 链接脚本（scatter）
+; P01：首启0x08000000，512KiB Flash，128KiB RAM
+; 不含Boot/App分割
+
+LR_FLASH 0x08000000 0x80000 {
+    ER_FLASH 0x08000000 0x80000 {
+        *.o (RESET, +First)
+        *(InRoot$$Sections)
+        .ANY (+RO)
+    }
+
+    RW_RAM 0x20000000 0x20000 {
+        .ANY (+RW +ZI)
+    }
+}

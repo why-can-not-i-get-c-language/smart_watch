@@ -1,0 +1,4 @@
+# 保留原厂文件的原始字节和空白；项目自有源码仍使用正常差异检查。
+Library/** -text -whitespace
+Start/startup_stm32f411xe.s -text -whitespace
+Start/system_stm32f4xx.c -text -whitespace

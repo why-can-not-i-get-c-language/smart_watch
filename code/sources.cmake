@@ -1,4 +1,31 @@
 # 本文件与project/config/source_manifest.json同步维护。
+
+# P01最小首启固件源码列表
+set(P01_STARTUP_SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/Start/startup_stm32f411xe.s"
+    "${CMAKE_CURRENT_LIST_DIR}/Start/system_stm32f4xx.c"
+)
+
+set(P01_HAL_SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_rcc.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_rcc_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_cortex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_gpio.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_flash.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_flash_ex.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Library/stm32f4xx_hal_pwr.c"
+)
+
+set(P01_BOARD_SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/Hardware/board_port.c"
+    "${CMAKE_CURRENT_LIST_DIR}/User/main.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Start/stm32f4xx_it.c"
+)
+
+set(WATCH_P01_SOURCES ${P01_STARTUP_SOURCES} ${P01_HAL_SOURCES} ${P01_BOARD_SOURCES})
+
+# 主工程应用源码（非P01）
 set(WATCH_CORE_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/Hardware/board_port.c"
     "${CMAKE_CURRENT_LIST_DIR}/Hardware/i2c_bus.c"
