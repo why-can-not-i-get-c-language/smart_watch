@@ -1,10 +1,11 @@
 /**
- * F00-P04 显示与基本状态页 - STM32F411CEU6
- * 版本：F00-P04-20261106-01
+ * F00-P05 按键消抖与事件 - STM32F411CEU6
+ * 版本：F00-P05-20261106-02
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 进入基本状态页（SMART WATCH/UPTIME/未就绪占位符）
- *  - 分步发送显示数据，保留HSI16、LED心跳、UART回环、SPI诊断
+ *  - 进入按键验收测试页（BUTTON CHECK）
+ *  - 显示UPTIME、最近按键名称与各事件累计计数
+ *  - 保留LED心跳、I2C/SPI/UART诊断与掉屏恢复
  */
 
 #include "board_port.h"
@@ -13,13 +14,14 @@
 #include "i2c_bus.h"
 #include "spi_bus.h"
 #include "uart_port.h"
+#include "buttons.h"
 #include "scheduler.h"
 #include "ssd1306.h"
 #include "watch_ui.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char p04_version[] = "F00-P04-20261106-01";
+static const char p05_version[] = "F00-P05-20261106-02";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -30,6 +32,7 @@ typedef struct {
     volatile uint8_t i2c_init_ok;
     volatile uint8_t spi_init_ok;
     volatile uint8_t uart_init_ok;
+    volatile uint8_t buttons_init_ok;
 
     /* 时基 */
     volatile uint32_t millis;
@@ -58,6 +61,16 @@ typedef struct {
 
     /* 显示状态 */
     volatile watch_status_t display_status;
+
+    /* 按键诊断 */
+    volatile uint32_t button_events_last;
+    volatile uint32_t button_event_count;
+    volatile uint32_t btn_press_p[3];
+    volatile uint32_t btn_release_p[3];
+    volatile uint32_t btn_short_p[3];
+    volatile uint32_t btn_long_p[3];
+    volatile uint32_t events_or;
+    volatile watch_status_t buttons_status;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -238,6 +251,71 @@ static void display_process_task(void *ctx)
 }
 
 /**
+ * 按键轮询任务：每5ms轮询一次，检测消抖和事件
+ */
+static void button_poll_task(void *ctx)
+{
+    (void)ctx;
+    uint32_t now = board_millis();
+    uint32_t events = 0;
+    watch_status_t status = buttons_poll(now, &events);
+    diag.buttons_status = status;
+
+    if (status == WATCH_OK && events != 0) {
+        diag.button_events_last = events;
+        if (diag.button_event_count < 999999U) { diag.button_event_count++; }
+        diag.events_or |= events;
+
+        /* 统计各类事件，按999999饱和 */
+        if (events & 0xFU) {  /* BOARD */
+            if (events & BUTTON_BOARD_PRESS) {
+                diag.btn_press_p[0] = (diag.btn_press_p[0] < 999999) ? diag.btn_press_p[0] + 1 : 999999;
+            }
+            if (events & BUTTON_BOARD_RELEASE) {
+                diag.btn_release_p[0] = (diag.btn_release_p[0] < 999999) ? diag.btn_release_p[0] + 1 : 999999;
+            }
+            if (events & BUTTON_BOARD_SHORT) {
+                diag.btn_short_p[0] = (diag.btn_short_p[0] < 999999) ? diag.btn_short_p[0] + 1 : 999999;
+            }
+            if (events & BUTTON_BOARD_LONG) {
+                diag.btn_long_p[0] = (diag.btn_long_p[0] < 999999) ? diag.btn_long_p[0] + 1 : 999999;
+            }
+        }
+        if (events & 0xF0U) {  /* MENU */
+            if (events & BUTTON_MENU_PRESS) {
+                diag.btn_press_p[1] = (diag.btn_press_p[1] < 999999) ? diag.btn_press_p[1] + 1 : 999999;
+            }
+            if (events & BUTTON_MENU_RELEASE) {
+                diag.btn_release_p[1] = (diag.btn_release_p[1] < 999999) ? diag.btn_release_p[1] + 1 : 999999;
+            }
+            if (events & BUTTON_MENU_SHORT) {
+                diag.btn_short_p[1] = (diag.btn_short_p[1] < 999999) ? diag.btn_short_p[1] + 1 : 999999;
+            }
+            if (events & BUTTON_MENU_LONG) {
+                diag.btn_long_p[1] = (diag.btn_long_p[1] < 999999) ? diag.btn_long_p[1] + 1 : 999999;
+            }
+        }
+        if (events & 0xF00U) {  /* SOS */
+            if (events & BUTTON_SOS_PRESS) {
+                diag.btn_press_p[2] = (diag.btn_press_p[2] < 999999) ? diag.btn_press_p[2] + 1 : 999999;
+            }
+            if (events & BUTTON_SOS_RELEASE) {
+                diag.btn_release_p[2] = (diag.btn_release_p[2] < 999999) ? diag.btn_release_p[2] + 1 : 999999;
+            }
+            if (events & BUTTON_SOS_SHORT) {
+                diag.btn_short_p[2] = (diag.btn_short_p[2] < 999999) ? diag.btn_short_p[2] + 1 : 999999;
+            }
+            if (events & BUTTON_SOS_LONG) {
+                diag.btn_long_p[2] = (diag.btn_long_p[2] < 999999) ? diag.btn_long_p[2] + 1 : 999999;
+            }
+        }
+
+        /* 通知UI显示按键事件 */
+        watch_ui_notify_button(events, now);
+    }
+}
+
+/**
  * UI每10ms推进状态机，帧内容按需更新。
  */
 static void ui_update_task(void *ctx)
@@ -247,6 +325,7 @@ static void ui_update_task(void *ctx)
     watch_status_t status = watch_ui_update(now);
     diag.display_status = status;
 }
+
 
 /**
  * 状态更新任务
@@ -309,7 +388,7 @@ static void fault_blink(void)
 int main(void)
 {
     /* 防编译器删除版本字符串 */
-    volatile const char *p = p04_version;
+    volatile const char *p = p05_version;
     while (*p != '\0') p++;
 
     /* 基础初始化 */
@@ -324,6 +403,13 @@ int main(void)
     diag.uart_init_ok = (board_uart_init(WATCH_UART1_BAUDRATE) == WATCH_OK) ? 1 : 0;
 
     if (!diag.uart_init_ok) {
+        fault_blink();
+    }
+
+    /* 初始化按键 */
+    watch_status_t buttons_status = buttons_init();
+    diag.buttons_init_ok = (buttons_status == WATCH_OK) ? 1 : 0;
+    if (buttons_status != WATCH_OK) {
         fault_blink();
     }
 
@@ -347,6 +433,9 @@ int main(void)
         /* UART回环：每5ms调用一次（内部500ms发送节流）*/
         {.period_ms = 5, .last_ms = startup_baseline, .callback = uart_loopback_task, .context = NULL},
 
+        /* 按键轮询：每5ms调用一次 */
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = button_poll_task, .context = NULL},
+
         /* 显示分步发送：每5ms驱动 */
         {.period_ms = 5, .last_ms = startup_baseline, .callback = display_process_task, .context = NULL},
 
@@ -364,6 +453,8 @@ int main(void)
     diag.uart_loopback_passes = 0;
     diag.uart_timeouts = 0;
     diag.millis = board_millis();
+    diag.button_event_count = 0;
+    diag.events_or = 0;
 
     /* 主循环 */
     for (;;) {
