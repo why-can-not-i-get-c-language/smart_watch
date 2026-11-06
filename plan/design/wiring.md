@@ -59,7 +59,9 @@ UV4.exe -r smart_watch.uvprojx -t smart_watch -o Build/keil_build.log
 2. `Flash Download`页使用`STM32F4xx_512`内部Flash算法，地址`0x08000000`、大小`0x80000`；不得选择Option Bytes算法。按实物连接核对下载器电源与公共地。
 3. 用户用当前工程重新构建、下载后，进入调试会话，应能停在`main`；完成`board_init`后查看`SystemCoreClock`为16000000，继续运行后LED应与P01一致。既有重启结果仅对应上方已记录的同版本镜像，SWD调试操作仍待本次用户确认。
 
-F00-P02实物调试验收：等待用户反馈，尚未标记通过。
+2026-11-06调试器核验：Codex直接操作当前Keil/ST-Link调试会话，确认已加载`Build/Objects/smart_watch.axf`并停在`main`；在初始化后的首次`HAL_GPIO_WritePin`调用处命中函数断点，调试器读取`SystemCoreClock=16000000`。本次新增的唯一断点已移除，程序已继续运行；这些是调试器观察结果，LED实物现象仍待用户确认。
+
+F00-P02实物调试验收（2026-11-06）：在上述ST-Link调试核验后移除断点继续运行，用户明确确认LED恢复每秒一次心跳，符合亮约200ms、灭约800ms的预期。当前BIN与F00-P01验收版一致，复位和断电重启记录沿用F00-P01；本项调试与运行现象验收通过。
 
 资料：
 - [WeAct核心板官方资料](https://github.com/WeActStudio/WeActStudio.MiniSTM32F4x1)
