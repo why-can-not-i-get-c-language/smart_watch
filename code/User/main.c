@@ -1,10 +1,10 @@
 /**
- * F00-P05 按键消抖与事件 - STM32F411CEU6
- * 版本：F00-P05-20261106-02
+ * F01-P01 RTC、日历与时间有效性 - STM32F411CEU6
+ * 版本：F01-P01-20261106-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 进入按键验收测试页（BUTTON CHECK）
- *  - 显示UPTIME、最近按键名称与各事件累计计数
+ *  - 进入RTC验收页，默认时间未设置；读取真实板载LSE/RTC
+ *  - 菜单长按载入跨年UTC样例，SOS长按清除时间有效标记
  *  - 保留LED心跳、I2C/SPI/UART诊断与掉屏恢复
  */
 
@@ -18,10 +18,11 @@
 #include "scheduler.h"
 #include "ssd1306.h"
 #include "watch_ui.h"
+#include "time_service.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char p05_version[] = "F00-P05-20261106-02";
+static const char firmware_version[] = "F01-P01-20261106-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -71,6 +72,11 @@ typedef struct {
     volatile uint32_t btn_long_p[3];
     volatile uint32_t events_or;
     volatile watch_status_t buttons_status;
+    volatile watch_status_t rtc_init_status;
+    volatile watch_status_t rtc_get_status;
+    volatile watch_status_t rtc_control_status;
+    volatile uint32_t rtc_utc;
+    volatile time_clock_source_t rtc_clock;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -310,14 +316,33 @@ static void button_poll_task(void *ctx)
             }
         }
 
-        /* 通知UI显示按键事件 */
+        /* 本步只提供明确标记的跨年样例，不替代下一任务的手动调时。
+         * 同一轮同时收到两键长按时，清除优先，避免又清除又载入。 */
+        if ((events & BUTTON_SOS_LONG) != 0U) {
+            diag.rtc_control_status = time_service_invalidate();
+        } else if ((events & BUTTON_MENU_LONG) != 0U) {
+            const rtc_calendar_t demo = {2026U, 12U, 31U, 23U, 59U, 55U};
+            uint32_t utc = time_calendar_to_utc(&demo);
+            diag.rtc_control_status = utc == 0U ? WATCH_INVALID_ARGUMENT : time_service_set(utc);
+        }
+        /* 通知UI保留原有三键统计 */
         watch_ui_notify_button(events, now);
     }
 }
 
 /**
- * UI每10ms推进状态机，帧内容按需更新。
+ * 每500ms读取RTC诊断，不修改RTC及其有效性。
  */
+static void rtc_update_task(void *ctx)
+{
+    (void)ctx;
+    uint32_t utc = 0U;
+    diag.rtc_get_status = time_service_get(&utc);
+    diag.rtc_utc = utc;
+    diag.rtc_clock = time_service_clock_source();
+}
+
+/* UI每10ms推进，整帧仍通过独立的分步发送任务处理。 */
 static void ui_update_task(void *ctx)
 {
     (void)ctx;
@@ -388,7 +413,7 @@ static void fault_blink(void)
 int main(void)
 {
     /* 防编译器删除版本字符串 */
-    volatile const char *p = p05_version;
+    volatile const char *p = firmware_version;
     while (*p != '\0') p++;
 
     /* 基础初始化 */
@@ -413,6 +438,11 @@ int main(void)
         fault_blink();
     }
 
+    /* RTC失败仍继续运行LED及显示，由RTC页面和diag明确反馈。 */
+    diag.rtc_init_status = time_service_init();
+    diag.rtc_control_status = WATCH_NOT_READY;
+    rtc_update_task(NULL);
+
     /* 启动三短闪 */
     startup_sequence();
 
@@ -435,6 +465,9 @@ int main(void)
 
         /* 按键轮询：每5ms调用一次 */
         {.period_ms = 5, .last_ms = startup_baseline, .callback = button_poll_task, .context = NULL},
+
+        /* RTC诊断：每500ms读取真实日历 */
+        {.period_ms = 500, .last_ms = startup_baseline, .callback = rtc_update_task, .context = NULL},
 
         /* 显示分步发送：每5ms驱动 */
         {.period_ms = 5, .last_ms = startup_baseline, .callback = display_process_task, .context = NULL},

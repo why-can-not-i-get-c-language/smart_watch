@@ -1,5 +1,6 @@
 #include "watch_ui.h"
 #include "ssd1306.h"
+#include "time_service.h"
 #include <string.h>
 
 /* 每行5位、共7行的小字库，只保存本界面需要的字符。 */
@@ -27,7 +28,7 @@ static const glyph_t glyphs[] = {
     {'?',{14,17,1,2,4,0,4}}
 };
 
-typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_BUTTON_CHECK } ui_phase_t;
+typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_RTC_CHECK } ui_phase_t;
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
 static bool ever_initialized;
@@ -90,6 +91,17 @@ static void number(unsigned x, unsigned y, uint32_t value)
     }
 }
 
+static void fixed_number(unsigned x, unsigned y, uint32_t value, unsigned width)
+{
+    char digits[5];
+    digits[width] = '\0';
+    for (unsigned i = width; i != 0U; --i) {
+        digits[i - 1U] = (char)('0' + value % 10U);
+        value /= 10U;
+    }
+    text(x, y, digits);
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -107,26 +119,28 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
-    } else if (phase == UI_BUTTON_CHECK) {
-        /* y=0: BUTTON CHECK标题 */
-        text(18U, 0U, "BUTTON CHECK");
-
-        /* y=8: UPTIME S + 秒数 */
-        text(2U, 8U, "UPTIME S"); number(54U, 8U, now_ms / 1000U);
-
-        /* y=16: 最近按键名称和事件 */
-        const char *key_names[] = {"BOARD", "MENU", "SOS"};
-        int idx = btn_last_key_idx;
-        if (idx >= 0 && idx < 3) {
-            text(2U, 16U, key_names[idx]);
-            text(38U, 16U, btn_last_event_name[idx][0] ? btn_last_event_name[idx] : "READY");
+    } else if (phase == UI_RTC_CHECK) {
+        uint32_t utc = 0U;
+        rtc_calendar_t cal;
+        watch_status_t status = time_service_get(&utc);
+        bool clock_ready = time_service_clock_source() == TIME_CLOCK_LSE;
+        text(37U, 0U, "RTC CHECK");
+        text(2U, 8U, clock_ready ? "CLK LSE" : "CLK ERROR");
+        if (clock_ready && status == WATCH_OK && time_utc_to_calendar(utc, &cal) == WATCH_OK) {
+            /* 当前页只通过明确的跨年样例设置时间，不能伪装成已校准的当前时间。 */
+            text(2U, 16U, "DEMO UTC");
+            fixed_number(2U, 24U, cal.year, 4U); text(26U, 24U, "-");
+            fixed_number(32U, 24U, cal.month, 2U); text(44U, 24U, "-");
+            fixed_number(50U, 24U, cal.day, 2U);
+            fixed_number(2U, 32U, cal.hour, 2U); text(14U, 32U, ":");
+            fixed_number(20U, 32U, cal.minute, 2U); text(32U, 32U, ":");
+            fixed_number(38U, 32U, cal.second, 2U);
+        } else {
+            text(2U, 16U, clock_ready && status == WATCH_NOT_READY ? "TIME NOT SET" : "RTC ERROR");
         }
-
-        /* 四行显示最近按键自身的计数，六位饱和值不会重叠。 */
-        text(2U, 24U, "PRESS"); number(62U, 24U, btn_press_counts[idx]);
-        text(2U, 32U, "RELEASE"); number(62U, 32U, btn_release_counts[idx]);
-        text(2U, 40U, "SHORT"); number(62U, 40U, btn_short_counts[idx]);
-        text(2U, 48U, "LONG"); number(62U, 48U, btn_long_counts[idx]);
+        text(2U, 40U, "UPTIME S"); number(62U, 40U, now_ms / 1000U);
+        text(2U, 48U, "MENU LONG DEMO");
+        text(2U, 56U, "SOS LONG CLEAR");
     }
 }
 
@@ -186,7 +200,7 @@ watch_status_t watch_ui_update(uint32_t now_ms)
         last_init_ms = now_ms;
         watch_status_t status = ssd1306_init();
         if (status != WATCH_OK) { return status; }
-        phase = ever_initialized ? UI_BUTTON_CHECK : UI_WHITE;
+        phase = ever_initialized ? UI_RTC_CHECK : UI_WHITE;
         ever_initialized = true;
         screen_enabled = false;
         holding = false;
@@ -202,7 +216,7 @@ watch_status_t watch_ui_update(uint32_t now_ms)
             screen_enabled = true;
         }
         frame_pending = false;
-        if (phase != UI_BUTTON_CHECK) { holding = true; hold_started_ms = now_ms; }
+        if (phase != UI_RTC_CHECK) { holding = true; hold_started_ms = now_ms; }
         return WATCH_OK;
     }
     if (holding) {
@@ -215,12 +229,12 @@ watch_status_t watch_ui_update(uint32_t now_ms)
             hold_started_ms = now_ms;
             return WATCH_OK;
         }
-        phase = phase == UI_WHITE ? UI_CHECKER : phase == UI_CHECKER ? UI_CORNERS : UI_BUTTON_CHECK;
+        phase = phase == UI_WHITE ? UI_CHECKER : phase == UI_CHECKER ? UI_CORNERS : UI_RTC_CHECK;
         holding = false;
-        if (phase == UI_BUTTON_CHECK) { last_refresh_ms = now_ms - 1000U; }
+        if (phase == UI_RTC_CHECK) { last_refresh_ms = now_ms - 1000U; }
     }
     if (phase == UI_OFF || ssd1306_is_busy()) { return WATCH_OK; }
-    if ((phase == UI_BUTTON_CHECK) && (uint32_t)(now_ms - last_refresh_ms) < 100U) { return WATCH_OK; }
+    if ((phase == UI_RTC_CHECK) && (uint32_t)(now_ms - last_refresh_ms) < 100U) { return WATCH_OK; }
     draw(now_ms);
     watch_status_t status = ssd1306_flush(frame, sizeof(frame));
     if (status == WATCH_OK) { frame_pending = true; last_refresh_ms = now_ms; }
