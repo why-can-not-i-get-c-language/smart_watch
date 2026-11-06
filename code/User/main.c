@@ -1,10 +1,10 @@
 /**
- * F00-P03 总线、时基与调度 - STM32F411CEU6
- * 版本：F00-P03-20261106-01
+ * F00-P04 显示与基本状态页 - STM32F411CEU6
+ * 版本：F00-P04-20261106-01
  * 行为：
- *  - 上电三短闪后持续1000ms周期心跳（200ms亮，800ms灭）
- *  - 调度驱动I2C/SPI/UART诊断任务及状态维护
- *  - 诊断：volatile全局状态供Keil观察（init status/per-bus status/计数/错误）
+ *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
+ *  - 进入基本状态页（SMART WATCH/UPTIME/未就绪占位符）
+ *  - 分步发送显示数据，保留HSI16、LED心跳、UART回环、SPI诊断
  */
 
 #include "board_port.h"
@@ -14,10 +14,12 @@
 #include "spi_bus.h"
 #include "uart_port.h"
 #include "scheduler.h"
+#include "ssd1306.h"
+#include "watch_ui.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char p03_version[] = "F00-P03-20261106-01";
+static const char p04_version[] = "F00-P04-20261106-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -53,6 +55,9 @@ typedef struct {
     volatile uint32_t uart_timeouts;
     volatile uint8_t uart_last_rx_byte;
     volatile watch_status_t uart_last_status;
+
+    /* 显示状态 */
+    volatile watch_status_t display_status;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -223,6 +228,27 @@ static void uart_loopback_task(void *ctx)
 }
 
 /**
+ * 显示分步发送任务：每5ms最多发送16字节，错误保留至重新初始化。
+ */
+static void display_process_task(void *ctx)
+{
+    (void)ctx;
+    watch_status_t status = ssd1306_process();
+    diag.display_status = status;
+}
+
+/**
+ * UI每10ms推进状态机，帧内容按需更新。
+ */
+static void ui_update_task(void *ctx)
+{
+    (void)ctx;
+    uint32_t now = board_millis();
+    watch_status_t status = watch_ui_update(now);
+    diag.display_status = status;
+}
+
+/**
  * 状态更新任务
  */
 static void update_status(void *ctx)
@@ -283,7 +309,7 @@ static void fault_blink(void)
 int main(void)
 {
     /* 防编译器删除版本字符串 */
-    volatile const char *p = p03_version;
+    volatile const char *p = p04_version;
     while (*p != '\0') p++;
 
     /* 基础初始化 */
@@ -320,6 +346,12 @@ int main(void)
 
         /* UART回环：每5ms调用一次（内部500ms发送节流）*/
         {.period_ms = 5, .last_ms = startup_baseline, .callback = uart_loopback_task, .context = NULL},
+
+        /* 显示分步发送：每5ms驱动 */
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = display_process_task, .context = NULL},
+
+        /* UI状态机每10ms推进 */
+        {.period_ms = 10, .last_ms = startup_baseline, .callback = ui_update_task, .context = NULL},
 
         /* 状态更新：每10ms更新一次 */
         {.period_ms = 10, .last_ms = startup_baseline, .callback = update_status, .context = NULL},
