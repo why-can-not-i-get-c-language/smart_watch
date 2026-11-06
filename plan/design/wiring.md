@@ -61,7 +61,25 @@ UV4.exe -r smart_watch.uvprojx -t smart_watch -o Build/keil_build.log
 
 2026-11-06调试器核验：Codex直接操作当前Keil/ST-Link调试会话，确认已加载`Build/Objects/smart_watch.axf`并停在`main`；在初始化后的首次`HAL_GPIO_WritePin`调用处命中函数断点，调试器读取`SystemCoreClock=16000000`。本次新增的唯一断点已移除，程序已继续运行；这些是调试器观察结果，LED实物现象仍待用户确认。
 
-F00-P02实物调试验收（2026-11-06）：在上述ST-Link调试核验后移除断点继续运行，用户明确确认LED恢复每秒一次心跳，符合亮约200ms、灭约800ms的预期。当前BIN与F00-P01验收版一致，复位和断电重启记录沿用F00-P01；本项调试与运行现象验收通过。
+F00-P02实物调试验收（2026-11-06）：在上述ST-Link调试核验后移除断点继续运行，用户明确确认LED恢复每秒一次心跳，符合亮约200ms、灭约800ms的预期。当时BIN与F00-P01验收版一致，复位和断电重启记录沿用F00-P01；本项调试与运行现象验收通过，远端提交为`fb6fc2f9214e95728754c75c03e2f1622991625c`。
+
+## F00-P03 总线、时基与调度
+
+2026-11-06软件检查：固件`F00-P03-20261106-01`，完整Keil构建0错误0警告；目标与非目标预处理分支语法检查通过，后者不是主机运行测试。56项编译输入与源码清单一致，ELF、版本字符串和USART1中断向量已核对。BIN为9616字节，SHA256为`f8f1f74ae1120e007d0bf7a789ad1587e55d83c7a6983285472397054ca624a0`。固件仍在`code/Build/Objects/smart_watch.hex`，调试文件为同目录`smart_watch.axf`。以下实物检查尚未执行。
+
+台架仅使用核心板、ST-LINK、默认I2C模式的OLED及串口回环跳线。先断电，OLED按丝印连接VCC→3V3、GND→GND、SCL→PB6、SDA→PB7；UART回环只用一根跳线连接PA9与PA10，暂不连接TEL0073。115200 8N1是本次端口台架设置，不是已确认的蓝牙模块参数。板载Flash仍使用板内PA4～PA7线路，不进行写入或擦除。
+
+烧录本版本后，上电三短闪，随后每秒亮约200ms、灭约800ms；本阶段不绘制OLED页面，屏幕无显示不能单独判失败。Keil可查看`main.c`中的`diag`：
+
+| 项目 | 通过标准 |
+| --- | --- |
+| 初始化与时基 | 四个`*_init_ok`均为1，`SystemCoreClock=16000000`；`millis`、`scheduler_runs`及`heartbeat_count`随运行增加，`scheduler_status=WATCH_OK(0)` |
+| OLED总线 | `i2c_oled_detected=1`且`i2c_last_status=WATCH_OK(0)`；仅证明0x3C应答，不表示显示功能通过 |
+| SPI原始回读 | `spi_transfer_ok=1`且状态为0，三字节`spi_jedec`重复回读一致；全FF/全00不能作为有效器件回应通过，需检查焊接与实物。仅记录原始ID，不据此确认Flash型号或读写擦除功能 |
+| UART回环 | PA9与PA10连接时，`uart_loopback_passes`持续增加；`uart_loopback_ok`在每次请求期间短暂清零，完整匹配后置1。单看一次ok不能替代计数和恢复检查 |
+| 掉线与恢复 | 保持电源与公共地，分别断开/接回OLED的SDA信号、UART回环信号；断开后对应探测失败/超时，LED和调度继续，接回后无需复位恢复ACK/回环成功。UART断开时`uart_timeouts`增加，不能沿用旧成功 |
+
+所有引脚与接线由用户操作，调试器读数和用户看到的LED现象分别记录。状态：等待用户接线、烧录与实测反馈；不将本节软件检查视为本项硬件验收。
 
 资料：
 - [WeAct核心板官方资料](https://github.com/WeActStudio/WeActStudio.MiniSTM32F4x1)

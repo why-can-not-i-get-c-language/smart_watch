@@ -98,3 +98,14 @@ void UsageFault_Handler(void)
 {
     fault_loop();
 }
+
+/**
+ * USART1_IRQHandler - USART1中断处理
+ * 处理接收、错误中断
+ */
+extern void uart_port_rx_callback(void);
+
+void USART1_IRQHandler(void)
+{
+    uart_port_rx_callback();
+}

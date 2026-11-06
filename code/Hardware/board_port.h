@@ -5,4 +5,9 @@
 watch_status_t board_init(void);
 uint32_t board_millis(void);
 watch_status_t board_enter_stop(void);
+
+/* I2C/SPI/UART初始化接口 */
+watch_status_t board_i2c_init(void);
+watch_status_t board_spi_init(void);
+watch_status_t board_uart_init(uint32_t baudrate);
 #endif
