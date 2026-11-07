@@ -94,8 +94,6 @@
 #define WATCH_HAPTIC_ADDR7 0x2DU
 
 /* TM6605驱动配置 */
-/* 本轮验证内置118及连续两字节发送；验收结束关闭以恢复短段提醒。 */
-#define WATCH_HAPTIC_NATIVE_BENCH 1
 #define WATCH_HAPTIC_WAKE_GAP_MS 5U
 #define WATCH_HAPTIC_RETRY_MS 1000U
 #define WATCH_HAPTIC_MAX_PLAY_MS 12000U

@@ -16,7 +16,7 @@ typedef struct {
 /* OK表示已接受排队，完成须看快照busy=false及status=OK。
  * init探测ACK并确认停止；不证明芯片身份，也不自动播放。
  * stop/sleep可抢占排队中的PLAY；效果编号123只供sleep使用。
- * 旧发送路径实测未中断效果118，当前发送路径待复验；可取消提醒使用alert。 */
+ * 本套装两种发送路径实测未中断118；可取消提醒使用alert。 */
 watch_status_t tm6605_init(void);
 watch_status_t tm6605_play(uint8_t effect);
 /* 1..12000ms内重复效果14；取消后不再启动下一次，当前短振动自然结束。
