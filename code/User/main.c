@@ -1,11 +1,11 @@
 /**
- * F01-P02 本地日期与时间设置 - STM32F411CEU6
- * 版本：F01-P02-20261107-01
+ * F02-P01 振动套装驱动验证 - STM32F411CEU6
+ * 版本：F02-P01-20261107-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 进入正常北京时间页，显示本地 UTC+8 日期和时间
- *  - 菜单长按进入日期/时间编辑，支持年/月/日/时/分/秒循环编辑
- *  - 保存更新RTC，取消回正常页；编辑草稿保留
+ *  - 默认进入振动验收页，板载KEY长按切换到北京时间页
+ *  - 振动命令异步推进，切出验收页时请求停止
+ *  - 时间页保留本地编辑/保存/取消，RTC继续走时
  *  - 保留LED心跳、I2C/SPI/UART诊断与掉屏恢复
  */
 
@@ -20,10 +20,11 @@
 #include "ssd1306.h"
 #include "watch_ui.h"
 #include "time_service.h"
+#include "tm6605.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F01-P02-20261107-01";
+static const char firmware_version[] = "F02-P01-20261107-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -78,9 +79,12 @@ typedef struct {
     volatile watch_status_t rtc_control_status;
     volatile uint32_t rtc_utc;
     volatile time_clock_source_t rtc_clock;
+    volatile watch_status_t haptic_request_status, haptic_process_status;
+    volatile tm6605_state_t haptic;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
+static uint32_t haptic_last_retry_ms;
 
 /* UART loopback state machine */
 static volatile uint8_t uart_expected_frame[4];
@@ -317,9 +321,20 @@ static void button_poll_task(void *ctx)
             }
         }
 
-        /* 本步编辑由UI状态机处理，主循环只读取结果更新诊断 */
+        /* 页面切换和时间编辑由UI负责；本分发点独占振动命令。 */
+        bool was_haptic = watch_ui_haptic_active();
         watch_ui_notify_button(events, now);
-        diag.rtc_control_status = watch_ui_get_action_status();
+        if (was_haptic && !watch_ui_haptic_active()) {
+            diag.haptic_request_status = tm6605_stop();
+        } else if (watch_ui_haptic_active() && (events & BUTTON_BOARD_LONG) == 0U) {
+            if ((events & BUTTON_BOARD_SHORT) != 0U) { diag.haptic_request_status = tm6605_stop(); }
+            else if ((events & BUTTON_SOS_LONG) != 0U) { diag.haptic_request_status = tm6605_sleep(false); }
+            else if ((events & BUTTON_SOS_SHORT) != 0U) { diag.haptic_request_status = tm6605_sleep(true); }
+            else if ((events & BUTTON_MENU_LONG) != 0U) { diag.haptic_request_status = tm6605_play(118U); }
+            else if ((events & BUTTON_MENU_SHORT) != 0U) { diag.haptic_request_status = tm6605_play(14U); }
+        } else if (!watch_ui_haptic_active()) {
+            diag.rtc_control_status = watch_ui_get_action_status();
+        }
     }
 }
 
@@ -346,8 +361,26 @@ static void ui_update_task(void *ctx)
 
 
 /**
- * 状态更新任务
+ * 振动命令推进与离线初始化重试
  */
+/* 每次最多一个驱动I2C操作；断线仅按每秒节流重试初始化，不重播旧效果。 */
+static void haptic_update_task(void *ctx)
+{
+    (void)ctx;
+    uint32_t now = board_millis();
+    diag.haptic_process_status = tm6605_process(now);
+    tm6605_state_t current;
+    tm6605_get_state(&current);
+    if (!current.ready && !current.busy &&
+        (uint32_t)(now - haptic_last_retry_ms) >= WATCH_HAPTIC_RETRY_MS) {
+        diag.haptic_request_status = tm6605_init();
+        haptic_last_retry_ms = now;
+        tm6605_get_state(&current);
+    }
+    diag.haptic = current;
+}
+
+/* 常规时基及串口诊断，与振动命令状态分别记录。 */
 static void update_status(void *ctx)
 {
     (void)ctx;
@@ -441,9 +474,12 @@ int main(void)
 
     /* 记录启动基准时刻 */
     startup_baseline = board_millis();
+    diag.haptic_request_status = tm6605_init();
+    haptic_last_retry_ms = board_millis();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},
         /* LED控制：每10ms更新一次 */
         {.period_ms = 10, .last_ms = startup_baseline, .callback = led_control_task, .context = NULL},
 

@@ -11,6 +11,7 @@
 | 板载辅助KEY | PA0 | 板内连接 | 极性以实物及原理图核对；与外置按键配置分开 |
 | DRI0056 电源 / 地 | 3V3 / GND | 套装驱动板电源及公共地 | TM6605驱动配套LRA，马达只接驱动输出端 |
 | DRI0056 SCL / SDA | PB6 / PB7 | 共享I2C1 | 拟用7位地址0x2D，调试先扫描与核对手册 |
+| 配套LRA马达 | 驱动板马达插座或OUTP/OUTN | 只接驱动板差分输出 | 不直接接GPIO，不将OUTP/OUTN任一端接GND；F02-P01实物验收记录见functions/F02.md |
 | GY-521 VCC / GND | 3V3 / GND | 模块电源及公共地 | 核对模块稳压、电平及实际供电要求 |
 | GY-521 SCL / SDA / INT | PB6 / PB7 / PB0 | I2C1与运动中断 | AD0接地拟用0x68；XDA/XCL不用 |
 | TEL0073 VCC / GND | 3V3 / GND | 电源及公共地 | 2.0mm接口；核对实物丝印与厂商引脚图后接线 |

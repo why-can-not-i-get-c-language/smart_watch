@@ -2,6 +2,7 @@
 #include "buttons.h"
 #include "ssd1306.h"
 #include "time_service.h"
+#include "tm6605.h"
 #include <string.h>
 
 /* 每行5位、共7行的小字库，只保存本界面需要的字符。 */
@@ -34,6 +35,7 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
+static bool haptic_page_active = true;
 static bool ever_initialized;
 static bool attempted_init;
 static bool frame_pending;
@@ -111,6 +113,28 @@ static uint8_t month_days(uint16_t year, uint8_t month)
     return month == 2U && is_leap ? 29U : days[month - 1U];
 }
 
+static void draw_haptic_page(uint32_t now_ms)
+{
+    tm6605_state_t current;
+    tm6605_get_state(&current);
+    static const char *commands[] = {"NONE","INIT","PLAY","STOP","SLEEP","WAKE"};
+    text(28U, 0U, "HAPTIC CHECK");
+    text(2U, 8U, "CMD"); text(38U, 8U, commands[current.command]);
+    const char *status = "NOT READY";
+    if (current.busy) { status = "PENDING"; }
+    else if (current.status == WATCH_OK) { status = "LAST ACK OK"; }
+    else if (current.status == WATCH_IO_ERROR) { status = "IO ERROR"; }
+    else if (current.status == WATCH_TIMEOUT) { status = "TIMEOUT"; }
+    else if (current.status == WATCH_INVALID_ARGUMENT) { status = "BAD EFFECT"; }
+    else if (current.status == WATCH_NOT_IMPLEMENTED) { status = "UNSUPPORTED"; }
+    text(2U, 16U, status);
+    text(2U, 24U, "EFFECT"); number(50U, 24U, current.effect);
+    text(2U, 32U, "UPTIME S"); number(62U, 32U, now_ms / 1000U);
+    text(2U, 40U, "MENU TAP14 HOLD118");
+    text(2U, 48U, "KEY TAP STOP HOLD UI");
+    text(2U, 56U, "SOS TAP SLP HOLD WK");
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -128,6 +152,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && haptic_page_active) {
+        draw_haptic_page(now_ms);
     } else if (phase == UI_NORMAL) {
         uint32_t utc = 0U;
         rtc_calendar_t local;
@@ -200,6 +226,13 @@ static void adjust_field(int direction)
 
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
 {
+    if (phase == UI_NORMAL && (event & BUTTON_BOARD_LONG) != 0U) {
+        haptic_page_active = !haptic_page_active;
+        last_refresh_ms = now_ms - 1000U;
+        return;
+    }
+    if (phase == UI_NORMAL && haptic_page_active) { return; }
+
     /* 自检期间不进入编辑；组合事件按取消、保存、切字段、加减的顺序处理。 */
     if (phase != UI_NORMAL && phase != UI_EDIT) { return; }
     if ((event & BUTTON_SOS_LONG) != 0U) {
@@ -297,4 +330,9 @@ watch_status_t watch_ui_update(uint32_t now_ms)
     watch_status_t status = ssd1306_flush(frame, sizeof(frame));
     if (status == WATCH_OK) { frame_pending = true; last_refresh_ms = now_ms; }
     return status;
+}
+
+bool watch_ui_haptic_active(void)
+{
+    return haptic_page_active;
 }

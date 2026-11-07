@@ -8,4 +8,6 @@ watch_status_t watch_ui_update(uint32_t now_ms);
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms);
 /* 返回最近的保存/取消状态：WATCH_NOT_READY初始，WATCH_OK保存成功，其他为具体错误码。 */
 watch_status_t watch_ui_get_action_status(void);
+/* 正常页用板载KEY长按切换振动验收页/时间页，编辑中不切换。 */
+bool watch_ui_haptic_active(void);
 #endif
