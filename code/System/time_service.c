@@ -29,6 +29,52 @@ uint32_t time_calendar_to_utc(const rtc_calendar_t *cal)
            (uint32_t)cal->minute * 60UL + cal->second;
 }
 
+/* 北京时间(UTC+8)转换：UTC -> 本地显示时间 */
+watch_status_t time_utc_to_local(uint32_t utc, rtc_calendar_t *out)
+{
+    if (out == NULL) { return WATCH_INVALID_ARGUMENT; }
+    memset(out, 0, sizeof(*out));
+    if (utc > UTC_MAX) { return WATCH_INVALID_ARGUMENT; }
+    /* 先转换UTC，验证有效性 */
+    if (time_utc_to_calendar(utc, out) != WATCH_OK) { return WATCH_INVALID_ARGUMENT; }
+    /* 加8小时处理进位 */
+    out->hour += 8U;
+    if (out->hour >= 24U) {
+        out->hour -= 24U;
+        out->day += 1U;
+        if (out->day > month_days(out->year, out->month)) {
+            out->day = 1U;
+            out->month += 1U;
+            if (out->month > 12U) {
+                out->month = 1U;
+                out->year += 1U;
+                if (out->year > 2099U) { out->year = 2100U; }
+            }
+        }
+    }
+    return WATCH_OK;
+}
+
+/* 本地时间(UTC+8) -> UTC */
+watch_status_t time_local_to_utc(const rtc_calendar_t *local, uint32_t *utc)
+{
+    if (utc == NULL) { return WATCH_INVALID_ARGUMENT; }
+    *utc = 0U;
+    if (local == NULL) { return WATCH_INVALID_ARGUMENT; }
+    if (local->year < 2000U || local->year > 2099U) { return WATCH_INVALID_ARGUMENT; }
+    /* 本地2000-01-01 08:00前早于RTC支持的UTC起点。 */
+    if (local->year == 2000U && local->month == 1U && local->day == 1U && local->hour < 8U) {
+        return WATCH_INVALID_ARGUMENT;
+    }
+    uint32_t local_utc = time_calendar_to_utc(local);
+    if (local_utc == 0U) { return WATCH_INVALID_ARGUMENT; }
+    if (local_utc < 28800UL) { return WATCH_INVALID_ARGUMENT; }
+    uint32_t result = local_utc - 28800UL;
+    if (result < UTC_MIN) { return WATCH_INVALID_ARGUMENT; }
+    *utc = result;
+    return WATCH_OK;
+}
+
 watch_status_t time_utc_to_calendar(uint32_t utc, rtc_calendar_t *cal)
 {
     if (cal == NULL) { return WATCH_INVALID_ARGUMENT; }

@@ -1,4 +1,5 @@
 #include "watch_ui.h"
+#include "buttons.h"
 #include "ssd1306.h"
 #include "time_service.h"
 #include <string.h>
@@ -25,10 +26,12 @@ static const glyph_t glyphs[] = {
     {'6',{14,16,16,30,17,17,14}}, {'7',{31,1,2,4,8,8,8}},
     {'8',{14,17,17,14,17,17,14}}, {'9',{14,17,17,15,1,1,14}},
     {':',{0,4,4,0,4,4,0}}, {'-',{0,0,0,31,0,0,0}},
-    {'?',{14,17,1,2,4,0,4}}
+    {'+',{0,4,4,31,4,4,0}}, {'?',{14,17,1,2,4,0,4}}
 };
 
-typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_RTC_CHECK } ui_phase_t;
+typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_NORMAL, UI_EDIT } ui_phase_t;
+typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_SECOND, EDIT_COUNT } edit_field_t;
+
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
 static bool ever_initialized;
@@ -40,13 +43,11 @@ static uint32_t last_init_ms;
 static uint32_t hold_started_ms;
 static uint32_t last_refresh_ms;
 
-/* 按键计数与最近事件 */
-static uint32_t btn_press_counts[3];
-static uint32_t btn_release_counts[3];
-static uint32_t btn_short_counts[3];
-static uint32_t btn_long_counts[3];
-static const char *btn_last_event_name[3] = {"READY", "READY", "READY"};
-static int btn_last_key_idx;
+/* 编辑状态机 */
+static rtc_calendar_t edit_draft;
+static edit_field_t edit_field;
+static watch_status_t action_status = WATCH_NOT_READY;
+static const char *notice = "";
 
 static void pixel(unsigned x, unsigned y)
 {
@@ -102,6 +103,14 @@ static void fixed_number(unsigned x, unsigned y, uint32_t value, unsigned width)
     text(x, y, digits);
 }
 
+static uint8_t month_days(uint16_t year, uint8_t month)
+{
+    static const uint8_t days[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    if (month < 1U || month > 12U) { return 0U; }
+    bool is_leap = (year % 4U == 0U && year % 100U != 0U) || year % 400U == 0U;
+    return month == 2U && is_leap ? 29U : days[month - 1U];
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -119,75 +128,124 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
-    } else if (phase == UI_RTC_CHECK) {
+    } else if (phase == UI_NORMAL) {
         uint32_t utc = 0U;
-        rtc_calendar_t cal;
+        rtc_calendar_t local;
         watch_status_t status = time_service_get(&utc);
         bool clock_ready = time_service_clock_source() == TIME_CLOCK_LSE;
-        text(37U, 0U, "RTC CHECK");
-        text(2U, 8U, clock_ready ? "CLK LSE" : "CLK ERROR");
-        if (clock_ready && status == WATCH_OK && time_utc_to_calendar(utc, &cal) == WATCH_OK) {
-            /* 当前页只通过明确的跨年样例设置时间，不能伪装成已校准的当前时间。 */
-            text(2U, 16U, "DEMO UTC");
-            fixed_number(2U, 24U, cal.year, 4U); text(26U, 24U, "-");
-            fixed_number(32U, 24U, cal.month, 2U); text(44U, 24U, "-");
-            fixed_number(50U, 24U, cal.day, 2U);
-            fixed_number(2U, 32U, cal.hour, 2U); text(14U, 32U, ":");
-            fixed_number(20U, 32U, cal.minute, 2U); text(32U, 32U, ":");
-            fixed_number(38U, 32U, cal.second, 2U);
+        bool valid = clock_ready && status == WATCH_OK && time_utc_to_local(utc, &local) == WATCH_OK;
+        text(31U, 0U, "SMART WATCH");
+        text(2U, 8U, "BJT UTC+8");
+        if (valid) {
+            fixed_number(2U, 16U, local.year, 4U); text(26U, 16U, "-");
+            fixed_number(32U, 16U, local.month, 2U); text(44U, 16U, "-");
+            fixed_number(50U, 16U, local.day, 2U);
+            fixed_number(2U, 24U, local.hour, 2U); text(14U, 24U, ":");
+            fixed_number(20U, 24U, local.minute, 2U); text(32U, 24U, ":");
+            fixed_number(38U, 24U, local.second, 2U);
         } else {
             text(2U, 16U, clock_ready && status == WATCH_NOT_READY ? "TIME NOT SET" : "RTC ERROR");
         }
-        text(2U, 40U, "UPTIME S"); number(62U, 40U, now_ms / 1000U);
-        text(2U, 48U, "MENU LONG DEMO");
-        text(2U, 56U, "SOS LONG CLEAR");
+        text(2U, 32U, "UPTIME S"); number(62U, 32U, now_ms / 1000U);
+        text(2U, 40U, "MENU HOLD SET");
+        if (valid && action_status == WATCH_OK) { text(2U, 48U, "SAVED"); }
+        else if (clock_ready && notice[0] != '\0' && action_status == WATCH_NOT_READY) { text(2U, 48U, notice); }
+        text(2U, 56U, clock_ready ? "CLK LSE" : "CLK ERROR");
+    } else if (phase == UI_EDIT) {
+        static const char *fields[] = {"YEAR","MONTH","DAY","HOUR","MIN","SEC"};
+        text(2U, 0U, "SET BJT UTC+8");
+        fixed_number(2U, 8U, edit_draft.year, 4U); text(26U, 8U, "-");
+        fixed_number(32U, 8U, edit_draft.month, 2U); text(44U, 8U, "-");
+        fixed_number(50U, 8U, edit_draft.day, 2U);
+        fixed_number(2U, 16U, edit_draft.hour, 2U); text(14U, 16U, ":");
+        fixed_number(20U, 16U, edit_draft.minute, 2U); text(32U, 16U, ":");
+        fixed_number(38U, 16U, edit_draft.second, 2U);
+        text(2U, 24U, "FIELD"); text(38U, 24U, fields[edit_field]);
+        text(2U, 32U, "KEY INC SOS DEC");
+        text(2U, 40U, "MENU NEXT HOLD SAVE");
+        text(2U, 48U, "SOS HOLD CANCEL");
+        text(2U, 56U, notice);
     }
 }
 
+static void adjust_field(int direction)
+{
+    uint16_t value = 0U, low = 0U, high = 0U;
+    switch (edit_field) {
+    case EDIT_YEAR: value = edit_draft.year; low = 2000U; high = 2099U; break;
+    case EDIT_MONTH: value = edit_draft.month; low = 1U; high = 12U; break;
+    case EDIT_DAY: value = edit_draft.day; low = 1U; high = month_days(edit_draft.year, edit_draft.month); break;
+    case EDIT_HOUR: value = edit_draft.hour; high = 23U; break;
+    case EDIT_MINUTE: value = edit_draft.minute; high = 59U; break;
+    case EDIT_SECOND: value = edit_draft.second; high = 59U; break;
+    default: return;
+    }
+    value = direction > 0 ? (value >= high ? low : (uint16_t)(value + 1U)) :
+                            (value <= low ? high : (uint16_t)(value - 1U));
+    switch (edit_field) {
+    case EDIT_YEAR: edit_draft.year = value; break;
+    case EDIT_MONTH: edit_draft.month = (uint8_t)value; break;
+    case EDIT_DAY: edit_draft.day = (uint8_t)value; break;
+    case EDIT_HOUR: edit_draft.hour = (uint8_t)value; break;
+    case EDIT_MINUTE: edit_draft.minute = (uint8_t)value; break;
+    case EDIT_SECOND: edit_draft.second = (uint8_t)value; break;
+    default: return;
+    }
+    /* 修改年份或月份后夹到合法月末，避免生成2月30日等草稿。 */
+    uint8_t maximum = month_days(edit_draft.year, edit_draft.month);
+    if (edit_draft.day > maximum) { edit_draft.day = maximum; }
+    action_status = WATCH_NOT_READY;
+    notice = "EDITING";
+}
 
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
 {
-    (void)now_ms;
-
-    /* 遍历所有按键的所有事件，分别饱和计数 */
-    for (int i = 0; i < 3; i++) {
-        /* 检查该按键的4种事件 */
-        uint32_t event_bits[] = {1U << (i*4+0), 1U << (i*4+1), 1U << (i*4+2), 1U << (i*4+3)};
-        uint32_t *count_ptrs[] = {&btn_press_counts[i], &btn_release_counts[i],
-                                   &btn_short_counts[i], &btn_long_counts[i]};
-
-        uint8_t found_event = 0;
-
-        /* 检查该按键是否有任何事件发生 */
-        if (event & (event_bits[0] | event_bits[1] | event_bits[2] | event_bits[3])) {
-            found_event = 1;
+    /* 自检期间不进入编辑；组合事件按取消、保存、切字段、加减的顺序处理。 */
+    if (phase != UI_NORMAL && phase != UI_EDIT) { return; }
+    if ((event & BUTTON_SOS_LONG) != 0U) {
+        if (phase == UI_EDIT) {
+            phase = UI_NORMAL;
+            action_status = WATCH_NOT_READY;
+            notice = "CANCELLED";
         }
-
-        if (found_event) {
-            /* 更新最近键索引 */
-            btn_last_key_idx = i;
-
-            /* 更新最近事件名，SHORT优先于RELEASE，LONG优先于PRESS */
-            if ((event & event_bits[2])) {
-                btn_last_event_name[i] = "SHORT";
-            } else if ((event & event_bits[3])) {
-                btn_last_event_name[i] = "LONG";
-            } else if ((event & event_bits[1])) {
-                btn_last_event_name[i] = "RELEASE";
-            } else if ((event & event_bits[0])) {
-                btn_last_event_name[i] = "PRESS";
+    } else if ((event & BUTTON_MENU_LONG) != 0U) {
+        if (phase == UI_NORMAL) {
+            uint32_t utc = 0U;
+            if (time_service_get(&utc) != WATCH_OK || time_utc_to_local(utc, &edit_draft) != WATCH_OK) {
+                edit_draft = (rtc_calendar_t){2026U,1U,1U,0U,0U,0U};
             }
-
-            /* 累计计数：遍历所有4种事件 */
-            for (int e = 0; e < 4; e++) {
-                if (event & event_bits[e]) {
-                    if (*count_ptrs[e] < 999999) {
-                        (*count_ptrs[e])++;
-                    }
-                }
+            /* UTC支持上界最后8小时可显示2100年，编辑年份仍限定2000至2099。 */
+            if (edit_draft.year > 2099U) { edit_draft.year = 2099U; }
+            edit_field = EDIT_YEAR;
+            action_status = WATCH_NOT_READY;
+            notice = "EDITING";
+            phase = UI_EDIT;
+        } else {
+            uint32_t utc = 0U;
+            action_status = time_local_to_utc(&edit_draft, &utc);
+            if (action_status == WATCH_OK) { action_status = time_service_set(utc); }
+            if (action_status == WATCH_OK) {
+                phase = UI_NORMAL;
+                notice = "SAVED";
+            } else {
+                notice = action_status == WATCH_INVALID_ARGUMENT ? "OUT OF RANGE" : "SAVE FAILED";
             }
         }
+    } else if (phase == UI_EDIT && (event & BUTTON_MENU_SHORT) != 0U) {
+        edit_field = (edit_field_t)(((unsigned)edit_field + 1U) % EDIT_COUNT);
+    } else if (phase == UI_EDIT) {
+        bool increase = (event & BUTTON_BOARD_SHORT) != 0U;
+        bool decrease = (event & BUTTON_SOS_SHORT) != 0U;
+        if (increase != decrease) { adjust_field(increase ? 1 : -1); }
     }
+    last_refresh_ms = now_ms - 1000U;
+}
+
+
+
+watch_status_t watch_ui_get_action_status(void)
+{
+    return action_status;
 }
 
 watch_status_t watch_ui_update(uint32_t now_ms)
@@ -200,7 +258,7 @@ watch_status_t watch_ui_update(uint32_t now_ms)
         last_init_ms = now_ms;
         watch_status_t status = ssd1306_init();
         if (status != WATCH_OK) { return status; }
-        phase = ever_initialized ? UI_RTC_CHECK : UI_WHITE;
+        phase = ever_initialized ? (phase == UI_EDIT ? UI_EDIT : UI_NORMAL) : UI_WHITE;
         ever_initialized = true;
         screen_enabled = false;
         holding = false;
@@ -216,7 +274,7 @@ watch_status_t watch_ui_update(uint32_t now_ms)
             screen_enabled = true;
         }
         frame_pending = false;
-        if (phase != UI_RTC_CHECK) { holding = true; hold_started_ms = now_ms; }
+        if (phase != UI_NORMAL && phase != UI_EDIT) { holding = true; hold_started_ms = now_ms; }
         return WATCH_OK;
     }
     if (holding) {
@@ -229,12 +287,12 @@ watch_status_t watch_ui_update(uint32_t now_ms)
             hold_started_ms = now_ms;
             return WATCH_OK;
         }
-        phase = phase == UI_WHITE ? UI_CHECKER : phase == UI_CHECKER ? UI_CORNERS : UI_RTC_CHECK;
+        phase = phase == UI_WHITE ? UI_CHECKER : phase == UI_CHECKER ? UI_CORNERS : UI_NORMAL;
         holding = false;
-        if (phase == UI_RTC_CHECK) { last_refresh_ms = now_ms - 1000U; }
+        if (phase == UI_NORMAL) { last_refresh_ms = now_ms - 1000U; action_status = WATCH_NOT_READY; }
     }
     if (phase == UI_OFF || ssd1306_is_busy()) { return WATCH_OK; }
-    if ((phase == UI_RTC_CHECK) && (uint32_t)(now_ms - last_refresh_ms) < 100U) { return WATCH_OK; }
+    if ((phase == UI_NORMAL || phase == UI_EDIT) && (uint32_t)(now_ms - last_refresh_ms) < 100U) { return WATCH_OK; }
     draw(now_ms);
     watch_status_t status = ssd1306_flush(frame, sizeof(frame));
     if (status == WATCH_OK) { frame_pending = true; last_refresh_ms = now_ms; }

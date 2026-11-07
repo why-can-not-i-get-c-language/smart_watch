@@ -22,4 +22,11 @@ time_clock_source_t time_service_clock_source(void);
 watch_status_t time_utc_to_calendar(uint32_t utc_seconds, rtc_calendar_t *cal);
 /* 非法日历返回0；合法支持范围内不会出现0秒。 */
 uint32_t time_calendar_to_utc(const rtc_calendar_t *cal);
+
+/* 固定北京时间UTC+8，无夏令时；以下转换不读写硬件RTC。 */
+/* UTC范围仍受RTC限制；本地显示上界可到2100-01-01 07:59:59。 */
+watch_status_t time_utc_to_local(uint32_t utc, rtc_calendar_t *out);
+/* 本地编辑范围2000至2099年；2000-01-01 08:00前不在RTC支持范围内。
+ * 失败清零utc输出，不写RTC。 */
+watch_status_t time_local_to_utc(const rtc_calendar_t *local, uint32_t *utc);
 #endif

@@ -1,10 +1,11 @@
 /**
- * F01-P01 RTC、日历与时间有效性 - STM32F411CEU6
- * 版本：F01-P01-20261106-01
+ * F01-P02 本地日期与时间设置 - STM32F411CEU6
+ * 版本：F01-P02-20261107-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 进入RTC验收页，默认时间未设置；读取真实板载LSE/RTC
- *  - 菜单长按载入跨年UTC样例，SOS长按清除时间有效标记
+ *  - 进入正常北京时间页，显示本地 UTC+8 日期和时间
+ *  - 菜单长按进入日期/时间编辑，支持年/月/日/时/分/秒循环编辑
+ *  - 保存更新RTC，取消回正常页；编辑草稿保留
  *  - 保留LED心跳、I2C/SPI/UART诊断与掉屏恢复
  */
 
@@ -22,7 +23,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F01-P01-20261106-01";
+static const char firmware_version[] = "F01-P02-20261107-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -316,17 +317,9 @@ static void button_poll_task(void *ctx)
             }
         }
 
-        /* 本步只提供明确标记的跨年样例，不替代下一任务的手动调时。
-         * 同一轮同时收到两键长按时，清除优先，避免又清除又载入。 */
-        if ((events & BUTTON_SOS_LONG) != 0U) {
-            diag.rtc_control_status = time_service_invalidate();
-        } else if ((events & BUTTON_MENU_LONG) != 0U) {
-            const rtc_calendar_t demo = {2026U, 12U, 31U, 23U, 59U, 55U};
-            uint32_t utc = time_calendar_to_utc(&demo);
-            diag.rtc_control_status = utc == 0U ? WATCH_INVALID_ARGUMENT : time_service_set(utc);
-        }
-        /* 通知UI保留原有三键统计 */
+        /* 本步编辑由UI状态机处理，主循环只读取结果更新诊断 */
         watch_ui_notify_button(events, now);
+        diag.rtc_control_status = watch_ui_get_action_status();
     }
 }
 
