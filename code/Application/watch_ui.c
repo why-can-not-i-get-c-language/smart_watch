@@ -3,6 +3,7 @@
 #include "ssd1306.h"
 #include "time_service.h"
 #include "tm6605.h"
+#include "board_config.h"
 #include <string.h>
 
 /* 每行5位、共7行的小字库，只保存本界面需要的字符。 */
@@ -130,7 +131,11 @@ static void draw_haptic_page(uint32_t now_ms)
     text(2U, 16U, status);
     text(2U, 24U, "EFFECT"); number(50U, 24U, current.effect);
     text(2U, 32U, "UPTIME S"); number(62U, 32U, now_ms / 1000U);
+#if WATCH_HAPTIC_NATIVE_BENCH
+    text(2U, 40U, "MENU TAP14 HOLD118");
+#else
     text(2U, 40U, "MENU TAP14 HOLD RPT");
+#endif
     text(2U, 48U, "KEY TAP STOP HOLD UI");
     text(2U, 56U, "SOS TAP SLP HOLD WK");
 }

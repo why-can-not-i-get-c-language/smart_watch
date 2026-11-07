@@ -131,6 +131,31 @@ watch_status_t i2c_bus_write(uint8_t address7, uint8_t reg, const uint8_t *data,
     return WATCH_OK;
 }
 
+watch_status_t i2c_bus_write_command(uint8_t address7, uint8_t reg, uint8_t command)
+{
+    if (address7 > 0x7FU) {
+        i2c_last_status = WATCH_INVALID_ARGUMENT;
+        return WATCH_INVALID_ARGUMENT;
+    }
+    if (!i2c_initialized) {
+        i2c_last_status = WATCH_NOT_READY;
+        return WATCH_NOT_READY;
+    }
+    /* 与Arduino Wire连续写reg/data一致；不改变其他设备的Mem_Write路径。 */
+    uint8_t packet[2] = {reg, command};
+    HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)(address7 << 1),
+                                                    packet, sizeof(packet), WATCH_I2C1_TIMEOUT_MS);
+    if (status != HAL_OK) {
+        watch_status_t error = status == HAL_TIMEOUT ? WATCH_TIMEOUT : WATCH_IO_ERROR;
+        i2c_bus_recover();
+        if (i2c_bus_init_internal() != WATCH_OK) { i2c_initialized = 0; }
+        i2c_last_status = error;
+        return error;
+    }
+    i2c_last_status = WATCH_OK;
+    return WATCH_OK;
+}
+
 /**
  * i2c_bus_probe - 探测I2C设备应答（诊断用，单次10ms超时）
  * 失败后执行有限RCC复位+重置HAL句柄+init恢复，返回当前错误
@@ -193,6 +218,13 @@ watch_status_t i2c_bus_write(uint8_t address7, uint8_t reg, const uint8_t *data,
     }
     (void)reg;
     return WATCH_NOT_IMPLEMENTED;
+}
+
+watch_status_t i2c_bus_write_command(uint8_t address7, uint8_t reg, uint8_t command)
+{
+    (void)reg;
+    (void)command;
+    return address7 > 0x7FU ? WATCH_INVALID_ARGUMENT : WATCH_NOT_IMPLEMENTED;
 }
 
 watch_status_t i2c_bus_probe(uint8_t address7)

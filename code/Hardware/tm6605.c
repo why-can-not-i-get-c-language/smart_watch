@@ -144,7 +144,7 @@ watch_status_t tm6605_process(uint32_t now_ms)
         if (tx_phase == PH_SELECT) { reg = TM6605_REG_EFFECT; data = state.effect; }
         else if (tx_phase == PH_GO) { data = 1U; }
         else if (tx_phase == PH_SLEEP) { reg = TM6605_REG_EFFECT; data = TM6605_SLEEP_EFFECT; }
-        result = i2c_bus_write(WATCH_HAPTIC_ADDR7, reg, &data, 1U);
+        result = i2c_bus_write_command(WATCH_HAPTIC_ADDR7, reg, data);
     }
     /* 一次推进最多一个传输；任一错误终止整个命令，禁止后续误报完成。 */
     if (result != WATCH_OK) {
