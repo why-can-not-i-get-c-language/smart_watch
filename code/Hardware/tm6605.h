@@ -1,12 +1,13 @@
 #ifndef WATCH_TM6605_H
 #define WATCH_TM6605_H
 #include "watch_types.h"
-typedef enum { TM6605_NONE=0, TM6605_INIT, TM6605_PLAY, TM6605_STOP, TM6605_SLEEP, TM6605_WAKE } tm6605_command_t;
+typedef enum { TM6605_NONE=0, TM6605_INIT, TM6605_PLAY, TM6605_STOP, TM6605_SLEEP, TM6605_WAKE, TM6605_ALERT } tm6605_command_t;
 typedef struct {
     bool ready;
     bool busy; /* 本地命令尚未完成，不是马达真实忙位。 */
     /* 只表示最后休眠命令ACK，不能证明共享总线下持续睡眠。 */
     bool sleep_command_sent;
+    bool alert_active; /* 本地短振动序列使能，不是马达运动测量。 */
     tm6605_command_t command;
     uint8_t effect;
     watch_status_t status;
@@ -14,9 +15,13 @@ typedef struct {
 } tm6605_state_t;
 /* OK表示已接受排队，完成须看快照busy=false及status=OK。
  * init探测ACK并确认停止；不证明芯片身份，也不自动播放。
- * stop/sleep可抢占排队中的PLAY；效果编号123只供sleep使用。 */
+ * stop/sleep可抢占排队中的PLAY；效果编号123只供sleep使用。
+ * 实物效果118无法通过停止/休眠命令中断，可取消提醒须使用alert。 */
 watch_status_t tm6605_init(void);
 watch_status_t tm6605_play(uint8_t effect);
+/* 1..12000ms内重复效果14；取消后不再启动下一次，当前短振动自然结束。
+ * 约190ms为手册参考值，不是停止延迟的实测保证。 */
+watch_status_t tm6605_alert(uint32_t duration_ms);
 watch_status_t tm6605_stop(void);
 watch_status_t tm6605_sleep(bool enabled);
 /* 每次最多一个I2C传输；错误直接返回并保留在快照中。 */

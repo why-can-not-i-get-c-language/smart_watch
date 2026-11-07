@@ -1,6 +1,6 @@
 /**
  * F02-P01 振动套装驱动验证 - STM32F411CEU6
- * 版本：F02-P01-20261107-01
+ * 版本：F02-P01-20261107-02
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认进入振动验收页，板载KEY长按切换到北京时间页
@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F02-P01-20261107-01";
+static const char firmware_version[] = "F02-P01-20261107-02";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -330,7 +330,7 @@ static void button_poll_task(void *ctx)
             if ((events & BUTTON_BOARD_SHORT) != 0U) { diag.haptic_request_status = tm6605_stop(); }
             else if ((events & BUTTON_SOS_LONG) != 0U) { diag.haptic_request_status = tm6605_sleep(false); }
             else if ((events & BUTTON_SOS_SHORT) != 0U) { diag.haptic_request_status = tm6605_sleep(true); }
-            else if ((events & BUTTON_MENU_LONG) != 0U) { diag.haptic_request_status = tm6605_play(118U); }
+            else if ((events & BUTTON_MENU_LONG) != 0U) { diag.haptic_request_status = tm6605_alert(10000U); }
             else if ((events & BUTTON_MENU_SHORT) != 0U) { diag.haptic_request_status = tm6605_play(14U); }
         } else if (!watch_ui_haptic_active()) {
             diag.rtc_control_status = watch_ui_get_action_status();

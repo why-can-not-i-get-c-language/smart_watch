@@ -38,6 +38,7 @@ typedef enum { PH_IDLE, PH_PROBE, PH_STOP1, PH_STOP2, PH_SELECT, PH_GO, PH_SLEEP
 static tm6605_state_t state = {.status = WATCH_NOT_READY};
 static tx_phase_t tx_phase;
 static uint32_t phase_ms, play_ms, guard_ms;
+static uint32_t alert_start_ms, alert_duration_ms;
 static bool guard_active, safety_active;
 
 static void queue_command(tm6605_command_t command)
@@ -47,7 +48,11 @@ static void queue_command(tm6605_command_t command)
     state.status = WATCH_NOT_READY;
     tx_phase = command == TM6605_INIT ? PH_PROBE : PH_STOP1;
     phase_ms = board_millis() - WATCH_HAPTIC_WAKE_GAP_MS;
-    if (command != TM6605_PLAY) { guard_active = false; safety_active = false; }
+    if (command != TM6605_PLAY && command != TM6605_ALERT) {
+        /* 取消软件序列；总线ACK不代表已经中断芯片内部效果。 */
+        state.alert_active = false;
+        safety_active = false;
+    }
 }
 
 watch_status_t tm6605_init(void)
@@ -62,13 +67,32 @@ watch_status_t tm6605_init(void)
 watch_status_t tm6605_play(uint8_t effect)
 {
     if (!is_valid_effect(effect)) { state.status = WATCH_INVALID_ARGUMENT; return WATCH_INVALID_ARGUMENT; }
-    if (!state.ready || state.busy ||
+    if (!state.ready || state.busy || state.alert_active ||
         (guard_active && (uint32_t)(board_millis() - play_ms) < guard_ms)) {
         state.status = WATCH_NOT_READY;
         return WATCH_NOT_READY;
     }
     state.effect = effect;
     queue_command(TM6605_PLAY);
+    return WATCH_OK;
+}
+
+watch_status_t tm6605_alert(uint32_t duration_ms)
+{
+    if (duration_ms == 0U || duration_ms > WATCH_HAPTIC_MAX_PLAY_MS) {
+        state.status = WATCH_INVALID_ARGUMENT;
+        return WATCH_INVALID_ARGUMENT;
+    }
+    if (!state.ready || state.busy || state.alert_active ||
+        (guard_active && (uint32_t)(board_millis() - play_ms) < guard_ms)) {
+        state.status = WATCH_NOT_READY;
+        return WATCH_NOT_READY;
+    }
+    alert_start_ms = board_millis();
+    alert_duration_ms = duration_ms;
+    state.effect = 14U;
+    state.alert_active = true;
+    queue_command(TM6605_ALERT);
     return WATCH_OK;
 }
 
@@ -87,19 +111,25 @@ static void complete(uint32_t now_ms)
     if (state.completed_count < 999999U) { state.completed_count++; }
     state.sleep_command_sent = state.command == TM6605_SLEEP;
     tx_phase = PH_IDLE;
-    if (state.command == TM6605_PLAY) {
+    if (state.command == TM6605_PLAY || state.command == TM6605_ALERT) {
         play_ms = now_ms;
         guard_ms = get_effect_duration(state.effect) + 200U;
         guard_active = true;
-        safety_active = true;
+        safety_active = state.command == TM6605_PLAY;
     }
 }
 
 watch_status_t tm6605_process(uint32_t now_ms)
 {
+    /* 到时也可取消仍在排队的SELECT/GO，防止慢总线在期限后启动一段。 */
+    if (state.alert_active && (uint32_t)(now_ms - alert_start_ms) >= alert_duration_ms) {
+        queue_command(TM6605_STOP);
+    }
     if (tx_phase == PH_IDLE) {
         if (guard_active && (uint32_t)(now_ms - play_ms) >= guard_ms) { guard_active = false; }
-        if (safety_active && (uint32_t)(now_ms - play_ms) >= WATCH_HAPTIC_MAX_PLAY_MS) {
+        if (state.alert_active && !guard_active) {
+            queue_command(TM6605_ALERT);
+        } else if (safety_active && (uint32_t)(now_ms - play_ms) >= WATCH_HAPTIC_MAX_PLAY_MS) {
             queue_command(TM6605_STOP);
         }
         return WATCH_OK;
@@ -120,7 +150,9 @@ watch_status_t tm6605_process(uint32_t now_ms)
     if (result != WATCH_OK) {
         state.ready = false; state.busy = false; state.status = result;
         state.sleep_command_sent = false;
-        guard_active = false; safety_active = false; tx_phase = PH_IDLE;
+        state.alert_active = false;
+        /* 保留已播放段的保护间隔；离线恢复ACK不证明该段已中断。 */
+        safety_active = false; tx_phase = PH_IDLE;
         return result;
     }
     phase_ms = now_ms;
@@ -128,7 +160,7 @@ watch_status_t tm6605_process(uint32_t now_ms)
     case PH_PROBE: tx_phase = PH_STOP1; break;
     case PH_STOP1: tx_phase = PH_STOP2; break;
     case PH_STOP2:
-        if (state.command == TM6605_PLAY) { tx_phase = PH_SELECT; }
+        if (state.command == TM6605_PLAY || state.command == TM6605_ALERT) { tx_phase = PH_SELECT; }
         else if (state.command == TM6605_SLEEP) { tx_phase = PH_SLEEP; }
         else { complete(now_ms); }
         break;
@@ -142,6 +174,7 @@ watch_status_t tm6605_process(uint32_t now_ms)
 static const tm6605_state_t state = {.status = WATCH_NOT_IMPLEMENTED};
 watch_status_t tm6605_init(void) { return WATCH_NOT_IMPLEMENTED; }
 watch_status_t tm6605_play(uint8_t effect) { (void)effect; return WATCH_NOT_IMPLEMENTED; }
+watch_status_t tm6605_alert(uint32_t duration_ms) { (void)duration_ms; return WATCH_NOT_IMPLEMENTED; }
 watch_status_t tm6605_stop(void) { return WATCH_NOT_IMPLEMENTED; }
 watch_status_t tm6605_sleep(bool enabled) { (void)enabled; return WATCH_NOT_IMPLEMENTED; }
 watch_status_t tm6605_process(uint32_t now_ms) { (void)now_ms; return WATCH_NOT_IMPLEMENTED; }

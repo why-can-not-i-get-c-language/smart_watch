@@ -117,7 +117,7 @@ static void draw_haptic_page(uint32_t now_ms)
 {
     tm6605_state_t current;
     tm6605_get_state(&current);
-    static const char *commands[] = {"NONE","INIT","PLAY","STOP","SLEEP","WAKE"};
+    static const char *commands[] = {"NONE","INIT","PLAY","STOP","SLEEP","WAKE","ALERT"};
     text(28U, 0U, "HAPTIC CHECK");
     text(2U, 8U, "CMD"); text(38U, 8U, commands[current.command]);
     const char *status = "NOT READY";
@@ -130,7 +130,7 @@ static void draw_haptic_page(uint32_t now_ms)
     text(2U, 16U, status);
     text(2U, 24U, "EFFECT"); number(50U, 24U, current.effect);
     text(2U, 32U, "UPTIME S"); number(62U, 32U, now_ms / 1000U);
-    text(2U, 40U, "MENU TAP14 HOLD118");
+    text(2U, 40U, "MENU TAP14 HOLD RPT");
     text(2U, 48U, "KEY TAP STOP HOLD UI");
     text(2U, 56U, "SOS TAP SLP HOLD WK");
 }
