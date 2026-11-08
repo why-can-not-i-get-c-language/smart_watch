@@ -1,6 +1,6 @@
 /**
  * F03-P02 计步累计与清零验证 - STM32F411CEU6
- * 版本：F03-P02-20261108-01
+ * 版本：F03-P02-20261108-02
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认计步页，板载KEY长按循环计步、MPU、振动、北京时间页
@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F03-P02-20261108-01";
+static const char firmware_version[] = "F03-P02-20261108-02";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察

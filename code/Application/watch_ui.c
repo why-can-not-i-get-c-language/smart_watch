@@ -199,11 +199,17 @@ static void draw_steps_page(uint32_t now_ms)
     const char *state = "WAIT SENSOR";
     if (counter.state == PEDOMETER_WARMING) { state = "WARMUP"; }
     else if (counter.state == PEDOMETER_READY) { state = "READY"; }
+    else if (counter.state == PEDOMETER_VERIFYING) { state = "CHECK WALK"; }
     if (!motion.sample.valid) { state = "WAIT SENSOR"; }
     if (motion.sample.valid && steps_cleared && (uint32_t)(now_ms - steps_cleared_ms) < 2000U) {
         state = "COUNT CLEARED";
     }
     text(2U, 24U, state);
+    if (motion.sample.valid && counter.state == PEDOMETER_VERIFYING &&
+        !(steps_cleared && (uint32_t)(now_ms - steps_cleared_ms) < 2000U)) {
+        number(68U, 24U, counter.pending_steps);
+        text(80U, 24U, "OF"); number(98U, 24U, WATCH_PEDOMETER_CONFIRM_STEPS);
+    }
     text(2U, 32U, "ACT HZ");
     if (motion.rate_valid) {
         fixed_number(44U, 32U, motion.actual_rate_millihz / 1000U, 2U);
