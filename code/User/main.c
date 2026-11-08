@@ -1,9 +1,10 @@
 /**
- * F03-P01 六轴运动身份与采样验证 - STM32F411CEU6
- * 版本：F03-P01-20261108-01
+ * F03-P02 计步累计与清零验证 - STM32F411CEU6
+ * 版本：F03-P02-20261108-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认MPU验收页，板载KEY长按循环MPU、振动、北京时间页
+ *  - 默认计步页，板载KEY长按循环计步、MPU、振动、北京时间页
+ *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
  *  - 振动命令异步推进，切出验收页时请求停止
  *  - 时间页保留本地编辑/保存/取消，RTC继续走时
@@ -23,10 +24,11 @@
 #include "time_service.h"
 #include "tm6605.h"
 #include "mpu6050.h"
+#include "pedometer.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F03-P01-20261108-01";
+static const char firmware_version[] = "F03-P02-20261108-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -85,6 +87,8 @@ typedef struct {
     volatile tm6605_state_t haptic;
     volatile watch_status_t motion_process_status;
     volatile mpu6050_state_t motion;
+    volatile watch_status_t pedometer_status;
+    volatile pedometer_status_t pedometer;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -392,6 +396,16 @@ static void motion_update_task(void *ctx)
     mpu6050_state_t state;
     mpu6050_get_state(&state);
     diag.motion = state;
+    motion_sample_t sample;
+    uint32_t steps;
+    /* read只领取新样本；其他5ms轮询不会重复计步。无效时保数并重置检测。 */
+    watch_status_t read_status = mpu6050_read(&sample);
+    if (read_status == WATCH_OK || !state.sample.valid) {
+        diag.pedometer_status = pedometer_update(&sample, &steps);
+    }
+    pedometer_status_t counter;
+    (void)pedometer_get_state(&counter);
+    diag.pedometer = counter;
 }
 
 /* 常规时基及串口诊断，与振动命令状态分别记录。 */
@@ -491,6 +505,7 @@ int main(void)
     diag.haptic_request_status = tm6605_init();
     haptic_last_retry_ms = board_millis();
     (void)mpu6050_init();
+    (void)pedometer_reset();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
