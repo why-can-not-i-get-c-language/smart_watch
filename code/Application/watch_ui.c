@@ -5,6 +5,7 @@
 #include "tm6605.h"
 #include "mpu6050.h"
 #include "pedometer.h"
+#include "wrist_wake.h"
 #include "board_config.h"
 #include <string.h>
 
@@ -38,8 +39,8 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-typedef enum { PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_STEPS;
+typedef enum { PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_WRIST;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
@@ -220,6 +221,28 @@ static void draw_steps_page(uint32_t now_ms)
     text(2U, 56U, "KEY HOLD PAGE");
 }
 
+static void draw_wrist_page(void)
+{
+    wrist_wake_status_t wrist;
+    (void)wrist_wake_get_state(&wrist);
+    static const char *poses[] = {
+        "NOT SET", "HOLD STILL", "WAIT AWAY", "ARMED", "HOLD VIEW",
+        "MOVING", "COOLDOWN", "TRIGGERED", "SENSOR ERROR", "SET FAILED"
+    };
+    text(32U, 0U, "WRIST CHECK");
+    text(2U, 8U, wrist.calib_state == WRIST_CALIB_DONE ? "REF SET" :
+         wrist.calib_state == WRIST_CALIB_PENDING ? "REF CAPTURING" : "REF NOT SET");
+    text(2U, 16U, (unsigned)wrist.pose < sizeof(poses) / sizeof(poses[0]) ? poses[wrist.pose] : "STATE ERROR");
+    text(2U, 24U, wrist.pose == WRIST_POSE_SENSOR_ERROR ? "POSE INVALID" :
+         wrist.calib_state != WRIST_CALIB_DONE ? "POSE NOT SET" :
+         wrist.in_view ? "POSE NEAR VIEW" : "POSE AWAY");
+    text(2U, 32U, "EVENTS"); number(44U, 32U, wrist.event_count);
+    text(2U, 40U, "MENU HOLD SET VIEW");
+    text(2U, 48U, wrist.pose == WRIST_POSE_SENSOR_ERROR ? "CHECK SENSOR" :
+         wrist.pose == WRIST_POSE_CALIB_FAILED ? "RETRY MENU HOLD" : "KEEP STILL TO SET");
+    text(2U, 56U, "KEY HOLD PAGE");
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -237,6 +260,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_WRIST) {
+        draw_wrist_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_STEPS) {
         draw_steps_page(now_ms);
     } else if (phase == UI_NORMAL && active_page == PAGE_MOTION) {
@@ -318,6 +343,13 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
     if (phase == UI_NORMAL && (event & BUTTON_BOARD_LONG) != 0U) {
         active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
         last_refresh_ms = now_ms - 1000U;
+        return;
+    }
+    if (phase == UI_NORMAL && active_page == PAGE_WRIST) {
+        if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
+            action_status = wrist_wake_calibrate(now_ms);
+            last_refresh_ms = now_ms - 1000U;
+        }
         return;
     }
     if (phase == UI_NORMAL && active_page == PAGE_STEPS) {

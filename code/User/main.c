@@ -1,9 +1,10 @@
 /**
- * F03-P02 计步累计与清零验证 - STM32F411CEU6
- * 版本：F03-P02-20261108-02
+ * F04-P01 看表参考姿态与事件验证 - STM32F411CEU6
+ * 版本：F04-P01-20261108-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认计步页，板载KEY长按循环计步、MPU、振动、北京时间页
+ *  - 默认姿态页，KEY长按循环姿态、计步、MPU、振动、北京时间页
+ *  - 姿态页MENU长按标定参考，只输出事件，不自动控制屏幕亮灭
  *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
  *  - 振动命令异步推进，切出验收页时请求停止
@@ -25,10 +26,11 @@
 #include "tm6605.h"
 #include "mpu6050.h"
 #include "pedometer.h"
+#include "wrist_wake.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F03-P02-20261108-02";
+static const char firmware_version[] = "F04-P01-20261108-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -89,6 +91,8 @@ typedef struct {
     volatile mpu6050_state_t motion;
     volatile watch_status_t pedometer_status;
     volatile pedometer_status_t pedometer;
+    volatile watch_status_t wrist_status;
+    volatile wrist_wake_status_t wrist;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -392,6 +396,7 @@ static void haptic_update_task(void *ctx)
 static void motion_update_task(void *ctx)
 {
     (void)ctx;
+    diag.wrist_status = wrist_wake_process(board_millis());
     diag.motion_process_status = mpu6050_process(board_millis());
     mpu6050_state_t state;
     mpu6050_get_state(&state);
@@ -402,10 +407,15 @@ static void motion_update_task(void *ctx)
     watch_status_t read_status = mpu6050_read(&sample);
     if (read_status == WATCH_OK || !state.sample.valid) {
         diag.pedometer_status = pedometer_update(&sample, &steps);
+        bool wake = false;
+        diag.wrist_status = wrist_wake_update(&sample, &wake);
     }
     pedometer_status_t counter;
     (void)pedometer_get_state(&counter);
     diag.pedometer = counter;
+    wrist_wake_status_t wrist;
+    (void)wrist_wake_get_state(&wrist);
+    diag.wrist = wrist;
 }
 
 /* 常规时基及串口诊断，与振动命令状态分别记录。 */
@@ -506,6 +516,7 @@ int main(void)
     haptic_last_retry_ms = board_millis();
     (void)mpu6050_init();
     (void)pedometer_reset();
+    (void)wrist_wake_reset();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
