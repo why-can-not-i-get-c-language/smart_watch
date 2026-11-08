@@ -337,7 +337,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls>-std=c11 -Werror -Wno-unused-parameter</MiscControls>
+              <MiscControls>-std=c11 -Werror -Wno-unused-parameter -Oz</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F411xE,WATCH_TARGET_STM32</Define>
               <Undefine></Undefine>
               <IncludePath>.\User;.\Hardware;.\System;.\Application;.\Start;.\Library</IncludePath>

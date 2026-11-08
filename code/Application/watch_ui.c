@@ -3,6 +3,8 @@
 #include "ssd1306.h"
 #include "time_service.h"
 #include "tm6605.h"
+#include "mpu6050.h"
+#include "board_config.h"
 #include <string.h>
 
 /* 每行5位、共7行的小字库，只保存本界面需要的字符。 */
@@ -27,7 +29,7 @@ static const glyph_t glyphs[] = {
     {'6',{14,16,16,30,17,17,14}}, {'7',{31,1,2,4,8,8,8}},
     {'8',{14,17,17,14,17,17,14}}, {'9',{14,17,17,15,1,1,14}},
     {':',{0,4,4,0,4,4,0}}, {'-',{0,0,0,31,0,0,0}},
-    {'+',{0,4,4,31,4,4,0}}, {'?',{14,17,1,2,4,0,4}}
+    {'+',{0,4,4,31,4,4,0}}, {'.',{0,0,0,0,0,4,4}}, {'?',{14,17,1,2,4,0,4}}
 };
 
 typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_NORMAL, UI_EDIT } ui_phase_t;
@@ -35,7 +37,8 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-static bool haptic_page_active = true;
+typedef enum { PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_MOTION;
 static bool ever_initialized;
 static bool attempted_init;
 static bool frame_pending;
@@ -85,7 +88,6 @@ static void number(unsigned x, unsigned y, uint32_t value)
 {
     char digits[11];
     size_t used = 0U;
-    if (value > 999999) value = 999999;
     if (value == 0) { character(x, y, '0'); return; }
     do { digits[used++] = (char)('0' + value % 10U); value /= 10U; } while (value != 0U && used < 10);
     while (used != 0U && x + 5U <= SSD1306_WIDTH) {
@@ -135,6 +137,53 @@ static void draw_haptic_page(uint32_t now_ms)
     text(2U, 56U, "SOS TAP SLP HOLD WK");
 }
 
+static void signed_milli(unsigned x, unsigned y, float value)
+{
+    int32_t milli = (int32_t)(value * 1000.0f + (value >= 0.0f ? 0.5f : -0.5f));
+    character(x, y, milli < 0 ? '-' : '+');
+    number(x + 6U, y, (uint32_t)(milli < 0 ? -milli : milli));
+}
+
+static void draw_motion_page(void)
+{
+    mpu6050_state_t motion;
+    mpu6050_get_state(&motion);
+    text(2U, 0U, "MPU6050 8G CFG");
+    number(86U, 0U, WATCH_MPU_SAMPLE_HZ); text(104U, 0U, "HZ");
+    text(2U, 8U, "ID");
+    if (motion.identity_read) {
+        static const char hex[] = "0123456789ABCDEF";
+        character(20U, 8U, hex[motion.who_am_i >> 4]);
+        character(26U, 8U, hex[motion.who_am_i & 15U]);
+    } else { text(20U, 8U, "--"); }
+    const char *status = "INIT";
+    if (motion.status == WATCH_IO_ERROR) { status = "IO RETRY"; }
+    else if (motion.status == WATCH_TIMEOUT) { status = "TIMEOUT"; }
+    else if (motion.status == WATCH_INVALID_DATA) {
+        status = motion.who_am_i != 0x68U ? "BAD ID" : "BAD CONFIG";
+    } else if (motion.ready) { status = motion.sample.valid ? "ONLINE" : "WAIT DATA"; }
+    text(44U, 8U, status);
+    if (motion.sample.valid) {
+        text(2U, 16U, "AX MG"); signed_milli(44U, 16U, motion.sample.ax_g);
+        text(2U, 24U, "AY MG"); signed_milli(44U, 24U, motion.sample.ay_g);
+        text(2U, 32U, "AZ MG"); signed_milli(44U, 32U, motion.sample.az_g);
+        text(2U, 40U, "HOST MS"); number(50U, 40U, motion.sample.timestamp_ms);
+    } else {
+        text(2U, 16U, motion.status == WATCH_INVALID_DATA && motion.who_am_i != 0x68U ?
+             "CHECK CHIP" : motion.status == WATCH_IO_ERROR || motion.status == WATCH_TIMEOUT ||
+             motion.status == WATCH_INVALID_DATA ? "CHECK WIRE" : "WAIT SAMPLE");
+        text(2U, 24U, "ACCEL INVALID");
+        text(2U, 40U, "HOST MS --");
+    }
+    text(2U, 48U, "ACT HZ");
+    if (motion.rate_valid) {
+        fixed_number(44U, 48U, motion.actual_rate_millihz / 1000U, 2U);
+        text(56U, 48U, "."); number(62U, 48U, (motion.actual_rate_millihz % 1000U) / 100U);
+    } else { text(44U, 48U, "--"); }
+    text(2U, 56U, "N"); number(14U, 56U, motion.sample_count);
+    text(86U, 56U, "KEY UI");
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -152,7 +201,9 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
-    } else if (phase == UI_NORMAL && haptic_page_active) {
+    } else if (phase == UI_NORMAL && active_page == PAGE_MOTION) {
+        draw_motion_page();
+    } else if (phase == UI_NORMAL && active_page == PAGE_HAPTIC) {
         draw_haptic_page(now_ms);
     } else if (phase == UI_NORMAL) {
         uint32_t utc = 0U;
@@ -227,11 +278,11 @@ static void adjust_field(int direction)
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
 {
     if (phase == UI_NORMAL && (event & BUTTON_BOARD_LONG) != 0U) {
-        haptic_page_active = !haptic_page_active;
+        active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
         last_refresh_ms = now_ms - 1000U;
         return;
     }
-    if (phase == UI_NORMAL && haptic_page_active) { return; }
+    if (phase == UI_NORMAL && active_page != PAGE_TIME) { return; }
 
     /* 自检期间不进入编辑；组合事件按取消、保存、切字段、加减的顺序处理。 */
     if (phase != UI_NORMAL && phase != UI_EDIT) { return; }
@@ -334,5 +385,5 @@ watch_status_t watch_ui_update(uint32_t now_ms)
 
 bool watch_ui_haptic_active(void)
 {
-    return haptic_page_active;
+    return phase == UI_NORMAL && active_page == PAGE_HAPTIC;
 }

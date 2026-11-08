@@ -1,9 +1,10 @@
 /**
- * F02-P01 振动套装驱动验证 - STM32F411CEU6
- * 版本：F02-P01-20261107-04
+ * F03-P01 六轴运动身份与采样验证 - STM32F411CEU6
+ * 版本：F03-P01-20261108-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认进入振动验收页，板载KEY长按切换到北京时间页
+ *  - 默认MPU验收页，板载KEY长按循环MPU、振动、北京时间页
+ *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
  *  - 振动命令异步推进，切出验收页时请求停止
  *  - 时间页保留本地编辑/保存/取消，RTC继续走时
  *  - 保留LED心跳、I2C/SPI/UART诊断与掉屏恢复
@@ -21,10 +22,11 @@
 #include "watch_ui.h"
 #include "time_service.h"
 #include "tm6605.h"
+#include "mpu6050.h"
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F02-P01-20261107-04";
+static const char firmware_version[] = "F03-P01-20261108-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -81,6 +83,8 @@ typedef struct {
     volatile time_clock_source_t rtc_clock;
     volatile watch_status_t haptic_request_status, haptic_process_status;
     volatile tm6605_state_t haptic;
+    volatile watch_status_t motion_process_status;
+    volatile mpu6050_state_t motion;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -380,6 +384,16 @@ static void haptic_update_task(void *ctx)
     diag.haptic = current;
 }
 
+/* 身份、配置和采样独立于页面推进，每轮至多一次I2C事务。 */
+static void motion_update_task(void *ctx)
+{
+    (void)ctx;
+    diag.motion_process_status = mpu6050_process(board_millis());
+    mpu6050_state_t state;
+    mpu6050_get_state(&state);
+    diag.motion = state;
+}
+
 /* 常规时基及串口诊断，与振动命令状态分别记录。 */
 static void update_status(void *ctx)
 {
@@ -476,10 +490,12 @@ int main(void)
     startup_baseline = board_millis();
     diag.haptic_request_status = tm6605_init();
     haptic_last_retry_ms = board_millis();
+    (void)mpu6050_init();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
         {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = motion_update_task, .context = NULL},
         /* LED控制：每10ms更新一次 */
         {.period_ms = 10, .last_ms = startup_baseline, .callback = led_control_task, .context = NULL},
 
