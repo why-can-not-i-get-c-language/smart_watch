@@ -51,6 +51,12 @@ static bool screen_enabled;
 static uint32_t last_init_ms;
 static uint32_t hold_started_ms;
 static uint32_t last_refresh_ms;
+/* 正常页的目标亮灭状态与自检UI_OFF、驱动已ACK状态分开维护。 */
+static bool idle_started;
+static bool idle_sleeping;
+static uint32_t last_activity_ms;
+static uint8_t keys_down;
+static uint8_t keys_blocked;
 
 /* 编辑状态机 */
 static rtc_calendar_t edit_draft;
@@ -406,6 +412,53 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
 
 
 
+void watch_ui_wake(uint32_t now_ms)
+{
+    if (phase != UI_NORMAL && phase != UI_EDIT) { return; }
+    idle_started = true;
+    last_activity_ms = now_ms;
+    if (idle_sleeping) {
+        idle_sleeping = false;
+        /* 在途旧帧可继续发送，但不能用它开屏；随后重新排队当前页。 */
+        frame_pending = false;
+        last_refresh_ms = now_ms - 1000U;
+    }
+}
+
+bool watch_ui_is_sleeping(void)
+{
+    return idle_sleeping;
+}
+
+uint32_t watch_ui_filter_buttons(uint32_t events, uint32_t now_ms)
+{
+    uint8_t present = 0U;
+    for (unsigned key = 0U; key < 3U; ++key) {
+        uint32_t group = (events >> (4U * key)) & 15U;
+        if (group != 0U) { present |= (uint8_t)(1U << key); }
+        if ((group & 1U) != 0U) { keys_down |= (uint8_t)(1U << key); }
+    }
+    if (present != 0U && (phase == UI_NORMAL || phase == UI_EDIT)) {
+        /* 逻辑已唤醒但新帧尚未开屏时，按键仍只用于唤醒。 */
+        if (idle_sleeping || !screen_enabled || !ssd1306_is_ready()) {
+            keys_blocked |= (uint8_t)(keys_down | present);
+        }
+        watch_ui_wake(now_ms);
+    }
+    uint32_t filtered = events;
+    for (unsigned key = 0U; key < 3U; ++key) {
+        uint8_t bit = (uint8_t)(1U << key);
+        uint32_t mask = 15U << (4U * key);
+        if ((keys_blocked & bit) != 0U) { filtered &= ~mask; }
+        /* 先过滤再解锁，RELEASE和SHORT同帧时不会漏出功能事件。 */
+        if ((events & (2U << (4U * key))) != 0U) {
+            keys_down &= (uint8_t)~bit;
+            keys_blocked &= (uint8_t)~bit;
+        }
+    }
+    return filtered;
+}
+
 watch_status_t watch_ui_get_action_status(void)
 {
     return action_status;
@@ -413,6 +466,13 @@ watch_status_t watch_ui_get_action_status(void)
 
 watch_status_t watch_ui_update(uint32_t now_ms)
 {
+    /* 即使屏幕掉线也继续计算空闲时间；重连不产生唤醒事件。 */
+    if (phase == UI_NORMAL || phase == UI_EDIT) {
+        if (!idle_started) { idle_started = true; last_activity_ms = now_ms; }
+        if ((uint32_t)(now_ms - last_activity_ms) >= WATCH_SCREEN_TIMEOUT_MS) {
+            idle_sleeping = true;
+        }
+    }
     if (!ssd1306_is_ready()) {
         if (attempted_init && (uint32_t)(now_ms - last_init_ms) < 1000U) {
             return ssd1306_get_status();
@@ -427,6 +487,16 @@ watch_status_t watch_ui_update(uint32_t now_ms)
         holding = false;
         frame_pending = false;
         last_refresh_ms = now_ms - 1000U;
+    }
+
+    if (idle_sleeping && (phase == UI_NORMAL || phase == UI_EDIT)) {
+        frame_pending = false;
+        if (screen_enabled) {
+            watch_status_t status = ssd1306_set_enabled(false);
+            if (status != WATCH_OK) { return status; }
+            screen_enabled = false;
+        }
+        return WATCH_OK;
     }
 
     if (frame_pending) {
@@ -452,7 +522,12 @@ watch_status_t watch_ui_update(uint32_t now_ms)
         }
         phase = phase == UI_WHITE ? UI_CHECKER : phase == UI_CHECKER ? UI_CORNERS : UI_NORMAL;
         holding = false;
-        if (phase == UI_NORMAL) { last_refresh_ms = now_ms - 1000U; action_status = WATCH_NOT_READY; }
+        if (phase == UI_NORMAL) {
+            last_refresh_ms = now_ms - 1000U;
+            action_status = WATCH_NOT_READY;
+            idle_started = true;
+            last_activity_ms = now_ms;
+        }
     }
     if (phase == UI_OFF || ssd1306_is_busy()) { return WATCH_OK; }
     if ((phase == UI_NORMAL || phase == UI_EDIT) && (uint32_t)(now_ms - last_refresh_ms) < 100U) { return WATCH_OK; }

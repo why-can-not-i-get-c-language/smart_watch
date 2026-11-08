@@ -1,6 +1,6 @@
 /**
- * F04-P01 看表参考姿态与事件验证 - STM32F411CEU6
- * 版本：F04-P01-20261108-01
+ * F04-P02 按键/姿态唤醒与超时熄屏 - STM32F411CEU6
+ * 版本：F04-P02-20261108-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认姿态页，KEY长按循环姿态、计步、MPU、振动、北京时间页
@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F04-P01-20261108-01";
+static const char firmware_version[] = "F04-P02-20261108-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -333,6 +333,9 @@ static void button_poll_task(void *ctx)
             }
         }
 
+        /* 原始诊断已统计；唤醒手势在UI及振动命令分发前统一消费。 */
+        events = watch_ui_filter_buttons(events, now);
+        if (events == 0U) { return; }
         /* 页面切换和时间编辑由UI负责；本分发点独占振动命令。 */
         bool was_haptic = watch_ui_haptic_active();
         watch_ui_notify_button(events, now);
@@ -409,6 +412,7 @@ static void motion_update_task(void *ctx)
         diag.pedometer_status = pedometer_update(&sample, &steps);
         bool wake = false;
         diag.wrist_status = wrist_wake_update(&sample, &wake);
+        if (wake) { watch_ui_wake(board_millis()); }
     }
     pedometer_status_t counter;
     (void)pedometer_get_state(&counter);
