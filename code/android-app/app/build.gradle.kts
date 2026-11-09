@@ -13,8 +13,8 @@ android {
         applicationId = "com.team.smartwatch.prototype"
         minSdk = 24
         targetSdk = 37
-        versionCode = 6
-        versionName = "1.5-sos-escalation-sim"
+        versionCode = 8
+        versionName = "1.7-low-activity-sim"
 
     }
 

@@ -87,7 +87,7 @@ class ReminderViewModel : ViewModel() {
         val requestedReply = reply
         phase = ReminderPhase.SENDING
         error = null
-        message = "正在模拟发送提醒设置…"
+        message = "正在模拟发送闹钟设置…"
         job = scope.launch {
             delay(900)
             if (requestRevision != revision || connection != Connection.SYNCED) return@launch
@@ -97,7 +97,7 @@ class ReminderViewModel : ViewModel() {
                 else -> Unit
             }
             phase = ReminderPhase.VERIFYING
-            message = "模拟设备已应答，正在回读提醒…"
+            message = "模拟手表已应答，正在回读闹钟…"
             delay(900)
             if (requestedReply == ReminderReply.MISMATCH) {
                 fail("模拟回读不一致，请重试")

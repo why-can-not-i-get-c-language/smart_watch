@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
     private var sosNotificationOpen by mutableIntStateOf(0)
     private val timeSync by lazy { ViewModelProvider(this)[TimeSyncViewModel::class.java] }
     private val reminder by lazy { ViewModelProvider(this)[ReminderViewModel::class.java] }
+    private val lowActivity by lazy { ViewModelProvider(this)[LowActivityViewModel::class.java] }
     private val fallSos by lazy { ViewModelProvider(this)[FallSosViewModel::class.java] }
 
     override fun onNewIntent(intent: Intent) {
@@ -94,6 +95,7 @@ class MainActivity : ComponentActivity() {
                 var showConnection by rememberSaveable { mutableStateOf(false) }
                 var showTimeSync by rememberSaveable { mutableStateOf(false) }
                 var showReminder by rememberSaveable { mutableStateOf(false) }
+                var showLowActivity by rememberSaveable { mutableStateOf(false) }
                 var showFallSos by rememberSaveable { mutableStateOf(false) }
                 var clockTick by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
                 var trend by rememberSaveable { mutableStateOf<HealthTrendMetric?>(null) }
@@ -104,6 +106,7 @@ class MainActivity : ComponentActivity() {
                     if (sosNotificationOpen > 0) {
                         showConnection = false
                         showReminder = false
+                        showLowActivity = false
                         showTimeSync = false
                         trend = null
                         showFallSos = true
@@ -112,6 +115,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(original.connection, connectionRevision) {
                     timeSync.connectionChanged(original.connection, connectionRevision)
                     reminder.connectionChanged(original.connection, connectionRevision)
+                    lowActivity.connectionChanged(original.connection, connectionRevision)
                     fallSos.connectionChanged(original.connection, connectionRevision)
                 }
                 LaunchedEffect(Unit) {
@@ -121,11 +125,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 val current = original.copy(watchTime = timeSync.watchReading(clockTick, connectionRevision) ?: original.watchTime)
-                BackHandler(enabled = trend != null || showConnection || showTimeSync || showReminder || showFallSos) {
+                BackHandler(enabled = trend != null || showConnection || showTimeSync || showReminder || showLowActivity || showFallSos) {
                     when {
                         showConnection -> showConnection = false
                         showTimeSync -> showTimeSync = false
                         showReminder -> showReminder = false
+                        showLowActivity -> showLowActivity = false
                         showFallSos -> showFallSos = false
                         else -> trend = null
                     }
@@ -150,6 +155,14 @@ class MainActivity : ComponentActivity() {
                             model = fallSos,
                             connection = current.connection,
                             onBack = { showFallSos = false },
+                            onConnection = { showConnection = true },
+                            modifier = Modifier.padding(padding),
+                        )
+                    } else if (showLowActivity) {
+                        LowActivityScreen(
+                            model = lowActivity,
+                            connection = current.connection,
+                            onBack = { showLowActivity = false },
                             onConnection = { showConnection = true },
                             modifier = Modifier.padding(padding),
                         )
@@ -183,6 +196,8 @@ class MainActivity : ComponentActivity() {
                                 onConnection = { showConnection = true },
                                 onTimeSync = { showTimeSync = true },
                                 onReminder = { showReminder = true },
+                                onLowActivity = { showLowActivity = true },
+                                lowActivityReminder = current.connection == Connection.SYNCED && lowActivity.reminding,
                                 onFallSos = { showFallSos = true },
                                 connectionRevision = connectionRevision,
                                 onTrend = { trend = it },
@@ -207,6 +222,8 @@ private fun WatchHome(
     onConnection: () -> Unit,
     onTimeSync: () -> Unit,
     onReminder: () -> Unit,
+    onLowActivity: () -> Unit,
+    lowActivityReminder: Boolean,
     onFallSos: () -> Unit,
     connectionRevision: Int,
     onTrend: (HealthTrendMetric) -> Unit,
@@ -239,10 +256,12 @@ private fun WatchHome(
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = onConnection) { Text("设备连接") }
             OutlinedButton(onClick = onTimeSync) { Text("时间校准") }
-            OutlinedButton(onClick = onReminder) { Text("提醒设置") }
+            OutlinedButton(onClick = onReminder) { Text("手表闹钟") }
+            OutlinedButton(onClick = onLowActivity) { Text("低运动提醒") }
             OutlinedButton(onClick = onFallSos) { Text("跌倒 SOS") }
         }
 
+        if (lowActivityReminder) LowActivityAlert()
         ReadingCard("今日步数", state.steps, featured = true, detail = { it.date }) { "${it.count} 步" }
         StepHistoryCard(state.steps)
         Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
