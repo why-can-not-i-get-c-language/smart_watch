@@ -1,6 +1,6 @@
 # SmartWatch Android 手机端
 
-这是智能手表的 Android 伴侣应用。当前版本为 `1.7-low-activity-sim`（versionCode 8），可在模拟器体验首页、健康趋势、天气、设备连接、校时、闹钟、低运动提醒和 SOS 流程。
+这是智能手表的 Android 伴侣应用。当前版本为 `1.7.1-time-sync-sim`（versionCode 9），可在模拟器体验首页、健康趋势、天气、设备连接、校时、闹钟、低运动提醒和 SOS 流程。
 
 用 Android Studio 打开本目录，安装 Android SDK Platform 37 并使用 JDK 25。完成 Gradle 同步后，选择已启动的 Android 模拟器并运行 `app`。也可在本目录运行 Windows 的 `gradlew.bat :app:assembleDebug` 或 macOS/Linux 的 `./gradlew :app:assembleDebug`。调试 APK 输出到 `app/build/outputs/apk/debug/`。
 
@@ -19,3 +19,11 @@ pwsh -File ./tools/check-android-state-regression.ps1 -AdbPath "$env:ANDROID_HOM
 ```
 
 脚本会重开 App、点击页面并核对结果。可通过 `-Section Readings` 或 `-Section Settings` 分组执行。日志写入本地 `worklogs/`。2026-11-10 已用 1.7 验证无数据与 0 步区分、过期读数与天气、闹钟保存失败及断线重连。真实 BLE 晚到报文留待实机验证。
+
+## 权限演示与校时复测
+
+运行 `gradlew.bat :app:assemblePermissionPreview` 可构建「智能手表（权限演示）」，输出位于 `app/build/outputs/apk/permissionPreview/`。它使用独立应用 ID `com.team.smartwatch.prototype.permissions`，可以与普通调试版共存。
+
+「设备连接」可试 Android 的「附近设备」授权弹窗。设备同步采用模拟数据。SOS 页可单独授权前台定位，发起模拟求助时尝试一次定位，最多 6 秒。短信预览和手动微信分享文本可附高德地图链接。无法定位时仍生成求助预览。带位置的短信预览保存在本机求助记录。
+
+2026-11-11 修复模拟校时跨秒时慢一秒的问题。模拟器复测中，手动校时后 5 次取样与重连自动校时后 3 次取样均显示手机和模拟手表时间一致。模拟回读不一致时仍提示失败。红米 K70E 复测、真实手表 RTC/BLE 校时和真实短信发送待验收。

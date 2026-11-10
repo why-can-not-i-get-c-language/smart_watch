@@ -24,6 +24,12 @@ internal fun beijingTime(millis: Long): String =
         timeZone = TimeZone.getTimeZone("GMT+08:00")
     }.format(Date(millis))
 
+internal data class ClockSample(val utcMillis: Long, val elapsedMillis: Long) {
+    companion object {
+        fun now() = ClockSample(System.currentTimeMillis(), SystemClock.elapsedRealtime())
+    }
+}
+
 internal enum class TimeSyncPhase(val busy: Boolean = false) {
     IDLE, SENDING(true), VERIFYING(true), SUCCESS, FAILED,
 }
@@ -43,7 +49,7 @@ class TimeSyncViewModel(application: Application) : AndroidViewModel(application
     private var runningAutomatically = false
     private var attempted = false
     private var attemptId = 0
-    private data class Clock(val utc: Long, val elapsed: Long, val received: Long)
+    private data class Clock(val utcMillis: Long, val elapsedMillis: Long, val receivedMillis: Long)
     private var clock by mutableStateOf<Clock?>(null)
 
     internal var automatic by mutableStateOf(preferences.getBoolean("automatic", false))
@@ -92,15 +98,15 @@ class TimeSyncViewModel(application: Application) : AndroidViewModel(application
 
     internal fun synchronize(automatically: Boolean = false) {
         if (connection != Connection.SYNCED || phase.busy) return
-        // Unix 秒已经是 UTC，不能在发出前再加八小时。
-        val utc = System.currentTimeMillis() / 1000L
+        // 模拟时钟保留毫秒，显示时才截到秒。
+        val start = ClockSample.now()
+        val utc = start.utcMillis / 1000L
         if (utc !in 946684800L..4102444799L) {
             phase = TimeSyncPhase.FAILED
             message = "手机时间超出手表支持范围（2000—2099 年 UTC）"
             return
         }
         val requestRevision = revision
-        val start = SystemClock.elapsedRealtime()
         val requestedReply = reply
         runningAutomatically = automatically
         attempted = true
@@ -123,15 +129,15 @@ class TimeSyncViewModel(application: Application) : AndroidViewModel(application
             phase = TimeSyncPhase.VERIFYING
             message = "模拟设备已应答，正在回读核对…"
             delay(900)
-            val elapsed = SystemClock.elapsedRealtime()
-            val expected = utc + (elapsed - start) / 1000L
-            val readback = expected + if (requestedReply == SimulatedTimeReply.MISMATCH) 60L else 0L
+            val received = ClockSample.now()
+            val expected = start.utcMillis + (received.elapsedMillis - start.elapsedMillis)
+            val readback = expected + if (requestedReply == SimulatedTimeReply.MISMATCH) 60_000L else 0L
             // 此处是可控模拟数据的相等核对，不是实机精度或误差阈值结论。
             if (readback != expected) {
                 fail("模拟回读时间不一致，请重试")
                 return@launch
             }
-            clock = Clock(readback, elapsed, System.currentTimeMillis())
+            clock = Clock(readback, received.elapsedMillis, received.utcMillis)
             phase = TimeSyncPhase.SUCCESS
             message = "模拟校时成功 · ${if (automatically) "自动" else "手动"}"
             Log.i("TimeSyncSimulator", "confirmed id=$attemptId session=$revision")
@@ -148,8 +154,8 @@ class TimeSyncViewModel(application: Application) : AndroidViewModel(application
         if (connection != Connection.SYNCED || revision != currentRevision) return null
         val confirmed = clock
         if (confirmed != null) {
-            val utc = confirmed.utc + (elapsed - confirmed.elapsed).coerceAtLeast(0L) / 1000L
-            return Reading.Valid(beijingTime(utc * 1000L), beijingTime(confirmed.received))
+            val utcMillis = confirmed.utcMillis + (elapsed - confirmed.elapsedMillis)
+            return Reading.Valid(beijingTime(utcMillis), beijingTime(confirmed.receivedMillis))
         }
         return if (attempted) Reading.Invalid("校时尚未确认") else null
     }

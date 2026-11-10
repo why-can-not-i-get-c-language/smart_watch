@@ -90,6 +90,10 @@ internal fun FallSosScreen(
                 notificationSettings.launch(settings)
             }
         }) { Text(if (notificationEnabled) "系统通知设置" else "开启 SOS 通知") }
+        if (BuildConfig.NEARBY_PERMISSION_PREVIEW) {
+            SosLocationPermission()
+            if (model.locating) Text("正在获取本次求助的位置…")
+        }
         if (model.loading) Text("正在恢复求助记录…")
         else if (!model.ready && model.storageError == null) Text("正在保存求助记录…")
         model.storageError?.let { Text(it) }
@@ -167,6 +171,9 @@ internal fun FallSosScreen(
                 OutlinedButton(onClick = { model.confirmAndOpen("短信") }, enabled = model.canConfirm) {
                     Text("确认并模拟打开短信页")
                 }
+                if (BuildConfig.NEARBY_PERMISSION_PREVIEW && model.phoneAction == "短信") {
+                    Text(model.shareBody, style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
         if (model.awaitingResync) {
@@ -191,12 +198,13 @@ internal fun FallSosScreen(
         }
         if (model.stage == FallEventStage.REQUESTED && !model.awaitingResync) {
             Text("微信辅助：手动选择联系人发送", style = MaterialTheme.typography.titleMedium)
-            OutlinedButton(onClick = {
+            OutlinedButton(enabled = !model.locating, onClick = {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("求助内容", model.shareBody))
                 model.copied()
             }) { Text("复制求助内容") }
-            OutlinedButton(onClick = { model.shareResult(openWeChatShare(context, model.shareBody)) }) {
+            OutlinedButton(enabled = !model.locating,
+                onClick = { model.shareResult(openWeChatShare(context, model.shareBody)) }) {
                 Text("打开微信分享")
             }
             if (model.shareMessage.isNotEmpty()) Text(model.shareMessage)
@@ -208,4 +216,25 @@ internal fun FallSosScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+@Composable
+private fun SosLocationPermission() {
+    val context = LocalContext.current
+    var allowed by remember { mutableStateOf(hasSosLocationPermission(context)) }
+    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        allowed = hasSosLocationPermission(context)
+    }
+    val settings = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        allowed = hasSosLocationPermission(context)
+    }
+    Text(if (allowed) "SOS 手机定位权限：已允许" else "SOS 手机定位权限：未允许")
+    Text("模拟求助时获取一次位置。带定位的群发预览会留在本机求助记录。")
+    OutlinedButton(enabled = !allowed, onClick = { request.launch(sosLocationPermissions()) }) {
+        Text("允许 SOS 附带手机位置")
+    }
+    OutlinedButton(onClick = {
+        settings.launch(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", context.packageName, null)))
+    }) { Text("管理 SOS 定位权限") }
 }

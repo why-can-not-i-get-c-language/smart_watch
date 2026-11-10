@@ -13,12 +13,20 @@ android {
         applicationId = "com.team.smartwatch.prototype"
         minSdk = 24
         targetSdk = 37
-        versionCode = 8
-        versionName = "1.7-low-activity-sim"
+        versionCode = 9
+        versionName = "1.7.1-time-sync-sim"
+        buildConfigField("boolean", "NEARBY_PERMISSION_PREVIEW", "false")
 
     }
 
     buildTypes {
+        create("permissionPreview") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".permissions"
+            versionNameSuffix = "-permission-preview"
+            matchingFallbacks += listOf("debug")
+            buildConfigField("boolean", "NEARBY_PERMISSION_PREVIEW", "true")
+        }
         release {
             optimization {
                 enable = true
@@ -32,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

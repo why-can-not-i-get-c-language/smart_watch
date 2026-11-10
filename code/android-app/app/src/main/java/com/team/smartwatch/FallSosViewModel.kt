@@ -36,6 +36,10 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
     private val preferences = application.getSharedPreferences("emergency-contact", Context.MODE_PRIVATE)
     private var countdownJob: Job? = null
     private var callJob: Job? = null
+    private var locationJob: Job? = null
+    private var eventLocation by mutableStateOf<String?>(null)
+    internal var locating by mutableStateOf(false)
+        private set
     private var callDeadline = 0L
     private var smsConsidered = false
     private var eventBody = ""
@@ -125,6 +129,7 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
                 loading = false
                 countdownJob?.cancel()
                 callJob?.cancel()
+                stopLocating()
             }
         }
     }
@@ -191,7 +196,10 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
     internal val canRetrySms: Boolean
         get() = ready && stage == FallEventStage.REQUESTED && !awaitingResync &&
             smsStage == SmsStage.FAILED && eventAutoSmsEnabled && smsSnapshot != null
-    internal val shareBody: String get() = smsSnapshot?.body ?: eventBody
+    internal val shareBody: String
+        get() = smsSnapshot?.body ?: if (BuildConfig.NEARBY_PERMISSION_PREVIEW) {
+            "$eventBody\n${eventLocation ?: "手机定位：未获取"}"
+        } else eventBody
     internal val automaticEscalationForEvent: Boolean get() = eventAutoSmsEnabled
     internal val canSimulateCallResult: Boolean
         get() = ready && stage == FallEventStage.REQUESTED && callStage == SosCallStage.DIALING
@@ -262,6 +270,8 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun beginEvent(source: String): Long {
+        stopLocating()
+        eventLocation = null
         val id = ++eventCounter
         eventId = id
         phoneAction = null
@@ -364,6 +374,8 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
             startEscalation(id, notify = previous == FallEventStage.COUNTDOWN)
         } else {
             callJob?.cancel()
+            stopLocating()
+            eventLocation = null
             callSeconds = 0
             if (callStage == SosCallStage.DIALING) callStage = SosCallStage.CANCELLED
             persist()
@@ -373,6 +385,13 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
     private fun startEscalation(id: Long, notify: Boolean) {
         if (smsConsidered) { persist(); return }
         smsConsidered = true
+        if (BuildConfig.NEARBY_PERMISSION_PREVIEW && hasSosLocationPermission(getApplication())) {
+            locating = true
+            locationJob = scope.launch {
+                eventLocation = readSosLocation(getApplication())
+                locating = false
+            }
+        }
         if (!eventAutoSmsEnabled || eventContacts.isEmpty() ||
             eventContacts.any { contactError(it.name, it.phone) != null }) {
             smsStage = SmsStage.BLOCKED
@@ -433,11 +452,18 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
         }
         if (index == 0) {
             // 第一位超时就提交整组短信，下一位的拨号计时无需等待短信回执。
+            stopLocating()
+            eventBody = shareBody
             smsSnapshot = SosMessage(eventContactName, eventContactPhone, eventBody)
             submitSms(continueCalling)
         } else {
             persist(continueCalling)
         }
+    }
+
+    private fun stopLocating() {
+        locationJob?.cancel()
+        locating = false
     }
 
     internal val smsRecipients: List<SosContact> get() = if (smsSnapshot == null) emptyList() else eventContacts

@@ -3,7 +3,6 @@ package com.team.smartwatch
 import android.content.Intent
 
 import android.os.Bundle
-import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -38,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -97,7 +95,7 @@ class MainActivity : ComponentActivity() {
                 var showReminder by rememberSaveable { mutableStateOf(false) }
                 var showLowActivity by rememberSaveable { mutableStateOf(false) }
                 var showFallSos by rememberSaveable { mutableStateOf(false) }
-                var clockTick by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
+                var clockTick by remember { mutableStateOf(ClockSample.now()) }
                 var trend by rememberSaveable { mutableStateOf<HealthTrendMetric?>(null) }
                 val homeState = rememberSaveableStateHolder()
                 val scenario = scenarios[index]
@@ -120,11 +118,14 @@ class MainActivity : ComponentActivity() {
                 }
                 LaunchedEffect(Unit) {
                     while (true) {
-                        delay(1000)
-                        clockTick = SystemClock.elapsedRealtime()
+                        // 两行时间共用一次采样，整秒后留 25 毫秒避开采样边界。
+                        delay(1_025L - clockTick.utcMillis % 1_000L)
+                        clockTick = ClockSample.now()
                     }
                 }
-                val current = original.copy(watchTime = timeSync.watchReading(clockTick, connectionRevision) ?: original.watchTime)
+                val current = original.copy(
+                    watchTime = timeSync.watchReading(clockTick.elapsedMillis, connectionRevision) ?: original.watchTime,
+                )
                 BackHandler(enabled = trend != null || showConnection || showTimeSync || showReminder || showLowActivity || showFallSos) {
                     when {
                         showConnection -> showConnection = false
@@ -179,7 +180,7 @@ class MainActivity : ComponentActivity() {
                             model = timeSync,
                             connection = current.connection,
                             watchTime = current.watchTime,
-                            phoneTime = beijingTime(System.currentTimeMillis()),
+                            phoneTime = beijingTime(clockTick.utcMillis),
                             onBack = { showTimeSync = false },
                             onConnection = { showConnection = true },
                             modifier = Modifier.padding(padding),

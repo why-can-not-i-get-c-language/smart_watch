@@ -38,6 +38,7 @@ internal fun ConnectionScreen(
         OutlinedButton(onClick = onBack) { Text("返回首页") }
         Text("设备连接", style = MaterialTheme.typography.headlineMedium)
         Text("演示手表 · 模拟流程", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (BuildConfig.NEARBY_PERMISSION_PREVIEW) NearbyPermissionPreview()
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(connection.label, style = MaterialTheme.typography.titleLarge)
