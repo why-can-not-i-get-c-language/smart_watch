@@ -8,6 +8,7 @@
 #include "wrist_wake.h"
 #include "board_config.h"
 #include <string.h>
+#include <math.h>
 
 /* 每行5位、共7行的小字库，只保存本界面需要的字符。 */
 typedef struct { char value; uint8_t rows[7]; } glyph_t;
@@ -233,20 +234,35 @@ static void draw_wrist_page(void)
     (void)wrist_wake_get_state(&wrist);
     static const char *poses[] = {
         "NOT SET", "HOLD STILL", "WAIT AWAY", "ARMED", "HOLD VIEW",
-        "MOVING", "COOLDOWN", "TRIGGERED", "SENSOR ERROR", "SET FAILED"
+        "TURN TOO FAST", "COOLDOWN", "TRIGGERED", "SENSOR ERROR", "SET FAILED",
+        "ACCEL RANGE"
     };
     text(32U, 0U, "WRIST CHECK");
     text(2U, 8U, wrist.calib_state == WRIST_CALIB_DONE ? "REF SET" :
          wrist.calib_state == WRIST_CALIB_PENDING ? "REF CAPTURING" : "REF NOT SET");
     text(2U, 16U, (unsigned)wrist.pose < sizeof(poses) / sizeof(poses[0]) ? poses[wrist.pose] : "STATE ERROR");
-    text(2U, 24U, wrist.pose == WRIST_POSE_SENSOR_ERROR ? "POSE INVALID" :
+    text(2U, 24U, wrist.pose == WRIST_POSE_SENSOR_ERROR ||
+         wrist.pose == WRIST_POSE_ACCEL_RANGE ? "POSE INVALID" :
          wrist.calib_state != WRIST_CALIB_DONE ? "POSE NOT SET" :
          wrist.in_view ? "POSE NEAR VIEW" : "POSE AWAY");
     text(2U, 32U, "EVENTS"); number(44U, 32U, wrist.event_count);
     text(2U, 40U, "MENU HOLD SET VIEW");
-    text(2U, 48U, wrist.pose == WRIST_POSE_SENSOR_ERROR ? "CHECK SENSOR" :
-         wrist.pose == WRIST_POSE_CALIB_FAILED ? "RETRY MENU HOLD" : "KEEP STILL TO SET");
-    text(2U, 56U, "KEY HOLD PAGE");
+    /* 检查页显示缓存样本的合量计算值，不增加传感器读取。 */
+    mpu6050_state_t motion;
+    mpu6050_get_state(&motion);
+    text(2U, 48U, "ACC NORM MG");
+    text(2U, 56U, "GYRO NORM DPS");
+    float a2 = motion.sample.ax_g * motion.sample.ax_g + motion.sample.ay_g * motion.sample.ay_g +
+               motion.sample.az_g * motion.sample.az_g;
+    float g2 = motion.sample.gx_dps * motion.sample.gx_dps + motion.sample.gy_dps * motion.sample.gy_dps +
+               motion.sample.gz_dps * motion.sample.gz_dps;
+    if (motion.sample.valid && isfinite(a2) && isfinite(g2) && a2 <= 192.0f && g2 <= 3000000.0f) {
+        number(86U, 48U, (uint32_t)(sqrtf(a2) * 1000.0f + 0.5f));
+        number(86U, 56U, (uint32_t)(sqrtf(g2) + 0.5f));
+    } else {
+        text(86U, 48U, "--");
+        text(86U, 56U, "--");
+    }
 }
 
 static void draw(uint32_t now_ms)

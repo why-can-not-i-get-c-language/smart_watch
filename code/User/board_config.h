@@ -130,8 +130,10 @@
 #define WATCH_WRIST_STABLE_COS 0.99619470f
 /* 标定仍要求约5度稳定；日常手持确认允许约12度方向摆动。 */
 #define WATCH_WRIST_HOLD_COS 0.97814760f
-#define WATCH_WRIST_GRAVITY_MIN_G 0.75f
-#define WATCH_WRIST_GRAVITY_MAX_G 1.25f
+/* 常亮检查版：实测两方向静止合量约0.798/1.247g，暂留检查余量。
+ * 这是样本筛选范围，不是零偏校准；装配后仍须校准和佩戴复验。 */
+#define WATCH_WRIST_GRAVITY_MIN_G 0.65f
+#define WATCH_WRIST_GRAVITY_MAX_G 1.35f
 #define WATCH_WRIST_CALIB_GYRO_DPS 25.0f
 #define WATCH_WRIST_STABLE_GYRO_DPS 60.0f
 #define WATCH_WRIST_CALIB_MS 400U

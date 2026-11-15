@@ -133,7 +133,7 @@ watch_status_t wrist_wake_update(const motion_sample_t *sample, bool *wake)
     if (!gravity_ok) {
         collecting = away_holding = view_holding = false;
         current.in_view = false;
-        current.pose = WRIST_POSE_MOVING;
+        current.pose = WRIST_POSE_ACCEL_RANGE;
         current.status = WATCH_NOT_READY;
         return current.status;
     }
