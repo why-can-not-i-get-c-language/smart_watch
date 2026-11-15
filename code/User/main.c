@@ -1,6 +1,6 @@
 /**
  * F04-P02 按键/姿态唤醒与超时熄屏 - STM32F411CEU6
- * 版本：F04-P02-20261108-01
+ * 版本：F04-P02-20261115-02
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认姿态页，KEY长按循环姿态、计步、MPU、振动、北京时间页
@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F04-P02-20261108-01";
+static const char firmware_version[] = "F04-P02-20261115-02";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察

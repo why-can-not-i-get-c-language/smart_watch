@@ -7,7 +7,7 @@
 
 typedef struct { float x, y, z; } direction_t;
 static wrist_wake_status_t current;
-static direction_t reference, anchor, sum, away_anchor;
+static direction_t reference, anchor, sum, away_anchor, view_anchor;
 static bool have_time, collecting, away_holding, view_holding, have_event, calib_failed;
 static uint32_t last_sample_ms, request_ms, collect_ms, away_ms, view_ms, last_event_ms;
 static uint32_t collect_count;
@@ -164,7 +164,7 @@ watch_status_t wrist_wake_update(const motion_sample_t *sample, bool *wake)
     }
     if (alignment <= WATCH_WRIST_AWAY_COS) {
         view_holding = false;
-        if (!away_holding || dot(away_anchor, direction) < WATCH_WRIST_STABLE_COS) {
+        if (!away_holding || dot(away_anchor, direction) < WATCH_WRIST_HOLD_COS) {
             away_holding = true;
             away_anchor = direction;
             away_ms = sample->timestamp_ms;
@@ -175,7 +175,12 @@ watch_status_t wrist_wake_update(const motion_sample_t *sample, bool *wake)
         current.pose = current.armed_state == WRIST_ARMED ? WRIST_POSE_ARMED : WRIST_POSE_WAIT_AWAY;
     } else if (current.in_view && current.armed_state == WRIST_ARMED) {
         away_holding = false;
-        if (!view_holding) { view_holding = true; view_ms = sample->timestamp_ms; }
+        /* 放宽角速度后仍检查返回窗口内的方向，避免缓慢扫过看表区就触发。 */
+        if (!view_holding || dot(view_anchor, direction) < WATCH_WRIST_HOLD_COS) {
+            view_holding = true;
+            view_anchor = direction;
+            view_ms = sample->timestamp_ms;
+        }
         current.pose = WRIST_POSE_HOLD_VIEW;
         if ((uint32_t)(sample->timestamp_ms - view_ms) >= WATCH_WRIST_HOLD_MS) {
             *wake = true;
