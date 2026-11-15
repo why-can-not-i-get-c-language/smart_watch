@@ -469,9 +469,11 @@ watch_status_t watch_ui_update(uint32_t now_ms)
     /* 即使屏幕掉线也继续计算空闲时间；重连不产生唤醒事件。 */
     if (phase == UI_NORMAL || phase == UI_EDIT) {
         if (!idle_started) { idle_started = true; last_activity_ms = now_ms; }
+#if WATCH_SCREEN_TIMEOUT_MS > 0U
         if ((uint32_t)(now_ms - last_activity_ms) >= WATCH_SCREEN_TIMEOUT_MS) {
             idle_sleeping = true;
         }
+#endif
     }
     if (!ssd1306_is_ready()) {
         if (attempted_init && (uint32_t)(now_ms - last_init_ms) < 1000U) {

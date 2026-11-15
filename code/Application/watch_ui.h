@@ -3,7 +3,7 @@
 #include "watch_types.h"
 /* 推进开机显示自检和正常北京时间显示，支持本地日期与时间编辑。
  * 掉屏后重试且恢复当前页面，编辑草稿保留。
- * 10秒无按键/姿态事件则熄屏，首个唤醒事件被消费不执行UI功能，之后恢复正常。 */
+ * 按板级超时配置自动熄屏，配置0则禁用；首个唤醒手势不执行UI功能。 */
 watch_status_t watch_ui_update(uint32_t now_ms);
 /* 分发按键事件给编辑状态机；按键计数由main诊断维护。 */
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms);

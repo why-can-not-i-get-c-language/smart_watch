@@ -141,8 +141,9 @@
 #define WATCH_WRIST_COOLDOWN_MS 1500U
 #define WATCH_WRIST_MAX_GAP_MS 100U
 
-/* F04-P02 屏幕唤醒与超时熄屏 */
-#define WATCH_SCREEN_TIMEOUT_MS 10000U
+/* F04-P02 屏幕唤醒与超时熄屏；0暂时禁用自动熄屏，便于实物读数。
+ * 检查结束后恢复10000U；常亮检查版不用于超时熄屏验收。 */
+#define WATCH_SCREEN_TIMEOUT_MS 0U
 
 /* 存储分区 */
 #define WATCH_BOOT_BASE 0x08000000UL
