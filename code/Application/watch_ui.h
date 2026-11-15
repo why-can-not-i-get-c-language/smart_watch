@@ -9,9 +9,11 @@ watch_status_t watch_ui_update(uint32_t now_ms);
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms);
 /* 返回最近的保存/取消状态：WATCH_NOT_READY初始，WATCH_OK保存成功，其他为具体错误码。 */
 watch_status_t watch_ui_get_action_status(void);
-/* KEY长按循环姿态、计步、MPU、振动、时间页，编辑中不切换。
+/* KEY长按循环BLE、姿态、计步、MPU、振动、时间页，编辑中不切换。
  * 熄屏不退出振动页，按键过滤由主分发入口统一执行。 */
 bool watch_ui_haptic_active(void);
+/* 供统一按键分发在过滤唤醒手势后判断主动发送请求。 */
+bool watch_ui_ble_active(void);
 /* 过滤按键事件：首次唤醒完整按键手势被消费，返回0掩码；之后恢复过滤后掩码。
  * 同帧RELEASE|SHORT组合吞掉，已被blocked的键释放时清blocked标志。
  * 不做I2C访问，仅跟踪各键down/blocked状态。 */

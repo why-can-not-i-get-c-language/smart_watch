@@ -1,15 +1,15 @@
 /**
- * F04-P02 按键/姿态唤醒与超时熄屏 - STM32F411CEU6
- * 版本：F04-P02-20261115-05
+ * F06-P01 BLE原样透传诊断 - STM32F411CEU6
+ * 版本：F06-P01-20261115-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认姿态页，KEY长按循环姿态、计步、MPU、振动、北京时间页
- *  - 姿态页MENU长按标定参考，只输出事件，不自动控制屏幕亮灭
+ *  - 默认BLE页，KEY长按循环BLE、姿态、计步、MPU、振动、北京时间页
+ *  - 姿态页MENU长按标定，按键/姿态唤醒，10秒无有效操作熄屏
  *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
  *  - 振动命令异步推进，切出验收页时请求停止
  *  - 时间页保留本地编辑/保存/取消，RTC继续走时
- *  - 保留LED心跳、I2C/SPI/UART诊断与掉屏恢复
+ *  - 保留LED心跳、I2C/SPI诊断与掉屏恢复，UART只由BLE任务接收
  */
 
 #include "board_port.h"
@@ -18,6 +18,7 @@
 #include "i2c_bus.h"
 #include "spi_bus.h"
 #include "uart_port.h"
+#include "ble_link.h"
 #include "buttons.h"
 #include "scheduler.h"
 #include "ssd1306.h"
@@ -30,7 +31,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static const char firmware_version[] = "F04-P02-20261115-05";
+static const char firmware_version[] = "F06-P01-20261115-01";
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -58,15 +59,8 @@ typedef struct {
     volatile uint8_t spi_transfer_ok;
     volatile watch_status_t spi_last_status;
 
-    /* UART诊断与回环匹配 */
-    volatile uint32_t uart_tx_count;
-    volatile uint32_t uart_rx_count;
-    volatile uint32_t uart_rx_error_count;
-    volatile uint8_t uart_loopback_ok;
-    volatile uint32_t uart_loopback_passes;
-    volatile uint32_t uart_timeouts;
-    volatile uint8_t uart_last_rx_byte;
-    volatile watch_status_t uart_last_status;
+    /* 本地UART传输快照；不表示真实BLE连接或手机收到了数据。 */
+    volatile ble_link_state_t ble;
 
     /* 显示状态 */
     volatile watch_status_t display_status;
@@ -98,11 +92,8 @@ typedef struct {
 static volatile diag_state_t diag = {0};
 static uint32_t haptic_last_retry_ms;
 
-/* UART loopback state machine */
-static volatile uint8_t uart_expected_frame[4];
-static volatile uint32_t uart_frame_send_time = 0;
-static volatile uint8_t uart_frame_index = 0;
-static volatile uint8_t uart_send_pending = 0;
+/* 至多保留一个手动发送请求，UART写入统一在BLE任务中执行。 */
+static bool ble_test_pending;
 
 /* LED timing state */
 static volatile uint32_t startup_baseline = 0;
@@ -160,107 +151,23 @@ static void spi_diag_task(void *ctx)
     diag.spi_last_status = status;
 }
 
-/**
- * UART回环匹配任务：
- * - 每500ms发送含递增序号的4字节帧（AA seq ~seq 55），发送前清ok标志
- * - 异步每5ms尝试接收：可每次取1字节，或一次取多个，最多100ms内匹配
- * - 错字节立刻记WATCH_INVALID_DATA/清ok/取消等待
- * - rx_status非WATCH_OK时立刻记错误/清ok/取消等待
- * - 100ms超时后清ok/记WATCH_TIMEOUT/timeouts++
- * - 完整4字节匹配保留计数，接回跳线后恢复
- */
-static void uart_loopback_task(void *ctx)
+/* 每5ms至多读16字节并写一次；无数据时不自动发包，不重试失败的半包。 */
+static void ble_update_task(void *ctx)
 {
     (void)ctx;
-    static uint32_t last_send_time = 0;
-    static uint8_t send_sequence = 0;
-
-    uint32_t now = board_millis();
-
-    /* 每500ms尝试发送一帧 */
-    if (!uart_send_pending && (now - last_send_time) >= 500) {
-        /* 清空旧接收缓冲 */
-        uint8_t dummy_buf[256];
-        size_t dummy_size = 0;
-        uart_port_receive(dummy_buf, sizeof(dummy_buf), &dummy_size);
-
-        /* 构建帧：AA seq ~seq 55 */
-        uart_expected_frame[0] = 0xAA;
-        uart_expected_frame[1] = send_sequence;
-        uart_expected_frame[2] = (uint8_t)~send_sequence;
-        uart_expected_frame[3] = 0x55;
-
-        /* 发送前清ok标志 */
-        diag.uart_loopback_ok = 0;
-
-        /* 发送帧 */
-        watch_status_t status = uart_port_send((const uint8_t *)uart_expected_frame, 4);
-        if (status == WATCH_OK) {
-            diag.uart_tx_count++;
-            uart_send_pending = 1;
-            uart_frame_send_time = now;
-            uart_frame_index = 0;
-            send_sequence++;
-        } else {
-            /* 发送失败也清ok，不残留旧成功 */
-            diag.uart_loopback_ok = 0;
-        }
-        diag.uart_last_status = status;
-        last_send_time = now;
+    uint8_t data[WATCH_BLE_CHUNK_SIZE];
+    size_t received = 0U;
+    watch_status_t status = ble_link_receive(data, sizeof(data), &received);
+    if (status == WATCH_OK && received != 0U) {
+        (void)ble_link_send(data, received);
+    } else if (status == WATCH_OK && ble_test_pending) {
+        static const uint8_t message[] = "WATCH BLE\r\n";
+        ble_test_pending = false;
+        (void)ble_link_send(message, sizeof(message) - 1U);
     }
-
-    /* 待发送中：每5ms接收并匹配 */
-    if (uart_send_pending) {
-        uint32_t elapsed_since_send = now - uart_frame_send_time;
-
-        /* 100ms超时 */
-        if (elapsed_since_send >= 100) {
-            uart_send_pending = 0;
-            diag.uart_loopback_ok = 0;
-            diag.uart_timeouts++;
-            diag.uart_last_status = WATCH_TIMEOUT;
-            return;
-        }
-
-        /* 接收字节：可逐字节或批量接收 */
-        uint8_t rx_buf[16];
-        size_t received = 0;
-        watch_status_t rx_status = uart_port_receive(rx_buf, sizeof(rx_buf), &received);
-
-        if (rx_status != WATCH_OK) {
-            /* 接收失败立刻记错误 */
-            uart_send_pending = 0;
-            diag.uart_loopback_ok = 0;
-            diag.uart_last_status = rx_status;
-            return;
-        }
-
-        if (received > 0) {
-            /* 逐字节匹配 */
-            for (size_t i = 0; i < received && uart_send_pending; i++) {
-                uint8_t rx_byte = rx_buf[i];
-                diag.uart_last_rx_byte = rx_byte;
-                diag.uart_rx_count++;
-
-                /* 匹配当前期望字节 */
-                if (uart_frame_index < 4 && rx_byte == uart_expected_frame[uart_frame_index]) {
-                    uart_frame_index++;
-
-                    /* 全部4字节匹配 */
-                    if (uart_frame_index == 4) {
-                        uart_send_pending = 0;
-                        diag.uart_loopback_ok = 1;
-                        diag.uart_loopback_passes++;
-                    }
-                } else if (uart_frame_index < 4) {
-                    /* 字节不匹配，记错误并重置等待 */
-                    uart_send_pending = 0;
-                    diag.uart_loopback_ok = 0;
-                    diag.uart_last_status = WATCH_INVALID_DATA;
-                }
-            }
-        }
-    }
+    ble_link_state_t state;
+    (void)ble_link_get_state(&state);
+    diag.ble = state;
 }
 
 /**
@@ -339,6 +246,10 @@ static void button_poll_task(void *ctx)
         /* 页面切换和时间编辑由UI负责；本分发点独占振动命令。 */
         bool was_haptic = watch_ui_haptic_active();
         watch_ui_notify_button(events, now);
+        if (watch_ui_ble_active() && (events & BUTTON_MENU_SHORT) != 0U &&
+            (events & (BUTTON_BOARD_LONG | BUTTON_MENU_LONG | BUTTON_SOS_LONG)) == 0U) {
+            ble_test_pending = true;
+        }
         if (was_haptic && !watch_ui_haptic_active()) {
             diag.haptic_request_status = tm6605_stop();
         } else if (watch_ui_haptic_active() && (events & BUTTON_BOARD_LONG) == 0U) {
@@ -428,7 +339,6 @@ static void update_status(void *ctx)
     (void)ctx;
     diag.millis = board_millis();
     diag.scheduler_runs++;
-    diag.uart_rx_error_count = uart_port_get_error_count();
 }
 
 /**
@@ -498,6 +408,7 @@ int main(void)
     if (!diag.uart_init_ok) {
         fault_blink();
     }
+    (void)ble_link_init();
 
     /* 初始化按键 */
     watch_status_t buttons_status = buttons_init();
@@ -535,8 +446,8 @@ int main(void)
         /* SPI诊断：每1000ms读JEDEC一次 */
         {.period_ms = 1000, .last_ms = startup_baseline, .callback = spi_diag_task, .context = NULL},
 
-        /* UART回环：每5ms调用一次（内部500ms发送节流）*/
-        {.period_ms = 5, .last_ms = startup_baseline, .callback = uart_loopback_task, .context = NULL},
+        /* UART唯一接收者：原样回显及单次手动测试发送。 */
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = ble_update_task, .context = NULL},
 
         /* 按键轮询：每5ms调用一次 */
         {.period_ms = 5, .last_ms = startup_baseline, .callback = button_poll_task, .context = NULL},
@@ -557,9 +468,6 @@ int main(void)
 
     /* 初始化诊断 */
     diag.spi_transfer_ok = 0;
-    diag.uart_loopback_ok = 0;
-    diag.uart_loopback_passes = 0;
-    diag.uart_timeouts = 0;
     diag.millis = board_millis();
     diag.button_event_count = 0;
     diag.events_or = 0;

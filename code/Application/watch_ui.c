@@ -7,6 +7,7 @@
 #include "pedometer.h"
 #include "wrist_wake.h"
 #include "board_config.h"
+#include "ble_link.h"
 #include <string.h>
 #include <math.h>
 
@@ -40,8 +41,8 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-typedef enum { PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_WRIST;
+typedef enum { PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_BLE;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
@@ -265,6 +266,34 @@ static void draw_wrist_page(void)
     }
 }
 
+static void draw_ble_page(void)
+{
+    ble_link_state_t state;
+    (void)ble_link_get_state(&state);
+    text(2U, 0U, "BLE UART CHECK");
+    text(2U, 8U, "UART"); number(32U, 8U, WATCH_UART1_BAUDRATE); text(80U, 8U, "8N1");
+    text(2U, 16U, "LINK UNKNOWN");
+    text(2U, 24U, "RX B"); number(38U, 24U, state.rx_bytes);
+    text(2U, 32U, "TX B"); number(38U, 32U, state.tx_bytes);
+    bool error = state.rx_status != WATCH_OK && state.rx_status != WATCH_NOT_READY;
+    error = error || (state.tx_status != WATCH_OK && state.tx_status != WATCH_NOT_READY);
+    text(2U, 40U, !state.initialized ? "UART NOT READY" : error ? "IO ERROR" :
+         state.rx_bytes == 0U ? "WAIT RX" : "RX SEEN");
+    /* 两层错误计数取较大值，避免同一UART错误双重累计。 */
+    uint32_t errors = state.errors > state.uart_errors ? state.errors : state.uart_errors;
+    text(86U, 40U, "E");
+    number(92U, 40U, errors > 99999U ? 99999U : errors);
+    if (errors > 99999U) { character(122U, 40U, '+'); }
+    text(2U, 48U, "LAST");
+    static const char hex[] = "0123456789ABCDEF";
+    if (state.last_rx_length == 0U) { text(38U, 48U, "--"); }
+    for (unsigned i = 0U; i < state.last_rx_length && i < 4U; ++i) {
+        character(38U + 18U * i, 48U, hex[state.last_rx[i] >> 4U]);
+        character(44U + 18U * i, 48U, hex[state.last_rx[i] & 15U]);
+    }
+    text(2U, 56U, "MENU SEND TEST");
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -282,6 +311,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_BLE) {
+        draw_ble_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_WRIST) {
         draw_wrist_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_STEPS) {
@@ -558,4 +589,9 @@ watch_status_t watch_ui_update(uint32_t now_ms)
 bool watch_ui_haptic_active(void)
 {
     return phase == UI_NORMAL && active_page == PAGE_HAPTIC;
+}
+
+bool watch_ui_ble_active(void)
+{
+    return phase == UI_NORMAL && active_page == PAGE_BLE;
 }

@@ -19,6 +19,8 @@
 #define WATCH_UART1_BAUDRATE 115200
 #define WATCH_UART1_TIMEOUT_MS 10
 #define WATCH_UART1_RX_BUFFER_SIZE 256
+/* F06-P01诊断单次收发上限，限制阻塞发送时间；不是BLE MTU。 */
+#define WATCH_BLE_CHUNK_SIZE 16U
 
 /* 引脚定义（字符串用于兼容，实际初始化用HAL宏） */
 #define WATCH_I2C_SCL "PB6"
