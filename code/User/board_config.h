@@ -130,7 +130,7 @@
 #define WATCH_WRIST_STABLE_COS 0.99619470f
 /* 标定仍要求约5度稳定；日常手持确认允许约12度方向摆动。 */
 #define WATCH_WRIST_HOLD_COS 0.97814760f
-/* 常亮检查版：实测两方向静止合量约0.798/1.247g，暂留检查余量。
+/* 台架候选参数：实测两方向静止合量约0.798/1.247g，暂留余量。
  * 这是样本筛选范围，不是零偏校准；装配后仍须校准和佩戴复验。 */
 #define WATCH_WRIST_GRAVITY_MIN_G 0.65f
 #define WATCH_WRIST_GRAVITY_MAX_G 1.35f
@@ -143,9 +143,8 @@
 #define WATCH_WRIST_COOLDOWN_MS 1500U
 #define WATCH_WRIST_MAX_GAP_MS 100U
 
-/* F04-P02 屏幕唤醒与超时熄屏；0暂时禁用自动熄屏，便于实物读数。
- * 检查结束后恢复10000U；常亮检查版不用于超时熄屏验收。 */
-#define WATCH_SCREEN_TIMEOUT_MS 0U
+/* F04-P02 屏幕唤醒与超时熄屏；0可临时禁用，正常验收使用10秒。 */
+#define WATCH_SCREEN_TIMEOUT_MS 10000U
 
 /* 存储分区 */
 #define WATCH_BOOT_BASE 0x08000000UL
