@@ -78,15 +78,37 @@ watch_status_t ble_link_connected(bool *connected)
 }
 
 #if WATCH_BLE_NAME_SETUP
-watch_status_t ble_link_setup_name(void)
+static ble_name_stage_t name_stage;
+
+ble_name_stage_t ble_link_setup_stage(void)
 {
-    static const char command[] = "AT+NAME=" WATCH_BLE_DEVICE_NAME "\r\n";
+    return name_stage;
+}
+
+static watch_status_t setup_line_result(const char *line)
+{
+    if (strncmp(line, "ERROR", 5U) == 0) { return WATCH_INVALID_DATA; }
+    if (name_stage == BLE_NAME_ENTER) {
+        return strcmp(line, "Enter AT Mode") == 0 ? WATCH_OK : WATCH_NOT_READY;
+    }
+    if (name_stage == BLE_NAME_SET) {
+        return strcmp(line, "OK") == 0 ? WATCH_OK : WATCH_NOT_READY;
+    }
+    /* 查询应返回名称；忽略空行、命令回显和孤立OK，避免把旧ACK当模式确认。 */
+    return line[0] != '\0' && strncmp(line, "AT+", 3U) != 0 &&
+           strcmp(line, "OK") != 0 ? WATCH_OK : WATCH_NOT_READY;
+}
+
+static watch_status_t setup_exchange(const char *command, size_t length)
+{
     uint8_t bytes[16];
     size_t count = 0U;
     char line[32];
     size_t used = 0U;
     bool overflow = false;
-    if (sizeof(WATCH_BLE_DEVICE_NAME) - 1U > 13U) { return WATCH_INVALID_ARGUMENT; }
+    current.rx_bytes = 0U;
+    current.last_rx_length = 0U;
+    memset(current.last_rx, 0, sizeof(current.last_rx));
     /* 清除确认之前的旧输入；持续输入时拒绝配置，不无限排空。 */
     for (unsigned i = 0U; ; ++i) {
         watch_status_t status = uart_port_receive(bytes, sizeof(bytes), &count);
@@ -94,17 +116,32 @@ watch_status_t ble_link_setup_name(void)
         if (count == 0U) { break; }
         if (i >= WATCH_UART1_RX_BUFFER_SIZE / sizeof(bytes)) { return WATCH_NOT_READY; }
     }
-    watch_status_t status = uart_port_send((const uint8_t *)command, sizeof(command) - 1U);
+    watch_status_t status = uart_port_send((const uint8_t *)command, length);
     if (status != WATCH_OK) { return status; }
     uint32_t started = board_millis();
+    uint32_t last_byte = started;
     while ((uint32_t)(board_millis() - started) < 2000U) {
         status = uart_port_receive(bytes, sizeof(bytes), &count);
         if (status != WATCH_OK) { return status; }
+        if (count != 0U) {
+            current.rx_bytes = add_saturated(current.rx_bytes, (uint32_t)count);
+            current.last_rx_length = (uint8_t)count;
+            memcpy(current.last_rx, bytes, count);
+            last_byte = board_millis();
+        }
+        /* 部分固件的模式提示不以换行结束：空闲100毫秒后按完整提示判断。 */
+        if (count == 0U && used != 0U && (uint32_t)(board_millis() - last_byte) >= 100U) {
+            line[used] = '\0';
+            status = overflow ? WATCH_NOT_READY : setup_line_result(line);
+            if (status != WATCH_NOT_READY) { return status; }
+            used = 0U;
+            overflow = false;
+        }
         for (size_t i = 0U; i < count; ++i) {
             if (bytes[i] == '\r' || bytes[i] == '\n') {
                 line[used] = '\0';
-                if (!overflow && strcmp(line, "OK") == 0) { return WATCH_OK; }
-                if (!overflow && strncmp(line, "ERROR", 5U) == 0) { return WATCH_INVALID_DATA; }
+                status = overflow ? WATCH_NOT_READY : setup_line_result(line);
+                if (status != WATCH_NOT_READY) { return status; }
                 used = 0U;
                 overflow = false;
             } else if (bytes[i] < 32U || bytes[i] > 126U) {
@@ -117,5 +154,25 @@ watch_status_t ble_link_setup_name(void)
         }
     }
     return WATCH_TIMEOUT;
+}
+
+watch_status_t ble_link_setup_name(void)
+{
+    static const char query[] = "AT+NAME=?\r\n";
+    static const char enter[] = "+++";
+    static const char command[] = "AT+NAME=" WATCH_BLE_DEVICE_NAME "\r\n";
+    name_stage = BLE_NAME_QUERY;
+    if (sizeof(WATCH_BLE_DEVICE_NAME) - 1U > 13U) { return WATCH_INVALID_ARGUMENT; }
+    watch_status_t status = setup_exchange(query, sizeof(query) - 1U);
+    if (status == WATCH_TIMEOUT) {
+        /* 老版拨动开关、新版+++；查询无响应只尝试一次新版进入流程。 */
+        uint32_t quiet = board_millis();
+        while ((uint32_t)(board_millis() - quiet) < 1000U) { }
+        name_stage = BLE_NAME_ENTER;
+        status = setup_exchange(enter, sizeof(enter) - 1U);
+    }
+    if (status != WATCH_OK) { return status; }
+    name_stage = BLE_NAME_SET;
+    return setup_exchange(command, sizeof(command) - 1U);
 }
 #endif

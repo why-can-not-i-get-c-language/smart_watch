@@ -120,20 +120,28 @@ watch_status_t watch_ui_ble_name_setup(bool attempted, watch_status_t result, ui
     }
     if ((uint32_t)(now_ms - last_refresh_ms) < 250U) { return WATCH_OK; }
     memset(frame, 0, sizeof(frame));
-    text(0U, 0U, "BLE NAME SETUP");
+    text(0U, 0U, "BLE NAME SETUP 02");
     text(0U, 12U, "NAME SMARTWATCH");
     if (!attempted) {
-        text(0U, 28U, "SWITCH AT FIRST");
+        text(0U, 28U, "OLD AT NEW AUTO");
         text(0U, 40U, "KEY SHORT TO SET");
         text(0U, 54U, "UART 115200 8N1");
+    } else if (result == WATCH_NOT_READY) {
+        text(0U, 28U, "CONFIGURING");
+        text(0U, 40U, "WAIT UP TO 8 SEC");
+        text(0U, 54U, "DO NOT PRESS AGAIN");
     } else if (result == WATCH_OK) {
         text(0U, 28U, "MODULE ACK OK");
         text(0U, 40U, "POWER OFF THEN NORM");
         text(0U, 54U, "RESTORE NORMAL FW");
     } else {
-        text(0U, 28U, result == WATCH_TIMEOUT ? "NO ACK TIMEOUT" :
+        ble_link_state_t state;
+        (void)ble_link_get_state(&state);
+        text(0U, 28U, result == WATCH_TIMEOUT ?
+                         (ble_link_setup_stage() == BLE_NAME_SET ? "SET NAME TIMEOUT" :
+                          ble_link_setup_stage() == BLE_NAME_ENTER ? "ENTER AT TIMEOUT" : "QUERY NAME TIMEOUT") :
                          result == WATCH_INVALID_DATA ? "MODULE ERROR" : "UART NOT READY");
-        text(0U, 40U, "CHECK AT AND WIRE");
+        text(0U, 40U, state.rx_bytes == 0U ? "NO RX BYTES" : "RX DATA SEEN");
         text(0U, 54U, "RESET TO TRY AGAIN");
     }
     watch_status_t status = ssd1306_flush(frame, sizeof(frame));

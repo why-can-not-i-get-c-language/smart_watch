@@ -32,7 +32,7 @@
 #include <string.h>
 
 #if WATCH_BLE_NAME_SETUP
-static const char firmware_version[] = "F06-NAME-20261116-01";
+static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
 static const char firmware_version[] = "F06-P01-20261115-01";
 #endif
@@ -433,7 +433,16 @@ int main(void)
         if (buttons_poll(now, &events) == WATCH_OK && !name_attempted &&
             (events & BUTTON_BOARD_SHORT) != 0U) {
             name_attempted = true;
+            /* 先完整显示进度，再进行有总时限的配置交互。 */
+            uint32_t showing = board_millis();
+            while ((uint32_t)(board_millis() - showing) < 500U) {
+                (void)ssd1306_process();
+                (void)watch_ui_ble_name_setup(true, WATCH_NOT_READY, board_millis());
+                delay_ms(1U);
+            }
             name_result = ble_link_setup_name();
+            /* UI的NOT_READY用于进行中；实际配置未就绪须显示失败，不能一直等待。 */
+            if (name_result == WATCH_NOT_READY) { name_result = WATCH_IO_ERROR; }
         }
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13,
                          now % 1000U < 200U ? GPIO_PIN_RESET : GPIO_PIN_SET);

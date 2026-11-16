@@ -21,7 +21,10 @@ watch_status_t ble_link_get_state(ble_link_state_t *state);
 /* 未接链路状态信号：总是先清false并返回NOT_IMPLEMENTED，不代表已断开。 */
 watch_status_t ble_link_connected(bool *connected);
 #if WATCH_BLE_NAME_SETUP
-/* 专用配置固件：用户确认AT档后单次设置名称，最多等待2秒。
+typedef enum { BLE_NAME_QUERY, BLE_NAME_ENTER, BLE_NAME_SET } ble_name_stage_t;
+ble_name_stage_t ble_link_setup_stage(void);
+/* 专用配置固件：先只读查询确认命令模式，超时则尝试+++进入新版模式。
+ * 每阶段最多等待2秒；只有确认命令模式后才发送一次名称设置。
  * OK仅表示模块应答，不证明广播名已生效；正常任务不得并行领取UART。 */
 watch_status_t ble_link_setup_name(void);
 #endif
