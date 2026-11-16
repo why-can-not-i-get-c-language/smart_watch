@@ -65,6 +65,8 @@
 
 ## 联调前必须共同确定的协议项
 
+2026-11-16 F06-P01实测对接：普通验收固件F06-P01-20261115-01，设备在nRF Connect显示SMARTWATCH，地址`0C:B2:B7:4E:A2:35`。实际服务UUID为`0000dfb0-0000-1000-8000-00805f9b34fb`，DFB1/DFB2特征均显示Notify/Read/Write/Write No Response，但本次两者未发现CCCD 2902，nRF Connect启用通知明确失败。DFB1写入`31 32 33 34`后手表RX/TX各+4已获用户确认；MENU发送`57 41 54 43 48 20 42 4C 45 0D 0A`（WATCH BLE加CRLF）后TX+11，手机回传未确认。手机端负责人需参照本地原厂Android示例，核对DFB1的Android本地通知注册及无2902兼容路径，实际记录通知回调的原始字节；勿将缺少2902直接当作连接失败，或把Write/Read成功当成完整回传通过。完整过程与实测限制见`plan/design/functions/F06.md`。这些是物理通道检查，不是F06-P02业务帧协议，也未证明队友APK已通过。
+
 | 项目 | 现有依据与待确定内容 | 负责确认 |
 | --- | --- | --- |
 | BLE通道 | 使用TEL0073；实物确认设备识别方式、Service UUID、写入与通知Characteristic UUID、写入方式、通知开启和连接流程；不能套用其他模块默认UUID | 手表端提供实测结果，手机端验证 |
