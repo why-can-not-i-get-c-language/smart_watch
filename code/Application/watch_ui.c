@@ -96,6 +96,52 @@ static void text(unsigned x, unsigned y, const char *value)
     }
 }
 
+#if WATCH_BLE_NAME_SETUP
+watch_status_t watch_ui_ble_name_setup(bool attempted, watch_status_t result, uint32_t now_ms)
+{
+    if (!ssd1306_is_ready()) {
+        if (attempted_init && (uint32_t)(now_ms - last_init_ms) < 1000U) {
+            return ssd1306_get_status();
+        }
+        attempted_init = true;
+        last_init_ms = now_ms;
+        watch_status_t status = ssd1306_init();
+        if (status != WATCH_OK) { return status; }
+        frame_pending = false;
+        screen_enabled = false;
+        last_refresh_ms = now_ms - 1000U;
+    }
+    if (ssd1306_is_busy()) { return WATCH_OK; }
+    if (frame_pending) {
+        watch_status_t status = ssd1306_set_enabled(true);
+        if (status != WATCH_OK) { return status; }
+        screen_enabled = true;
+        frame_pending = false;
+    }
+    if ((uint32_t)(now_ms - last_refresh_ms) < 250U) { return WATCH_OK; }
+    memset(frame, 0, sizeof(frame));
+    text(0U, 0U, "BLE NAME SETUP");
+    text(0U, 12U, "NAME SMARTWATCH");
+    if (!attempted) {
+        text(0U, 28U, "SWITCH AT FIRST");
+        text(0U, 40U, "KEY SHORT TO SET");
+        text(0U, 54U, "UART 115200 8N1");
+    } else if (result == WATCH_OK) {
+        text(0U, 28U, "MODULE ACK OK");
+        text(0U, 40U, "POWER OFF THEN NORM");
+        text(0U, 54U, "RESTORE NORMAL FW");
+    } else {
+        text(0U, 28U, result == WATCH_TIMEOUT ? "NO ACK TIMEOUT" :
+                         result == WATCH_INVALID_DATA ? "MODULE ERROR" : "UART NOT READY");
+        text(0U, 40U, "CHECK AT AND WIRE");
+        text(0U, 54U, "RESET TO TRY AGAIN");
+    }
+    watch_status_t status = ssd1306_flush(frame, sizeof(frame));
+    if (status == WATCH_OK) { frame_pending = true; last_refresh_ms = now_ms; }
+    return status;
+}
+#endif
+
 static void number(unsigned x, unsigned y, uint32_t value)
 {
     char digits[11];

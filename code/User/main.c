@@ -31,7 +31,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#if WATCH_BLE_NAME_SETUP
+static const char firmware_version[] = "F06-NAME-20261116-01";
+#else
 static const char firmware_version[] = "F06-P01-20261115-01";
+#endif
 
 /**
  * 诊断状态结构 - volatile，Keil可观察
@@ -416,6 +420,26 @@ int main(void)
     if (buttons_status != WATCH_OK) {
         fault_blink();
     }
+
+#if WATCH_BLE_NAME_SETUP
+    /* 专用配置路径不启动普通透传任务；每次开机仅确认一次，失败不自动重发。 */
+    bool name_attempted = false;
+    watch_status_t name_result = WATCH_NOT_READY;
+    for (;;) {
+        uint32_t now = board_millis();
+        uint32_t events = 0U;
+        (void)ssd1306_process();
+        (void)watch_ui_ble_name_setup(name_attempted, name_result, now);
+        if (buttons_poll(now, &events) == WATCH_OK && !name_attempted &&
+            (events & BUTTON_BOARD_SHORT) != 0U) {
+            name_attempted = true;
+            name_result = ble_link_setup_name();
+        }
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13,
+                         now % 1000U < 200U ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        delay_ms(1U);
+    }
+#endif
 
     /* RTC失败仍继续运行LED及显示，由RTC页面和diag明确反馈。 */
     diag.rtc_init_status = time_service_init();

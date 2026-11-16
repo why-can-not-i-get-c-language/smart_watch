@@ -20,4 +20,9 @@ watch_status_t ble_link_receive(uint8_t *data, size_t capacity, size_t *received
 watch_status_t ble_link_get_state(ble_link_state_t *state);
 /* 未接链路状态信号：总是先清false并返回NOT_IMPLEMENTED，不代表已断开。 */
 watch_status_t ble_link_connected(bool *connected);
+#if WATCH_BLE_NAME_SETUP
+/* 专用配置固件：用户确认AT档后单次设置名称，最多等待2秒。
+ * OK仅表示模块应答，不证明广播名已生效；正常任务不得并行领取UART。 */
+watch_status_t ble_link_setup_name(void);
+#endif
 #endif

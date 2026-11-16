@@ -21,6 +21,11 @@
 #define WATCH_UART1_RX_BUFFER_SIZE 256
 /* F06-P01诊断单次收发上限，限制阻塞发送时间；不是BLE MTU。 */
 #define WATCH_BLE_CHUNK_SIZE 16U
+/* 仅专用改名固件设为1；正常透传固件保持0，不自动发送AT命令。 */
+#ifndef WATCH_BLE_NAME_SETUP
+#define WATCH_BLE_NAME_SETUP 0
+#endif
+#define WATCH_BLE_DEVICE_NAME "SmartWatch"
 
 /* 引脚定义（字符串用于兼容，实际初始化用HAL宏） */
 #define WATCH_I2C_SCL "PB6"

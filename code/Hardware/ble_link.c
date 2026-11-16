@@ -76,3 +76,46 @@ watch_status_t ble_link_connected(bool *connected)
     *connected=false;
     return WATCH_NOT_IMPLEMENTED;
 }
+
+#if WATCH_BLE_NAME_SETUP
+watch_status_t ble_link_setup_name(void)
+{
+    static const char command[] = "AT+NAME=" WATCH_BLE_DEVICE_NAME "\r\n";
+    uint8_t bytes[16];
+    size_t count = 0U;
+    char line[32];
+    size_t used = 0U;
+    bool overflow = false;
+    if (sizeof(WATCH_BLE_DEVICE_NAME) - 1U > 13U) { return WATCH_INVALID_ARGUMENT; }
+    /* 清除确认之前的旧输入；持续输入时拒绝配置，不无限排空。 */
+    for (unsigned i = 0U; ; ++i) {
+        watch_status_t status = uart_port_receive(bytes, sizeof(bytes), &count);
+        if (status != WATCH_OK) { return status; }
+        if (count == 0U) { break; }
+        if (i >= WATCH_UART1_RX_BUFFER_SIZE / sizeof(bytes)) { return WATCH_NOT_READY; }
+    }
+    watch_status_t status = uart_port_send((const uint8_t *)command, sizeof(command) - 1U);
+    if (status != WATCH_OK) { return status; }
+    uint32_t started = board_millis();
+    while ((uint32_t)(board_millis() - started) < 2000U) {
+        status = uart_port_receive(bytes, sizeof(bytes), &count);
+        if (status != WATCH_OK) { return status; }
+        for (size_t i = 0U; i < count; ++i) {
+            if (bytes[i] == '\r' || bytes[i] == '\n') {
+                line[used] = '\0';
+                if (!overflow && strcmp(line, "OK") == 0) { return WATCH_OK; }
+                if (!overflow && strncmp(line, "ERROR", 5U) == 0) { return WATCH_INVALID_DATA; }
+                used = 0U;
+                overflow = false;
+            } else if (bytes[i] < 32U || bytes[i] > 126U) {
+                overflow = true;
+            } else if (used < sizeof(line) - 1U) {
+                line[used++] = (char)bytes[i];
+            } else {
+                overflow = true;
+            }
+        }
+    }
+    return WATCH_TIMEOUT;
+}
+#endif

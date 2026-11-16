@@ -1,6 +1,7 @@
 #ifndef WATCH_WATCH_UI_H
 #define WATCH_WATCH_UI_H
 #include "watch_types.h"
+#include "board_config.h"
 /* 推进开机显示自检和正常北京时间显示，支持本地日期与时间编辑。
  * 掉屏后重试且恢复当前页面，编辑草稿保留。
  * 按板级超时配置自动熄屏，配置0则禁用；首个唤醒手势不执行UI功能。 */
@@ -23,4 +24,8 @@ bool watch_ui_is_sleeping(void);
 /* 唤醒屏幕：由按键或姿态事件调用，延长或重置超时计时，
  * 完整刷新当前页后发送开屏命令；屏幕尚未实际开/驱动未ready时预先刷新。 */
 void watch_ui_wake(uint32_t now_ms);
+#if WATCH_BLE_NAME_SETUP
+/* 专用改名固件独占显示，不进入普通UI、自检或熄屏流程。 */
+watch_status_t watch_ui_ble_name_setup(bool attempted, watch_status_t result, uint32_t now_ms);
+#endif
 #endif
