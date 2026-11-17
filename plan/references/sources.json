@@ -1220,6 +1220,2477 @@
       ],
       "control_characters_rendered_as_visible_escapes": true,
       "text_extraction": "pypdf; PDF物理页标记; 异常C0字符保留为<U+XXXX>，不猜测修复字体编码; 为Git共享规范化行尾空白，不更改页标和正文内容"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/.mbed",
+      "size": 7,
+      "sha256": "bc55a202bc4cc62e4b9e66d2c70115c1de2617be7a30a44d34a96f3c3e940753",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/algorithm/algorithm.cpp",
+      "size": 14447,
+      "sha256": "bfdacdf6080afefde142168b1208c7f1b3f9997d01b44e326f6014994639ff97",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/algorithm/algorithm.h",
+      "size": 5283,
+      "sha256": "6b08aba131fb1c3120db4920930d2963c1168e5e971ac7fb2cf3cfac15edf541",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/algorithm.crf",
+      "size": 785809,
+      "sha256": "b9fc0fd221d49d24f1e787469be90034d6b68c7566a2a83240b5c995395e3891",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/algorithm.d",
+      "size": 10170,
+      "sha256": "6f6aa3810d635f08e0dcf4439b64529d32f9493cf6a3c2b57fa3c2e546ebbe29",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/algorithm.o",
+      "size": 860384,
+      "sha256": "01ac541a983775b8b9e938ca5dce908aa7c019308c8a843324b7f394c2dbd8ff",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/ExtDll.iex",
+      "size": 19,
+      "sha256": "93ef77447acafaed3fb015af57b4c066b48dd9194a52d477177c90a5742a973e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/main.crf",
+      "size": 784692,
+      "sha256": "b2e763030da1f65b60e8099d883a0e6479f24927b40382e46e3b8f273f657450",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/main.d",
+      "size": 9575,
+      "sha256": "6a37a4170dde83763c66d8a87506021ccdec127883f2bde643eeabec8652aded",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/main.o",
+      "size": 871568,
+      "sha256": "42b24460e20a3f3cc52b7f4fbb45890be59de579bddc2021870fe8e776f15eed",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/max30102.crf",
+      "size": 781240,
+      "sha256": "adb44905001dca0b1c324804c8863198a067bea938d78b91b4e1e121971e3921",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/max30102.d",
+      "size": 10022,
+      "sha256": "06523281cf8aab81d46692478455e74ecc5c0093059e2e4b7f53c0dd2bddd3ec",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/max30102.o",
+      "size": 859544,
+      "sha256": "3db1267d54e44240d228df88cf26d744e102cd342d20ac8c319aa3b7326d7178",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102.axf",
+      "size": 1338160,
+      "sha256": "5309c7a482e2d3c500548449c6ab6940279df88f1d28cef176fcbf43a934ce06",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102.build_log.htm",
+      "size": 3344,
+      "sha256": "97ab6b3b3737060eb0bfb6bec027e48851b557ee6c67eba424d2c90a021e78ba",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102.hex",
+      "size": 106566,
+      "sha256": "cee30318f83f65ab3bdc0e5ee57865069d5f5ea586433c8a0809208d0f74c70d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102.htm",
+      "size": 218976,
+      "sha256": "1f22b93b8bb5eb25ca916ab32ece6388b537d981e476066a62d8f28769174dde",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102.lnp",
+      "size": 6323,
+      "sha256": "81818c520b3a86647dcc4bb91883a1b19c95ec7becfc732588c5a34a27c387e6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102.map",
+      "size": 641876,
+      "sha256": "c3814956a729edcf9a57c27058ac86b31cf7da2f4e7767eb59cb9086fe93c9ff",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/Nucleo_MAX30102_Nucleo_MAX30102.dep",
+      "size": 66850,
+      "sha256": "2b5e8952d49ef0cd2decac8325883b9f3952c2ac43689bee18019a904977859c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/sysclockconf.crf",
+      "size": 779550,
+      "sha256": "d726a0447b8eed7129ced487f8bd110fcfce4ca845db13c01cea3ec540d3c565",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/sysclockconf.d",
+      "size": 10626,
+      "sha256": "fb9b00dd01930d65e6460c355c657b3b0b2307e4784446bbbc118552d2614436",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/BUILD/sysclockconf.o",
+      "size": 845892,
+      "sha256": "83149e7622f789c13f87d3f20d662f65fa7b2baa7b379d8263bf4b874165449c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/DebugConfig/Nucleo_MAX30102_STM32F103C8_1.0.0.dbgconf",
+      "size": 6956,
+      "sha256": "c4495cbdb25b80794d6e183091fe25c669df4d0e5b3f5466e822fe608d2f82d1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/DebugConfig/Nucleo_MAX30102_STM32F103RB_1.0.0.dbgconf",
+      "size": 6956,
+      "sha256": "c4495cbdb25b80794d6e183091fe25c669df4d0e5b3f5466e822fe608d2f82d1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/EventRecorderStub.scvd",
+      "size": 339,
+      "sha256": "c0bc76c307786ae399f79bf32d410f7d6c46e0ac1208cc882f60ac2649cba601",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/GettingStarted.html",
+      "size": 654,
+      "sha256": "cb6aa03bf9f9c603d7a7525fa49f81098302948ba9f6cd3dfbb22f376659e4d7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/JLinkLog.txt",
+      "size": 446179,
+      "sha256": "286bfe959d9aff6e9bbedec1c2a05c0e767516fec210abf124f16cc4d175d83e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/JLinkSettings.ini",
+      "size": 755,
+      "sha256": "b90fe11f71a29981b94d52058bdaa103586ad0f2c628f84d03ae760ddefcb8b8",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/main.cpp",
+      "size": 7951,
+      "sha256": "6df3ea75e1d68f5a8a976a5c96a05d35cc8f0d3ad25443e4c203aefcc85fd77a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/MAX30102/MAX30102.cpp",
+      "size": 7309,
+      "sha256": "2836ccf8445718808cbae6568393f45b068dceb56ca71a36de251b91d9c70c8b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/MAX30102/MAX30102.h",
+      "size": 3797,
+      "sha256": "ca2fac8488648f7422c330fcfb8f8e818aa35e1a018ea1dc288ccd7f27750f55",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/.bld/bldrc",
+      "size": 65,
+      "sha256": "7b44854caf39a1ce9c1ec3d601c8d89e98131ce42ff7e0308bc0474ca0250914",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/AnalogIn.h",
+      "size": 3163,
+      "sha256": "23b9e33e5d5a3bf6f2c55024d3afef1887a6a631d2390cc45bfd2e4d6e131bc0",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/AnalogOut.h",
+      "size": 4008,
+      "sha256": "896690c24824b116569b717e406d6185f7b8805c44c5d2667fba6dfbdfc0a320",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/BusIn.h",
+      "size": 4061,
+      "sha256": "8b842810ba9b3dea0e3ecfa7c8696d9b808ad02251454c00eeb2e29fa69a8b3e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/BusInOut.h",
+      "size": 4574,
+      "sha256": "5cdd4749dccf273bed4a63d0a17f7e880f9a7f20e24d0f6cb42861cad29657cf",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/BusOut.h",
+      "size": 4221,
+      "sha256": "e13a5e05c65a37163dcb8dc2517e9d867b83d52e9d5b20fe8c67d959501e1783",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/CAN.h",
+      "size": 9185,
+      "sha256": "01f4aacd16fcb816795df8ed8cfd3be503f3cedc5fc77a6db50835549f5664f3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/DigitalIn.h",
+      "size": 3048,
+      "sha256": "c2bfffcb488f20e01df8af7aa0138292491d91438ece0118db8968117d892c8c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/DigitalInOut.h",
+      "size": 4191,
+      "sha256": "ab2d61bf56a07cf8b7f93f8baba0070be88e1ec7b6a5a4281727d377a3c4095a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/DigitalOut.h",
+      "size": 3497,
+      "sha256": "92c69133ed5ab12edb6cdff83d4f284e4ec4a3b1c5864e847c9fdf96511fb902",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/Ethernet.h",
+      "size": 4947,
+      "sha256": "fcef1fbe81e9cc0760907b13f198801b57b9738e2f897652f37010d0667ab07f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/FlashIAP.h",
+      "size": 4685,
+      "sha256": "48e3512c6aff4c78289d8480ecdb4af5e3d92f97490d0e1bbbd5217351f40cec",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/I2C.h",
+      "size": 5404,
+      "sha256": "74478fdc9eb9e92c0d2e25b2b6c5a874f163dec7e4b34f2759c3631019e8c31c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/I2CSlave.h",
+      "size": 4295,
+      "sha256": "d6e110ba489f76fd057850d53a6d5fe8743781934bcf55d15aa7cc8d8f27855f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/InterruptIn.h",
+      "size": 4767,
+      "sha256": "08fb89345a74ced67eece7958a89bcd81330ff3c63b01a5a063ae829aeb900e1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/InterruptManager.h",
+      "size": 5248,
+      "sha256": "12cd23e4c5317ca1da7b7b2090223bb2aef71e7a1db23fcfc0ad5b940ae5d5fb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/LowPowerTicker.h",
+      "size": 1289,
+      "sha256": "e0e27d9f396bd67f8bbf4259c9f7aec21597b89b80abad07c0643a3905e1472b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/LowPowerTimeout.h",
+      "size": 1256,
+      "sha256": "2d338c48911f2c08c0aaa3af378c5568356b0d8a3b2144e46678805b9fe2a268",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/LowPowerTimer.h",
+      "size": 1240,
+      "sha256": "b77fde40fbbde6afde2f959165e636da1deeb35228b086ec92e271560966523b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/PortIn.h",
+      "size": 2547,
+      "sha256": "8652db232cc26a76f634804e21c1345b9698b5ea264fb60255886f708ac111d9",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/PortInOut.h",
+      "size": 3193,
+      "sha256": "6254f60678fe6905464f3284830aa4e7bd33bfe7df84f5d66873bc64d6fc5c41",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/PortOut.h",
+      "size": 2858,
+      "sha256": "2f5052c1c9781e13658c8038406fefc2a69a8c408735c5b461424137fd50dce3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/PwmOut.h",
+      "size": 5868,
+      "sha256": "23ae5c1189b1302eb80c092e658c5c4b3b3e50fe1bdd36a7b5e185ea5aedffe1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/RawSerial.h",
+      "size": 2898,
+      "sha256": "e55219b3469f0909b1f4b422dacc8e6ad12b2fa4789222d512ae808cd41dda1d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/Serial.h",
+      "size": 3249,
+      "sha256": "637f19a34c0dee922be1961ffecb20620fcae233a9ceda45b82d58cbd4c22884",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/SerialBase.h",
+      "size": 9109,
+      "sha256": "9eaa5328b65c051c91eac32ca5b83603964e298b48b4e9262a1d3d362ec78fe5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/SPI.h",
+      "size": 10098,
+      "sha256": "5d7231e7b210619a9e22cd75604490913559403a1a1021ad42491157c80446d5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/SPISlave.h",
+      "size": 3368,
+      "sha256": "bb1ce9578f2c5aa88ba8d42dda08ccbf4723bfae882549437707184b216fba10",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/Ticker.h",
+      "size": 4442,
+      "sha256": "1d46915f2877dbc2bf7d921fe73ce95538fd2074fe2a33b43aedb173141efc4a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/Timeout.h",
+      "size": 1526,
+      "sha256": "14c9c9b3ea70267e3ff16d21ef24e2195a4b1cf7a5bf86abb33ee77b6b9e4e37",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/Timer.h",
+      "size": 2577,
+      "sha256": "e461fb3738d4bd188b8ed4d519b60f4f29b81debf8165e12cfb58f786aa057ad",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/TimerEvent.h",
+      "size": 1828,
+      "sha256": "b2ec357370ec8bbe434b015f8d968dbc57c0a5bb2421ca481fff05404165e550",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/drivers/UARTSerial.h",
+      "size": 6808,
+      "sha256": "37399e20a1ec8eeb0890a2c63f77497e926b5e0fdd361f32b8b802a402565138",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/analogin_api.h",
+      "size": 1798,
+      "sha256": "7b8e022091902c2c2dc4f7dba078b68104583a0c6c062c06a39a40213956d1b7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/analogout_api.h",
+      "size": 2421,
+      "sha256": "e341b1891dddc04dfd54ee128f69fd9d8477663716cdfbb23ba6dba04c1a354a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/buffer.h",
+      "size": 1108,
+      "sha256": "6b80e93bea238535bd384941f74e7e2402d18ab5d9bc22440c5bb94f5a4cd15a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/can_api.h",
+      "size": 2319,
+      "sha256": "19cd990d83a9925715b06d628ccc30f722608b9479e9f54a1f6e778776ebdbed",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/can_helper.h",
+      "size": 1736,
+      "sha256": "c05670f557f3a1fef01c8f84f039722f67885d0c2dff08f3b387df8474d407a1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/dma_api.h",
+      "size": 1179,
+      "sha256": "6bc90bb68662030c7ad60047117c7571e9fd447d20e26b38c32f2f4da2c38c2d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/Driver_Common.h",
+      "size": 2112,
+      "sha256": "99fa46d5e9b86b9c5746f35d027c47eab0aa3ed805411594a98422d9ca553d7b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/Driver_Storage.h",
+      "size": 41255,
+      "sha256": "b4d33aa18a4c66607525607a7427df2929fbf3298fbe1deadc3b4baf54f8ed68",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/emac_api.h",
+      "size": 4799,
+      "sha256": "0297be65cb7b392b350f8b67e44ae7c8e55318bb4b75c08d920c8bce84a6c5e3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/ethernet_api.h",
+      "size": 1688,
+      "sha256": "e1f75a55320ebd1a2d4167317522fc4936ee58b1729c07e33f85d96aaa2cd9ed",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/flash_api.h",
+      "size": 3559,
+      "sha256": "b307a02dd5d4fc0afe7ec6bbe7960ec21bd018aa39788583cc407f2f7455447d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/flash_data.h",
+      "size": 2327,
+      "sha256": "687e2b66f3ed6c96327fda5eb35f8fdde30fe7daccb595ed29d4dec4526af1c9",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/gpio_api.h",
+      "size": 3458,
+      "sha256": "1f7cb2fd3606103eb841d01e892a89ca9cbf60ea77d196cce184d231f2e6bff4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/gpio_irq_api.h",
+      "size": 2355,
+      "sha256": "2aa165cf490c25cf9b470125b647fe80f5d1f8184920e33262921ae25de0bb8f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/i2c_api.h",
+      "size": 6592,
+      "sha256": "58968bac1b0155e958388b082c7f6b380408899eb688a3f4ded8a720f414e8c6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/lp_ticker_api.h",
+      "size": 1836,
+      "sha256": "2b923e047b7f851d28282c8b39181f6bbe8aea09326a3f384636faa9d802a07e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/pinmap.h",
+      "size": 1405,
+      "sha256": "2619b6481f37e97192b608557024c091714f0a5de249b254a4226b7ac26aa3ba",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/port_api.h",
+      "size": 2304,
+      "sha256": "13540745e783fdd458415ea42dbf2c753c4c2b1010d14f3301df606b4aa1282f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/pwmout_api.h",
+      "size": 3306,
+      "sha256": "38709b7e1eb94534023290f05aa684ebd8919b80a9b3127fdd1427fd6a67ebc5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/rtc_api.h",
+      "size": 1512,
+      "sha256": "fb2c2b01f0fd44473ef2384f1cffba6babbea259a0f8996bf2863ebf498b60eb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/serial_api.h",
+      "size": 9261,
+      "sha256": "6ff3eba563283fc7731808df670a55131c3dc988184d0bdb850be32d55482448",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/sleep_api.h",
+      "size": 2371,
+      "sha256": "e13dddf37ba2e0dfaf9f378ba254e678391ba4b87f9a3b45437e8e5fc85dde3c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/spi_api.h",
+      "size": 7970,
+      "sha256": "1e87d22a15957473de3e1c2a7cb367db2b23fdce23de88c9487c8d6b402d940f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/ticker_api.h",
+      "size": 5935,
+      "sha256": "c82b5cec84deb858e579c913d3d2b4fe35dde0e89bdd3284be5d66fba0e055ef",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/trng_api.h",
+      "size": 1669,
+      "sha256": "66d7803fa679e7f4798004fe7c8032439f0a0fce4bde0fd296b5949d6250ee4d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/hal/us_ticker_api.h",
+      "size": 1770,
+      "sha256": "306a2ca1f25cd03c97b3f997716483790517583957732c30ec472c414ab1e1df",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/mbed.h",
+      "size": 3360,
+      "sha256": "f08a13583bde66d89c8c9ee9c80dd3aecb96f032d5de730b108d455e015e3118",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/ATCmdParser.h",
+      "size": 7901,
+      "sha256": "2570fb89c4c161ca989ce5fa82df3a53e3335aa7fbdd5ca04e67a4c610fcb2a5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/Callback.h",
+      "size": 166735,
+      "sha256": "d92a433b98ccfb64a8d32250d9de39d4ea238461d67e7967fb93b9bbae541839",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/CallChain.h",
+      "size": 5186,
+      "sha256": "9191c40c626d5539aaf1d0e816c88d9d74b1acbd45e6a0560814643f1736594b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/CircularBuffer.h",
+      "size": 3177,
+      "sha256": "ec51d7218a194a97159c0b140440df73ee7be382f60b9372f3db058d66c16e00",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/critical.h",
+      "size": 898,
+      "sha256": "c292524634e46201ccdc2b424ee430b997cde0075e521f55f6ffd26d1496bffb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/CThunk.h",
+      "size": 7613,
+      "sha256": "f636eef71df393e142d9ec4aa9dede00ceaba78e3ae087a4e4baeb127c582462",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/DirHandle.h",
+      "size": 4484,
+      "sha256": "73e2030e6eb2cf9e15c6cb22283747930dad66ab8c3a2b9634ddf40b3778fb12",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FileBase.h",
+      "size": 1620,
+      "sha256": "885684ccfa273d4e8596360901688bf61427eca4cef8e5425eeb06a86ccd570d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FileHandle.h",
+      "size": 8253,
+      "sha256": "41ad59750944125df6a79fddb8da95e89e88e3f1435fe6915be81a012f119dad",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FileLike.h",
+      "size": 1377,
+      "sha256": "4385059e095018a1b1ac0a020800a741b9ac991032e1c90456ca0ad0d0b95f45",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FilePath.h",
+      "size": 1236,
+      "sha256": "66f83ff99606980d5c5ef7956382a216b9c895d4d24aacf64daf8ec43fe976df",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FileSystemHandle.h",
+      "size": 3393,
+      "sha256": "8970fbfaf5c907423b505e520091922cd97cf0c9fffab63c95a602c0c7884e1a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FileSystemLike.h",
+      "size": 2892,
+      "sha256": "e3e3b0ebd5b38c8bfca54df25d35d190be576bb7656bc60fbf691b46c481ff83",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/FunctionPointer.h",
+      "size": 2895,
+      "sha256": "a5c406dbec5e07e6381cd11c1e3ba1a4bfb803efe978fb31aef9357cb56eee7b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/LocalFileSystem.h",
+      "size": 3546,
+      "sha256": "6f14aca8bec91a87f24136d64c31de5c4770481be66162fe549003008f759470",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_application.h",
+      "size": 1671,
+      "sha256": "70499cc115092f55053abc26b30d67d8735f0262d95ed867d2c1a4767c48bf26",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_assert.h",
+      "size": 4115,
+      "sha256": "063b36e8e584136fa733a04ab7b402e33ccc81bc82f7e8d9ebfe1afc4a283e8d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_critical.h",
+      "size": 16099,
+      "sha256": "a2cf7ee10713e563003bbb4f0409acdda70ec40bfb89f05ec6f2c44aaa248be2",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_debug.h",
+      "size": 1858,
+      "sha256": "d05528f3a28a6aafa1d81282bf884301e437f1549a017ef0fa2bd60831a1177d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_error.h",
+      "size": 2131,
+      "sha256": "c92304052604b5f76588db28f28d9300d2cc888d6b08ad9504279d6ab43be657",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_interface.h",
+      "size": 4559,
+      "sha256": "10ce1dd35e8d31de8e397b161f527ddec19e17c034b887f4bb032b4ad07c41bc",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_mem_trace.h",
+      "size": 5444,
+      "sha256": "d6bfcb3d31c715ce0198d0f92ee0b45fda62d92faa93df116fa8d15cd9b5dc66",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_mktime.h",
+      "size": 3046,
+      "sha256": "e8182dec4e5a521a503ba2a63af7265d24682100254225c0e49be888373d7204",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_poll.h",
+      "size": 1813,
+      "sha256": "ed9879a5e2e527b1cc31ec3003ff085b2a10a2b733381662de2e4cb419677ea7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_preprocessor.h",
+      "size": 1454,
+      "sha256": "fe38f55c251bc9c96913069a5c7e89a72d3f9fd589781945c21a046f27c169af",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_retarget.h",
+      "size": 5885,
+      "sha256": "e48a6d2ad6ae36b2c3a80b0684523d02c753be13ebbc308b01243e6794f6a015",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_rtc_time.h",
+      "size": 2731,
+      "sha256": "593dccabcac399e69a267bb1768017c13032da08d9e97044b56cdf4074d7d5e8",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_semihost_api.h",
+      "size": 2736,
+      "sha256": "441c776924522b1f5af3426e0e997c45bfc46047af256498bb133cadf7046d1f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_sleep.h",
+      "size": 3372,
+      "sha256": "3d84abf4ec2e2f8b1b6a2c010cb684f765fb5ccf93513bb37e71c5aed4bb0cb9",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_stats.h",
+      "size": 2821,
+      "sha256": "44b0f2f1d18753e80fba657295903151a7deccdce2bd37e33b456714a5a99647",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_toolchain.h",
+      "size": 9529,
+      "sha256": "2f8b72336eb3d7981b9b363cc04fb342bc460900eda16d86daaaf3781e34eb7d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/mbed_wait_api.h",
+      "size": 1639,
+      "sha256": "f4da4838aafad7442dfa8902eddc1d856592ad386a3ad4e675f4b03770c0fbec",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/NonCopyable.h",
+      "size": 5089,
+      "sha256": "8fc0f29686d7026cc3bd4586bc06732b7359a49b54e83cc091539e900cd050d3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/platform.h",
+      "size": 993,
+      "sha256": "a12475c00814a51d06b2c54b6a8ac41c24f746a828db641658ffce2527a8234f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/PlatformMutex.h",
+      "size": 1247,
+      "sha256": "539c8617a7bfe76aab80b64ee3ffd501f6563408b000207c540353e5a17cf445",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/rtc_time.h",
+      "size": 898,
+      "sha256": "ccfd508d4fc144b0424e4e627cf62f49f0361cb7ab7f5b87f1b4458758ea829e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/semihost_api.h",
+      "size": 922,
+      "sha256": "dcf4007e8704ffee505e676e5814b67afc3dcf28a38484cc4b9c444cc41e411b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/SingletonPtr.h",
+      "size": 2866,
+      "sha256": "77b0edac776f907bc572970c6f89a72055eb7173add3dddb91619d543247b625",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/sleep.h",
+      "size": 880,
+      "sha256": "f509f6d183c49e2181ec0415f04fbdb3077d9a10090aa9eb0693119b7980fc64",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/Stream.h",
+      "size": 2294,
+      "sha256": "d97b54132eb7d3910c014e6a5aba10040fb7a4758297ac8ef12d1d244161e024",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/toolchain.h",
+      "size": 928,
+      "sha256": "752a0b0a45375df9e6f0f02c312fa83dfe3ec02a51fb431dab7d32040aad2400",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/Transaction.h",
+      "size": 2116,
+      "sha256": "8a626ae57c57201bdcfaa3fcedea52eaa555b210b15213d5e002520571033e6f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/platform/wait_api.h",
+      "size": 898,
+      "sha256": "ce701970745e977186c77892a683a1d6760ab9aa6275ae10b77667e49d805212",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/arm_math.h",
+      "size": 248441,
+      "sha256": "d27eb49f295e83f0f2fdacee68d3deb16759050330578be03dbd054a0d57006c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/cmsis_armcc.h",
+      "size": 25796,
+      "sha256": "ddf173b42c63b2041eb2f08c640a54596d6f6c9e5a294f63ade09b7a9d2e57d3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/cmsis_armclang.h",
+      "size": 55008,
+      "sha256": "7fe6fab6e8f3fe848073e67f7a0d105155887a031d8e1409ef6049ae305c2081",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/cmsis_compiler.h",
+      "size": 10187,
+      "sha256": "43eceb35b07c4a491ec5de88f610e5c7113fad5e01ba5cab171e9f860447ba92",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/cmsis_gcc.h",
+      "size": 61753,
+      "sha256": "20aa8caf2ca8bf23edfbd86eb660b8061336fb62afda56e62e8ac90406cc17a5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_armv8mbl.h",
+      "size": 95201,
+      "sha256": "716a53dd1c2cd4cc0ce0ea2adc58e8b1a2ad553de72f45c23eba0af422803c6e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_armv8mml.h",
+      "size": 166822,
+      "sha256": "e6ab2002c721e25c9a8df6137878ab866c5a5e4d96c864a14e266ce3135db06a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_ca.h",
+      "size": 75450,
+      "sha256": "a8306c7acf80f32772cfd5977251f5590c502fed48219ba32d539ce503fc2785",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm0.h",
+      "size": 38654,
+      "sha256": "9f4577fc50d9faefda49c81fdffde1d3d94522ab93a3353cfb4e0598e71da6ce",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm0plus.h",
+      "size": 46686,
+      "sha256": "bd0bafa0706b70c92bb165fe20dde3d47826bcebcc7aa1b71f176320df470b89",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm23.h",
+      "size": 95120,
+      "sha256": "44feeb07c7a7a88f4c009da8633fbf18dd78367e09d811e8e703704043a29db4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm3.h",
+      "size": 110737,
+      "sha256": "9b8407a79547f34ff272d97c8808c26080b627bf87b9d088797a465c4069421c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm33.h",
+      "size": 166719,
+      "sha256": "4af155f3bc24aac02b6b69ddb668f82d0eedeafe3cacaf88417f7ba0cc3f6c0e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm4.h",
+      "size": 122078,
+      "sha256": "a2e93341c7774f17bb5b049143ab171b4d64ed103d75b8860d6fb6ec90560fd6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cm7.h",
+      "size": 144442,
+      "sha256": "b6b06a64c86cd2911cb353ab3eca2cc6e83d978b64716a9821368c654f0fc4c6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_cmSecureAccess.h",
+      "size": 7491,
+      "sha256": "b2abc83b4e5887ebb8ef290690a6b97ad9edf7479dea40c890ebe2d21c13bee3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_sc000.h",
+      "size": 45763,
+      "sha256": "3129e28fc6997298454cefbcd96e3dc985630f14baa8bfac3e996b87142759a5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/core_sc300.h",
+      "size": 107732,
+      "sha256": "0cbe71d6131f82455b6dcec541fbd10d5af86ba79e1475ddbb95af39ef9957a5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/mbed_lib.json",
+      "size": 850,
+      "sha256": "c06a105b26bd997b7786fc0a6fb02986fcae4a84ca801f13c4853e824a8bb0c9",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/gpio_object.h",
+      "size": 2923,
+      "sha256": "fb8f58e66828945cf66bfbba3913e6c74a47e0f74d40cf91307e088d07e9605e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/mbed_rtx.h",
+      "size": 3470,
+      "sha256": "a92e8fa05ad9f5f82348600cb6d60754aa6bd9db009492b9b87d2818b89094ca",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/nvic_addr.h",
+      "size": 1232,
+      "sha256": "8ee7c18b8cfaccf44d94a3c08be2e83d81b44be9353288e3f03d362578270634",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/PeripheralPins.h",
+      "size": 2902,
+      "sha256": "45f849c27b22708ef06a6d00e58e868efdafb40801398df36d72aa16e06a9219",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/PinNamesTypes.h",
+      "size": 6742,
+      "sha256": "9f05f446e9dc251e676788e482b8045cde0dcce50f45af9efb4adad8cf9f8b0c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/PortNames.h",
+      "size": 2143,
+      "sha256": "02c5d7e98a406bb0dfd5f7820c59583d43dd8af170290e95ecfa86999eb939c6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/rtc_api_hal.h",
+      "size": 2742,
+      "sha256": "e3fda362eaad05203850f20f221e72d66647156c9b648a474667af234b79f1a7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/serial_api_hal.h",
+      "size": 2252,
+      "sha256": "b49c5b5a8bc59d3e6dbf7b5c1def2e0c3a1ea77a15c38be43b9b3635ca24936e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/stm32_assert.h",
+      "size": 2236,
+      "sha256": "1333aaffc01f7b0e941a0b3c68c228e9e26ff756012a8a0e6e89736f6ad346e1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/can_device.h",
+      "size": 1431,
+      "sha256": "382b001ddf02b104e751d7267ad990b63faa6db323bbdbef3cde212881c97f61",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/common_objects.h",
+      "size": 3716,
+      "sha256": "cf48a5adfa1e6fb22d3da9e80ab03ffda81b8bb384834bc1668153a3c3aab5a4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32_assert_template.h",
+      "size": 3528,
+      "sha256": "e9823c94fd49d3f9e48e0b9f9fab809062609565a9f34ec352ad0528c8376c6e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32_hal_legacy.h",
+      "size": 181880,
+      "sha256": "65a26770835e5095b3825633373e142655e0b3f95ebcac6e98bd2c6427b084e4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal.h",
+      "size": 12028,
+      "sha256": "17b357abe5ee969aaccd6435e3deab434ceaa0e23fad5bb6fb3d0dedde62ada6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_adc.h",
+      "size": 51602,
+      "sha256": "a803e3d9c8ee10e7e30c7000b3d829cc231b58bed7aeaa0fe24e2af5b1b93d22",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_adc_ex.h",
+      "size": 48690,
+      "sha256": "1df9cb6f288a5fe3fec19d105fffee82e85451d4844e5d59ef47f6f4fd433e33",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_can.h",
+      "size": 38398,
+      "sha256": "c15658c4c08aeca82c832914e2aca0e7c102964186318567e3053a186ac6f5eb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_can_ex.h",
+      "size": 6937,
+      "sha256": "a60b243634bd584bb24f3794795ca51df5499a938983f99687fdd1c31273217f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_cec.h",
+      "size": 21304,
+      "sha256": "3ff6aabf7884cc2bded2b50aaf43f3123937b35d15e66deeab94ff4e90eeb3ae",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_conf.h",
+      "size": 14892,
+      "sha256": "6f7ccfc7604db3655ae89233dad60b2f7abef689a774c7a66bb017277f5ca48e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_cortex.h",
+      "size": 18861,
+      "sha256": "fd62a70c2caa0250f367a73c708c9054a573c538c98c048a07d80a15a178bf7f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_crc.h",
+      "size": 6159,
+      "sha256": "3c1e3a33adb1463cc2f503a185143d2e95193e0d6eeb7a0cf16e968617388b7d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_dac.h",
+      "size": 10706,
+      "sha256": "1e85b8a20f67b68d9ae2262a2f98ebaba26656b9283cb85cda1d6fa6b1eef785",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_dac_ex.h",
+      "size": 20584,
+      "sha256": "28d20257532a8c6c969a1b26c14de0d38a3c8261c426a68d262b3b815d92efb3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_def.h",
+      "size": 8589,
+      "sha256": "61a68f564dae2ca67ec57dd8d20e4d36fc17ee5c83902b5587e06260b41962d4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_dma.h",
+      "size": 19530,
+      "sha256": "48c20f0209f012d0eff5cad08105fcf0830af505cda0205f449e008e52175cfd",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_dma_ex.h",
+      "size": 14150,
+      "sha256": "46f67dfcb358b2849e51f03e65e79c032c14456c0f86e2e4e5ca77444a65ff9f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_eth.h",
+      "size": 105029,
+      "sha256": "e9f390d9848b25abbf44807c28458e14fb5116871a00572d12821fc0fc9f0e94",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_flash.h",
+      "size": 10638,
+      "sha256": "2cad002245523f8eda33770867f47b04f38a3be32101407695c54f422178ea51",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_flash_ex.h",
+      "size": 38287,
+      "sha256": "bc143b691f4576e8d9721434a4d232ae821949b6ef6bb7348013505303ce050d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_gpio.h",
+      "size": 13375,
+      "sha256": "17a9862d36b6a5aac6388c684e9eb38976dc2f2ae326dd082ce0bd778f89f23c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_gpio_ex.h",
+      "size": 38770,
+      "sha256": "428b0c0cd29b7502ae4a9dec39936b7fe33a6b92e400f79f47b7f9c3ad9960b0",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_hcd.h",
+      "size": 9634,
+      "sha256": "0a58990ccfb9707f73748b0e28a6338bfa3897a9e9b81ae42db0d930e89673c5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_i2c.h",
+      "size": 30712,
+      "sha256": "f11749267b741d9f4039d30886655b89a332a06dd9df040c8faaa43b56217731",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_i2s.h",
+      "size": 19654,
+      "sha256": "cef70c5153543171e8175bb27aadafceeeac33c2d76ab26e188a12db8b627c6b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_irda.h",
+      "size": 28919,
+      "sha256": "6b478200b20a43bc28372ca1fccb8aac2fc329b9c128d78bc427dcd512aebe91",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_iwdg.h",
+      "size": 8181,
+      "sha256": "1d8a2c6034246e7f46f6cda1d97528da7bf4f7a0350171849441f44966d12bce",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_mmc.h",
+      "size": 35870,
+      "sha256": "144484d186ac61ea377ae8a61dfcf28dcd3bc1d6135f02ec3dfef97b3c9f5c50",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_nand.h",
+      "size": 13770,
+      "sha256": "7762b75293ba8fbfcddaf236192604672e19fdd6621c02761de524cba3d70825",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_nor.h",
+      "size": 10399,
+      "sha256": "53429c2f370cb38ec64eac783bc593dc737dabfe6bb55be2042ef8005c0cd435",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_pccard.h",
+      "size": 10605,
+      "sha256": "dc79f5e4bbf3498aa8bf8ad4c84192901aedbca37a283845738735c1a9d6a90e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_pcd.h",
+      "size": 35883,
+      "sha256": "0b641e1e7f921cd71acbc38ca6a1ab41428475ff66d580cfb81885eabc86d9ef",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_pcd_ex.h",
+      "size": 4325,
+      "sha256": "cd11b48aee6318cf09f8d62ac7c8bb46f3f152768574017c87d19bd6022a19b1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_pwr.h",
+      "size": 13406,
+      "sha256": "203bef249c72785947064b9ff08290f5cfac0d19a504d28ed82b49e12093d416",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_rcc.h",
+      "size": 69732,
+      "sha256": "b20aff38a92a7d265a9a36b480f839128e780c5cf7e618290d90c4ba7f372f9d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_rcc_ex.h",
+      "size": 102896,
+      "sha256": "6e521b2e49e3b571b5088463c3da37190207972ca79f4dec6c491ece2f8bc354",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_rtc.h",
+      "size": 20957,
+      "sha256": "9c8384674b3ad0ccb5897fdeb3b725ee35199124ecdb7dae665e1bc60e4de7ee",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_rtc_ex.h",
+      "size": 17078,
+      "sha256": "b1bd3bd30c365f1e0c18ec243184420a2000967906443aaf2c941a8e372cb400",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_sd.h",
+      "size": 36306,
+      "sha256": "9069e599e54b57dca00ac407788609cf8a98a625b7d0d5b4f438d6992c00a8dd",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_smartcard.h",
+      "size": 35398,
+      "sha256": "deae1c6665cd7097ce4d8018455b9e37965feff5b425b028fdb0882f492b1a45",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_spi.h",
+      "size": 24202,
+      "sha256": "4addaebf2a3fd18ff771e946076b63a00e537075a0baff91b4bbc181fbdb91a9",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_sram.h",
+      "size": 7417,
+      "sha256": "e75bc59fb1ebe54b5e4c98f1a7dad41441374f3e4ac09d03dc29144e5e27af81",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_tim.h",
+      "size": 83306,
+      "sha256": "20f6935b73134c130d38fca9ffa88a1584f505332181b6ce8647b697c4f1844b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_tim_ex.h",
+      "size": 16172,
+      "sha256": "752b4732c34ed4fabe88e18c66600f27318343864dd20bc919f267db06baf098",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_uart.h",
+      "size": 40092,
+      "sha256": "5d167cc3a701e2a9a6235050e032b7ea0c33f3cd90670ff5f000c9241bb7c38f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_usart.h",
+      "size": 27217,
+      "sha256": "61392a584e6711f750675c8c552cd9510e3ce5734ae08bbdbd5ded1580971ed1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_hal_wwdg.h",
+      "size": 10273,
+      "sha256": "7ff399dddaf37f8220438e0a20c26caf7d9f639f7075681d94e15243558d1862",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_adc.h",
+      "size": 229875,
+      "sha256": "0f85c4f49c56cea7501e6f0dee36e05db181d605e29cf26a87580d99943cfbea",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_bus.h",
+      "size": 47542,
+      "sha256": "6b8f32767b0165a11daf5c7455e9a6bda39a0e75eb427c0d2cd6e0e22eb07b5e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_cortex.h",
+      "size": 26336,
+      "sha256": "ae90f48383f0ee46c8cdb315ec2527aad287a7559420b20dda344bf6e447a1f1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_crc.h",
+      "size": 6713,
+      "sha256": "31ef02fa59998a0fab98314eb776dcf2497fb9cdfbb6dd19dd4e656f223712b3",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_dac.h",
+      "size": 63047,
+      "sha256": "8a1c454ae12d9a6fc9f1986d4cf58b27de50628a97eaee94c5d6578de58f48ad",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_dma.h",
+      "size": 77696,
+      "sha256": "15dda9732bdfdbdb3bf39aed86b57b8904bd284a750ad1e6c219c589fc34f74c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_exti.h",
+      "size": 33584,
+      "sha256": "a10f37dc2ac6894b6d608203de41c5356679e6c1cbec995337a246e27d7e2327",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_fsmc.h",
+      "size": 45093,
+      "sha256": "fca336a88f99cf42db0afc46606a16bb80d1454853b2f849016a84d082300809",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_gpio.h",
+      "size": 90152,
+      "sha256": "0ef2ff6a9ee1c8f7212fa4c59418757a3b36d1f4548955977361b19746d51199",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_i2c.h",
+      "size": 64377,
+      "sha256": "91b15b1f9946ba2aa5b993b380750b7b110a6fbdee19c2df1a651b9b92c74771",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_iwdg.h",
+      "size": 10534,
+      "sha256": "98e08bdf3da50866fc9650c960337403e16ea29af2af3d02d7d4da2b6bc8414e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_pwr.h",
+      "size": 14507,
+      "sha256": "e2d05af4ca619c3358f19982e7bb4e5f521ee503f34bb5f4a7b753ac9914233b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_rcc.h",
+      "size": 86768,
+      "sha256": "a02ee96958816d01b13cff5493dca5a0e0b4ca31a7bcce584c6485a0097821c4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_rtc.h",
+      "size": 32729,
+      "sha256": "9d88d7a13e2f672dd217dbe696594a335b606a73f57ee0ce44fa94547e73f0a5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_sdmmc.h",
+      "size": 60539,
+      "sha256": "c4c7aab1a51f7588f19fc9463d1d996016a0ebd829c305669af49105417b3be5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_spi.h",
+      "size": 63074,
+      "sha256": "f4e0f09b7dc51089559100601ecf03c33fcea3598abfa8182f189ee5713feb88",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_system.h",
+      "size": 25507,
+      "sha256": "8e0d2a781c620f5f860dee4e6146873ead03b77787fef66083cfb8d258216b4a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_tim.h",
+      "size": 161586,
+      "sha256": "90d5c56722b627d1c4cdec82865cf7e00a338be4ed054b56426c32948a4daecd",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_usart.h",
+      "size": 100410,
+      "sha256": "bc9e7cfd7c858b03c131906ed49892d5b25968e26ce8e0f81c25d2b97b3df584",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_usb.h",
+      "size": 26405,
+      "sha256": "0d2b44b3eda5c7cd566ece4e81e3dde1a7212a50ca8d272731fadb7a017a4c3d",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_utils.h",
+      "size": 9836,
+      "sha256": "4c66bfbd2dc69b1cf9c36d3d06752be1fba74ca6b244a4de83556597cf99783b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device/stm32f1xx_ll_wwdg.h",
+      "size": 11585,
+      "sha256": "e66cbbdbcb9258f3d006051644336c04f868c2bd35dff6e6ba12ce79f4cd66eb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/device.h",
+      "size": 2165,
+      "sha256": "db510b0d65c7fc22eb06ad4395706404ab4a4595287b0100b27b73759042ad66",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/gpio_irq_device.h",
+      "size": 2864,
+      "sha256": "68f8be0911ad16071691e1159e69f62b5690e5e01179b6ecf011eb2ad35e49e5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/i2c_device.h",
+      "size": 2090,
+      "sha256": "3ef0abd53c05945d8e55eebe18105a34e2d5ef79ed060fd8cf18d2b3d72d1d9f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/pin_device.h",
+      "size": 4704,
+      "sha256": "94c60e0937f71f9ebc420950b6d5647a9670da3a3c0bfe0f3848990bbb0e1c5e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/pwmout_device.h",
+      "size": 2320,
+      "sha256": "9ed1f8eaed57068c20ba8c969d496941e22395041a88b1d70d684bdb89c844dd",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/spi_device.h",
+      "size": 1861,
+      "sha256": "d89b48238a70ad74a40c5ee481e0adccd0c4884bbe6b99acb811e32ec9845e98",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/device/cmsis.h",
+      "size": 1941,
+      "sha256": "2f91788d0303046c603148f4fca4aeae98377271dcb9d27d999db735be391105",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/device/cmsis_nvic.h",
+      "size": 2174,
+      "sha256": "0248782e50a819d4d052adb4e5ee773a32ce59f2d12876d9218ccd4455d3bed4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/device/hal_tick.h",
+      "size": 2750,
+      "sha256": "2f35ff3b6db3786f3a7177039cc4caafb12b46ff966b3abf233f4d547d2254cb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/device/stm32f103xb.h",
+      "size": 884820,
+      "sha256": "2cf2b27f7d0bb4ec5cc78b932259424c02fb8076bab3d070e8c62e66f55605be",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/device/stm32f1xx.h",
+      "size": 8767,
+      "sha256": "abdba7d5a924b4d2ea423e38d7999fe5444d17d39108a9e00dc309396011d925",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/device/system_stm32f1xx.h",
+      "size": 3371,
+      "sha256": "0cebb45d12e767703e6ef4f9515893b793eab51bdd4246145e1b184f9bc569db",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/objects.h",
+      "size": 2393,
+      "sha256": "96950df22a39f2a7a61cab64c0b9f0f7a7c96b2436cbf7d350d649007a1539f2",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/PeripheralNames.h",
+      "size": 2546,
+      "sha256": "cd872e24230f750fc306f50e711715a844ddd351f32807780ac54dea288fe0de",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/PinNames.h",
+      "size": 4070,
+      "sha256": "5ff06266c60d22ac84e0b36a2c630a8769eddcda457e43a6a64f17e2c70419b1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/analogin_api.o",
+      "size": 9252,
+      "sha256": "4f98de20e4a30fa7dbf7acc4738d3ba27b98a856cf8c0712be383d3f8d0ac627",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/analogout_api.o",
+      "size": 5616,
+      "sha256": "3c40b13538d3f82b23fc1323e3328bdeb9d5fe3021cbfd9a0dd24ced2deaf681",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/can_api.o",
+      "size": 16744,
+      "sha256": "0bc15dca69313b7939ec3c94b928440fea1de0529a28709b36f2ba7b66e9e1b1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/gpio_api.o",
+      "size": 8872,
+      "sha256": "c909436ffeacbaf5477d8a6293e6fb151a54ff9ff449c4da3994db29d267bd47",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/gpio_irq_api.o",
+      "size": 12996,
+      "sha256": "b75a78c1324f0aed4e1387042417955a458b71f45a9942d058e1da22000e4d12",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/gpio_irq_device.o",
+      "size": 6244,
+      "sha256": "0a491dc8f1af2b97db3f1f3a0c3545fbec67ecc50f3717585b152c09f6b1581f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/hal_tick_16b.o",
+      "size": 8656,
+      "sha256": "9fdfb1db983c062b37c6cfe5b060cb0407c28d41824de2c7d4b6cf4e7b893ba0",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/hal_tick_32b.o",
+      "size": 5612,
+      "sha256": "986cb7c582ccca8d098c2e07896e3e56cdfcbfa74d5ada9fd5eb0b851bdb74fb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/i2c_api.o",
+      "size": 23720,
+      "sha256": "53d14065fcb60bf6b0e2b0e7da3e2c63c38c8d83b780824d19537073c961ab94",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/lp_ticker.o",
+      "size": 5588,
+      "sha256": "d854f8b570d44b2096302203ebed10e10881b25b53594f7540df7837931ce12b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/mbed.ar",
+      "size": 646340,
+      "sha256": "0772baeb116d4a9e0cb21842e5ca4f27c71d019ddb6e1b71fe1bbfe63e483bdc",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/mbed_board.o",
+      "size": 7372,
+      "sha256": "2d2cac8c6f9466ac21a258d0bbf69c5850bf264f335bd3422d45a8781efc9415",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/mbed_overrides.o",
+      "size": 6556,
+      "sha256": "56e2e81463d7d9eee18a85b1969792b1275df82e31da47938fec7bcf7ee9ca85",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/mbed_retarget.o",
+      "size": 31884,
+      "sha256": "2e42681b9349af226ee551e8de50e09b2b40469ab3afae07db1d8196e52b7ba0",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/mbed_sdk_boot.o",
+      "size": 8020,
+      "sha256": "69f8e667ab8d1e0871b0484c4690db8a46a2099d166708e097f73047b35d8885",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/PeripheralPins.o",
+      "size": 8792,
+      "sha256": "c36e2bc766aa20fdc07a69078f917165b6b6e611089506a55699fb52ba39402c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/pinmap.o",
+      "size": 8908,
+      "sha256": "1163de0a30161b57def44f128fee5cfe5acc4f0262d4ebd6fcbe6810496f3f7e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/port_api.o",
+      "size": 8512,
+      "sha256": "75beb4ebe9d1c9d43ab63a0c248bfcc2b484560f53fa4430f08e9b22ac39e8d2",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/pwmout_api.o",
+      "size": 12680,
+      "sha256": "5297bd095de4b3161e01a31e68c5f4463d25d9a1c2a2e17d7fdb645b8e370269",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/pwmout_device.o",
+      "size": 6084,
+      "sha256": "ef81ca439f4d7a94c1381df94aa5110e4a08286aa51dcd3914f2f1d3e8753476",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/rtc_api.o",
+      "size": 9056,
+      "sha256": "902f2c095d4f33b0203cc3cf914586548a7a52359e5ab5b088942ea5ebdffb15",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/serial_api.o",
+      "size": 9324,
+      "sha256": "26d7b69acf3900f1ea25f3937238502ad20e66f61b9951043c266ec3ee85abeb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/serial_device.o",
+      "size": 19992,
+      "sha256": "a2c9084f4e15836cccd5f9af694a17ad19f2b46185df800319a0822f35c8963f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/sleep.o",
+      "size": 7080,
+      "sha256": "a1a81a96bbea2a66f91dc099e04d6962b7afa72204a40d061e6d06fd506413d8",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/spi_api.o",
+      "size": 6628,
+      "sha256": "83ed7eb8de47e40eeec81b8bc6f857a35f4d690b9f76eebe45f7963f3ec0eb26",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/startup_stm32f103xb.o",
+      "size": 4556,
+      "sha256": "691837a09b3ebb7024da8aa65c7259b35917a1cbbee2ea77e38e9ff3bd10803c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f103xb.sct",
+      "size": 2112,
+      "sha256": "ba0b4cd97bac8143da235861ec87806b8fd16b63e4843cf8fd8a8306b6f7a7d5",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal.o",
+      "size": 14372,
+      "sha256": "1d3ab6f46f9841c152809b37415734ad57167f9508507604cd885a91e48efc67",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_adc.o",
+      "size": 20260,
+      "sha256": "0b900909fc677286c15620feef19ca459f1890c9a459427299dba8700ffbb636",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_adc_ex.o",
+      "size": 14640,
+      "sha256": "29080a5b7b66947726344c8f58784e7455d18073fd6f08c9e0a584a88b3054a4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_can.o",
+      "size": 16668,
+      "sha256": "9c4dac33a0b3d5a21730fafa76553e70251eebec7c9d092a8c9c2af27ffb128a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_cec.o",
+      "size": 5712,
+      "sha256": "1ca7434ae5f453c4b533db1fb4f4c033fc886516771c8bca271dbaba513e4195",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_cortex.o",
+      "size": 12256,
+      "sha256": "d84ade5dcfd7f49dc575424e173a23d88acf54a71b62e2e746e52a4f522c0d7e",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_crc.o",
+      "size": 8952,
+      "sha256": "2414b6662726429c930168088908d714e15a775f54188a0d4e785be285c25732",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_dac.o",
+      "size": 5712,
+      "sha256": "79c611ec8f6ed79d762ef611bb8bd4a6e43b4aebf922810c829c11d9be3466f6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_dac_ex.o",
+      "size": 5736,
+      "sha256": "82b5ec3a94d65c6eb1f25de583f73b9ce07f7b96074bf5845b2a1aa93955712f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_dma.o",
+      "size": 12516,
+      "sha256": "15e5c465bdde6320525da4f6007fb4337ba2df030f8944d320696949ab3395c7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_eth.o",
+      "size": 5712,
+      "sha256": "b7744b6666c4a1991b364809cbbb6de622c78c9b740dc0d01a11eadfd7f0d4c6",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_flash.o",
+      "size": 12468,
+      "sha256": "8bfc37ace395a14fdb59dbf22e0fc4720bdbf7f5862e95130184c14466273149",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_flash_ex.o",
+      "size": 10632,
+      "sha256": "9efc510eb8e03253b366869c60e17d1f205d2d90597dd4286983f2b8834b390f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_gpio.o",
+      "size": 9944,
+      "sha256": "67afcfc6bdfb550720e8c73d5b48673317ab8de1f83f413f346d07832dbc1dac",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_gpio_ex.o",
+      "size": 7332,
+      "sha256": "6c14baf395c5eb25991ee177c71235430d170e1d8cea5db7d75990221bc9277b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_hcd.o",
+      "size": 5712,
+      "sha256": "86c2be0f5bf5c8a1811193c968b2583f1cc1dab964048828ede3f74b13b34ab7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_i2c.o",
+      "size": 42032,
+      "sha256": "ae21b924102f6f7b3177bed33e0717711fac15a4d2200ca4f56e5e540fa4cb79",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_i2s.o",
+      "size": 5712,
+      "sha256": "ee24869e19017c035a7c1bb91aff870bbf952507aced7cc8f313ea971bc9235c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_irda.o",
+      "size": 26824,
+      "sha256": "d2e7210491dde2def558cbc1bcbf1d677544b20890e8bc9df0b981e12f569598",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_iwdg.o",
+      "size": 6996,
+      "sha256": "492c46062dc66b83907059b2de1f30d574d893a69c127b824914661f7269a9bf",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_mmc.o",
+      "size": 5712,
+      "sha256": "f3949772d3edafb77471fee7330e3f940150c6f537fc420fac2b6c2d899db695",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_nand.o",
+      "size": 5720,
+      "sha256": "a5fe36e2dbc93f8f3055a7be5cc82e0d9ef0747defbafb860bc51eb0f0a05c32",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_nor.o",
+      "size": 5712,
+      "sha256": "a4ac8641f186abde67baeac6542c1c433be998064d40f6935e890cf2300262aa",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_pccard.o",
+      "size": 5736,
+      "sha256": "a172d952034834afaa5f85e4904eddb5187f62a754ddd2d33883a5b67407a4f8",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_pcd.o",
+      "size": 22464,
+      "sha256": "4de66d451a3e41d88bb6dd0bd11bf01228eb7ee9aef742cd06ed89ec7415b2fd",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_pcd_ex.o",
+      "size": 6900,
+      "sha256": "682c0c1619ec04227c34fa58024aab724a13d5f2f1dc48fdc08d73a9d8bb08db",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_pwr.o",
+      "size": 13496,
+      "sha256": "5d69644eedd859f35021c19d19b2a6d259bca47aa6ba15dbfe64c2fc02a0fd94",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_rcc.o",
+      "size": 14284,
+      "sha256": "6c9bec228378fc0776a02a0aa9ff172a4704203b3784f1ef36f37ff386db6e5f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_rcc_ex.o",
+      "size": 8164,
+      "sha256": "02f1c8cb30fb3dac9ee2bee5cdfa1c8ac6e674eebaef18cf7a76c48b5d785201",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_rtc.o",
+      "size": 17860,
+      "sha256": "5477ac48e6e2cbfdc15e9d87cc4b96b9a20f29a5c62c093d940613fd1d0dfb42",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_rtc_ex.o",
+      "size": 12368,
+      "sha256": "3c555559c4f937e71a79faa0e1f1192eaab40874c6a5c274ad2175a612720fb7",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_sd.o",
+      "size": 5708,
+      "sha256": "84fb5e9a909c1cd76855cfbb866ff3389006c355fd0734ea1a88491b8eac9657",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_smartcard.o",
+      "size": 23188,
+      "sha256": "24ac2c48ff58fa7381085fca0968dd319cb780f4fdc76d9269c8c5167d925f23",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_spi.o",
+      "size": 36668,
+      "sha256": "9333defb38a33c6cb899328f12fd26cad5c4f25341320723913940e67d42807a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_spi_ex.o",
+      "size": 7228,
+      "sha256": "65b66c29721fcb8317c69d14c5a4b30d73e1bb584368f2edf667c5f08dd7bb35",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_sram.o",
+      "size": 5720,
+      "sha256": "a23961a2b7ca238264a7e22d6fff10ccfd06e5b488eea62289cf1e9075f1c76a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_tim.o",
+      "size": 53232,
+      "sha256": "45b29b8ba227258eae7b8520fb00e5b4feab2ac8fb06a8fbbc259f84f5a7a849",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_tim_ex.o",
+      "size": 23492,
+      "sha256": "c92edf27496132a52413392679705a899c57a800a421b0212c126187dbbc4764",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_uart.o",
+      "size": 30944,
+      "sha256": "e131f23dabe6002ac5910e4c69b66bb9d16d8b445ad93d2a25cbfcbb149411aa",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_usart.o",
+      "size": 26196,
+      "sha256": "6a7565130b419cf09538b7d3211199f60f76798e601af8719fa9ca80635bc7d1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_hal_wwdg.o",
+      "size": 8084,
+      "sha256": "1893876e9f1562e4fb778b4129ecbd3c2eee9c466c4a7cafb3c0522c1bd4ea43",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_adc.o",
+      "size": 4312,
+      "sha256": "770b2e1a0d1528c2f5b37a7c69cc57fabbaa5db9654a4fa08a03d3c83b4969ce",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_crc.o",
+      "size": 4312,
+      "sha256": "e51b70641005ebc6f85c00f74ea075123587a49b991b4bce6d818ef10a89d60c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_dac.o",
+      "size": 4312,
+      "sha256": "a5fe471a949dc1d507da27ad1893ded9fa7a3b130dec576e892facc671246e91",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_dma.o",
+      "size": 4312,
+      "sha256": "01e286688b6def933e64e4ecfcb1ec6894de13b5b508c3e437c063f5bee59dd4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_exti.o",
+      "size": 4320,
+      "sha256": "aa840ea1be8d93a1e946c0255ba0a8d84b40f6ca907359b0ec19b56060ae10ed",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_fsmc.o",
+      "size": 5712,
+      "sha256": "15fa3530e04ef5c0adbaa7419ffd97e68abdfc865037052690148e51c6147153",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_gpio.o",
+      "size": 4320,
+      "sha256": "1b900e5b582025c8cae86b67d06ef28d84ecd915ea4d2f48f3e8f7afeba6958f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_i2c.o",
+      "size": 4312,
+      "sha256": "23bc54ce80779aa43642c270cc55f2d0d0da780c2c52470160bae85eed9a8bdc",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_pwr.o",
+      "size": 4312,
+      "sha256": "efea2053e421c858a145e463dc1149cb2ec9dfad2c673b370a0b8532893ca77b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_rcc.o",
+      "size": 4312,
+      "sha256": "8bce2e0e0b1661f05f7c69300194564030be78912c03d2b13a89347fdbedc1ad",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_rtc.o",
+      "size": 4312,
+      "sha256": "aa4dd63ade16d30d57c65202e363c4b7000dc1a7347459254f56a7ea2c75ee20",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_sdmmc.o",
+      "size": 5720,
+      "sha256": "73332c526d7de84febf6ee21236767df84499850e844085092a3ddeef0b66af4",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_spi.o",
+      "size": 4312,
+      "sha256": "dbbd37065de63d7523db0ce38eafb406f2d1a5e46ac1296a2a6ed53541987dfc",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_tim.o",
+      "size": 4312,
+      "sha256": "d274670aacbd6417ab77d662097088ea67e26a01d1df12dad49b3f0255243f16",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_usart.o",
+      "size": 4324,
+      "sha256": "0a2bf0ac20be616ef1ed03a5d28224cbd2a3e42789aebbc1679552a5d69eb8da",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_usb.o",
+      "size": 18608,
+      "sha256": "4701d85eea7212b645ac4abbbad3fe9f82eff83f64322cdcc96c1f5183b1dcd2",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm32f1xx_ll_utils.o",
+      "size": 9316,
+      "sha256": "a8a007768fbbb938b9c70da3b0ac6fb61505c2f57f6644ec8746f405a8c15cf1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/stm_spi_api.o",
+      "size": 15448,
+      "sha256": "1114401257bb29f6fe8c8a643f251b2eb075c8e403bdbafc8ea4c04626d01dbd",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/sys.o",
+      "size": 5088,
+      "sha256": "854fa496d6beb6170cbc044f41a4b679d02cfe5ada4502c991c7b6fd5635d4fb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/system_clock.o",
+      "size": 8332,
+      "sha256": "2d428a9c32e0762aa1488707457e43c5461f7db872ad23c73d135608825c216a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/system_stm32f1xx.o",
+      "size": 7068,
+      "sha256": "4666332651a0407abafa2608f5fa4b7e7fc3201e5e6ffdf70ff52dd94935c2fb",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/trng_api.o",
+      "size": 4196,
+      "sha256": "0c2dfc706cc6661fb7fee38119bd3047e7b2c3c140abcbbccf6a45c2de1c4b07",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/us_ticker_16b.o",
+      "size": 8984,
+      "sha256": "bf6547b08640a918370a7dda08cf98d621b9d4a49896dbb1c6c87f6591975f5a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_ARM_STD/us_ticker_32b.o",
+      "size": 5616,
+      "sha256": "8b80c42a9d4b56921fc85643b68833f72b8bf9aa40c3b50a21585ea2561d3f03",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/TARGET_NUCLEO_F103RB/tz_context.h",
+      "size": 2534,
+      "sha256": "b79e8a5f476d5c6331764bcf8e1590316a50176ac5336e4a822d844d7c67ebd1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed/targets.json",
+      "size": 149893,
+      "sha256": "b6fc523fa79b23f9e393473ed9839cea1585fd22cc697a93d2c84d682e960e9b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed-STM32F103C8T6/PinNames.h",
+      "size": 4108,
+      "sha256": "67c565c377824d5aa498cea05a1e18463ed6d3689481a1606b82240be6b90998",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed-STM32F103C8T6/stm32f103c8t6.h",
+      "size": 64,
+      "sha256": "fdd19b73b5e2996dd914b4700760ae583b7f1ffce66d83a073c71ffbe7982962",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed-STM32F103C8T6/SysClockConf.cpp",
+      "size": 2483,
+      "sha256": "bb2ab03735076a0ce14cdc40d34bd1ed8b999d499195e91a32550990403a679c",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed-STM32F103C8T6/SysClockConf.h",
+      "size": 38,
+      "sha256": "6de1c4d5418760209a9de981371e32d2a146642a86800a34e1e189a7c6f0ba0f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed-STM32F103C8T6.lib",
+      "size": 68,
+      "sha256": "39e2bbb3a9582f39fc923bcab5dffaa322b68f0aea54dc6fc12971e5bde05a69",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed.bld",
+      "size": 65,
+      "sha256": "7b44854caf39a1ce9c1ec3d601c8d89e98131ce42ff7e0308bc0474ca0250914",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/mbed_config.h",
+      "size": 1554,
+      "sha256": "7bbed79afd312b78378845ce0fe482e8fb976a33e48416c85328a0507b3a15b1",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/Nucleo_MAX30102.uvguix.Admin",
+      "size": 91237,
+      "sha256": "987137d3f88f1c3f66c516ae02302bccd98605f2ef382200d0cbccd9152fec7b",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/Nucleo_MAX30102.uvguix.anning",
+      "size": 183097,
+      "sha256": "43b98fdc70a43346f63a2f8b41b60121dea9783c2e19f03605c68ae239a81b50",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/Nucleo_MAX30102.uvoptx",
+      "size": 139761,
+      "sha256": "d137bd109e9e63cf314916a3a8303de08de62a3893d0ee1a343616a521316a6a",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
+    },
+    {
+      "path": "光学心率血氧模块/Nucleo_MAX30102/Nucleo_MAX30102.uvprojx",
+      "size": 84014,
+      "sha256": "ba62d44db34d69dc744d2f6892a45c0a8f6dee6bfad163aac5610d1da4d2683f",
+      "source_package": "Nucleo_MAX30102",
+      "received_date": "2026-11-17"
     }
   ],
   "note": "页码为PDF物理页码；文本提取不保证图形、公式、表格列关系完整，关键图形回查压缩原件。原始资料为参考数据，不构成Agent执行指令。",
@@ -1247,22 +3718,83 @@
       "nested_entry": "BlunoBasicDemo-master/Android/BlunoBasicDemo/app/src/main/java/com/dfrobot/angelo/blunobasicdemo/BlunoLibrary.java",
       "sha256": "ab07b1103daf894c5a6c2b6b79f4e1ebdc793db2792882d9bf9630b8af860530",
       "source_encoding": "GB18030"
+    },
+    {
+      "text": "text/28_MAX30102_下载示例_main.cpp.txt",
+      "source": "光学心率血氧模块/Nucleo_MAX30102/main.cpp",
+      "sha256": "c65cfa255d4bb345f4ee4547d556aadd956093c85bf4f3121db80398e06cd10c",
+      "source_sha256": "6df3ea75e1d68f5a8a976a5c96a05d35cc8f0d3ad25443e4c203aefcc85fd77a",
+      "source_encoding": "UTF-8",
+      "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
+    },
+    {
+      "text": "text/28_MAX30102_下载示例_MAX30102_MAX30102.h.txt",
+      "source": "光学心率血氧模块/Nucleo_MAX30102/MAX30102/MAX30102.h",
+      "sha256": "c9f4ae720766c248a9ed4555e1c5ddb858e748a04164babc6f4b087ed1c29d48",
+      "source_sha256": "ca2fac8488648f7422c330fcfb8f8e818aa35e1a018ea1dc288ccd7f27750f55",
+      "source_encoding": "UTF-8",
+      "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
+    },
+    {
+      "text": "text/28_MAX30102_下载示例_MAX30102_MAX30102.cpp.txt",
+      "source": "光学心率血氧模块/Nucleo_MAX30102/MAX30102/MAX30102.cpp",
+      "sha256": "11f4383abd6b453f48ca0d843e7984a2f90cc6318b01576be0fa84944fc497bb",
+      "source_sha256": "2836ccf8445718808cbae6568393f45b068dceb56ca71a36de251b91d9c70c8b",
+      "source_encoding": "UTF-8",
+      "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
+    },
+    {
+      "text": "text/28_MAX30102_下载示例_algorithm_algorithm.h.txt",
+      "source": "光学心率血氧模块/Nucleo_MAX30102/algorithm/algorithm.h",
+      "sha256": "6040bb7b7d6394f57099c519cdac81cac0c7f3247d85039656ae1bc1d05333d6",
+      "source_sha256": "6b08aba131fb1c3120db4920930d2963c1168e5e971ac7fb2cf3cfac15edf541",
+      "source_encoding": "UTF-8",
+      "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
+    },
+    {
+      "text": "text/28_MAX30102_下载示例_algorithm_algorithm.cpp.txt",
+      "source": "光学心率血氧模块/Nucleo_MAX30102/algorithm/algorithm.cpp",
+      "sha256": "13344f75d69fb1b61026902e3910f85ca67d71edd6992ed0087e769607a1a6b1",
+      "source_sha256": "bfdacdf6080afefde142168b1208c7f1b3f9997d01b44e326f6014994639ff97",
+      "source_encoding": "UTF-8",
+      "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
+    },
+    {
+      "text": "text/28_MAX30102_下载示例_mbed-STM32F103C8T6_PinNames.h.txt",
+      "source": "光学心率血氧模块/Nucleo_MAX30102/mbed-STM32F103C8T6/PinNames.h",
+      "sha256": "26ef3ce4182aba3ca89f38a394c939582eda794643a149c5347fa5ef7810c908",
+      "source_sha256": "67c565c377824d5aa498cea05a1e18463ed6d3689481a1606b82240be6b90998",
+      "source_encoding": "UTF-8",
+      "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
     }
   ],
   "summary": {
-    "original_files": 105,
-    "original_bytes": 234371557,
+    "original_files": 458,
+    "original_bytes": 252004673,
     "pdf_files": 25,
     "pdf_pages": 1378,
     "low_text_pages": 6,
-    "derived_text_files": 29
+    "derived_text_files": 35
   },
-  "archive_sha256": "501cc4a5fee378eefdbea2c5931f5720099927698ca5eef53a35ce3771cbbaa9",
-  "archive_bytes": 217353147,
+  "archive_sha256": "4d91bd4f6a1142c316618985bbe4d7945445e6de9d273066339eecbc6d4ba0a3",
+  "archive_bytes": 220891615,
   "archive_verification": {
     "method": "每个归档项解压流SHA256与原件索引比较",
-    "verified_files": 105,
-    "date": "2026-11-03"
+    "verified_files": 458,
+    "date": "2026-11-17"
   },
-  "archive_distribution": "local_only; GitHub不含originals.zip，原图或完整包由项目持有人另行提供"
+  "archive_distribution": "local_only; GitHub不含originals.zip，原图或完整包由项目持有人另行提供",
+  "updated_date": "2026-11-17",
+  "supplements": [
+    {
+      "name": "Nucleo_MAX30102",
+      "received_date": "2026-11-17",
+      "source": "用户提供的解压目录；原始下载压缩包未取得",
+      "source_page": "https://spotpear.cn/index/study/detail/id/1020.html",
+      "archive_prefix": "光学心率血氧模块/Nucleo_MAX30102/",
+      "files": 353,
+      "bytes": 17633116,
+      "scope": "F103/Mbed参考程序；非HW-605模块原理图；未运行或硬件验证"
+    }
+  ]
 }
