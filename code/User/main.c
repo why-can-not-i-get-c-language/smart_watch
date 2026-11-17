@@ -1,9 +1,9 @@
 /**
- * F06-P01 BLE原样透传诊断 - STM32F411CEU6
- * 版本：F06-P01-20261115-01
+ * F13-P01 MAX30102身份与原始采样 - STM32F411CEU6
+ * 版本：F13-P01-20261117-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认BLE页，KEY长按循环BLE、姿态、计步、MPU、振动、北京时间页
+ *  - 默认PPG页，KEY长按循环PPG、BLE、姿态、计步、MPU、振动、北京时间页
  *  - 姿态页MENU长按标定，按键/姿态唤醒，10秒无有效操作熄屏
  *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
@@ -26,6 +26,7 @@
 #include "time_service.h"
 #include "tm6605.h"
 #include "mpu6050.h"
+#include "max30102.h"
 #include "pedometer.h"
 #include "wrist_wake.h"
 #include <stdint.h>
@@ -34,7 +35,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F06-P01-20261115-01";
+static const char firmware_version[] = "F13-P01-20261117-01";
 #endif
 
 /**
@@ -87,6 +88,8 @@ typedef struct {
     volatile tm6605_state_t haptic;
     volatile watch_status_t motion_process_status;
     volatile mpu6050_state_t motion;
+    volatile watch_status_t ppg_process_status;
+    volatile max30102_state_t ppg;
     volatile watch_status_t pedometer_status;
     volatile pedometer_status_t pedometer;
     volatile watch_status_t wrist_status;
@@ -337,6 +340,20 @@ static void motion_update_task(void *ctx)
     diag.wrist = wrist;
 }
 
+/* 原始PPG独立于页面采集；每次最多领取4个样本，不运行心率或血氧算法。 */
+static void ppg_update_task(void *ctx)
+{
+    (void)ctx;
+    diag.ppg_process_status = max30102_process(board_millis());
+    ppg_sample_t sample;
+    for (unsigned i = 0U; i < 4U; ++i) {
+        if (max30102_read(&sample) != WATCH_OK) { break; }
+    }
+    max30102_state_t state;
+    max30102_get_state(&state);
+    diag.ppg = state;
+}
+
 /* 常规时基及串口诊断，与振动命令状态分别记录。 */
 static void update_status(void *ctx)
 {
@@ -463,11 +480,13 @@ int main(void)
     diag.haptic_request_status = tm6605_init();
     haptic_last_retry_ms = board_millis();
     (void)mpu6050_init();
+    (void)max30102_init();
     (void)pedometer_reset();
     (void)wrist_wake_reset();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = ppg_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = motion_update_task, .context = NULL},
         /* LED控制：每10ms更新一次 */

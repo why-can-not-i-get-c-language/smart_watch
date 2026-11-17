@@ -4,6 +4,7 @@
 #include "time_service.h"
 #include "tm6605.h"
 #include "mpu6050.h"
+#include "max30102.h"
 #include "pedometer.h"
 #include "wrist_wake.h"
 #include "board_config.h"
@@ -41,8 +42,8 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-typedef enum { PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_BLE;
+typedef enum { PAGE_PPG, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_PPG;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
@@ -320,6 +321,44 @@ static void draw_wrist_page(void)
     }
 }
 
+static void draw_ppg_page(void)
+{
+    max30102_state_t state;
+    max30102_get_state(&state);
+    text(2U, 0U, "PPG RAW CHECK");
+    text(2U, 8U, "ID");
+    static const char hex[] = "0123456789ABCDEF";
+    if (state.identity_read) {
+        character(20U, 8U, hex[state.part_id >> 4U]);
+        character(26U, 8U, hex[state.part_id & 15U]);
+    } else { text(20U, 8U, "--"); }
+    text(44U, 8U, "CFG 100HZ");
+    text(2U, 16U, "RED");
+    text(2U, 24U, "IR");
+    if (state.sample.valid) {
+        number(32U, 16U, state.sample.red);
+        number(32U, 24U, state.sample.infrared);
+    } else {
+        text(32U, 16U, "--"); text(32U, 24U, "--");
+    }
+    text(2U, 32U, "N");
+    number(14U, 32U, state.sample_count > 999999U ? 999999U : state.sample_count);
+    text(2U, 40U, "OVF");
+    number(26U, 40U, state.overflow_count > 9999U ? 9999U : state.overflow_count);
+    text(62U, 40U, "E");
+    number(74U, 40U, state.error_count > 999999U ? 999999U : state.error_count);
+    const char *signal = state.status == WATCH_TIMEOUT ? "TIMEOUT RETRY" :
+        state.status == WATCH_IO_ERROR ? "IO ERROR RETRY" :
+        state.status == WATCH_INVALID_DATA ? "DATA ERROR RETRY" :
+        !state.ready ? "STARTING RETRY" :
+        !state.sample.valid ? "WAIT RAW DATA" :
+        state.saturated ? "SATURATED" : state.low_signal ? "LOW SIGNAL" : "RAW ONLY";
+    text(2U, 48U, signal);
+    text(2U, 56U, "T MS");
+    if (state.sample.valid) { number(32U, 56U, state.sample.timestamp_ms); }
+    else { text(32U, 56U, "--"); }
+}
+
 static void draw_ble_page(void)
 {
     ble_link_state_t state;
@@ -365,6 +404,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_PPG) {
+        draw_ppg_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_BLE) {
         draw_ble_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_WRIST) {
