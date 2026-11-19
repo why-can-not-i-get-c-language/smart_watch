@@ -1,9 +1,9 @@
 /**
- * MAX30102 INT接口检查 - STM32F411CEU6
- * 版本：F13-INT-20261119-01
+ * MPU INT与板载KEY接口检查 - STM32F411CEU6
+ * 版本：F03-INT-20261119-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认PPG INT页，KEY长按循环PPG、BAT、BLE、姿态、计步、MPU、振动、北京时间页
+ *  - 默认MPU INT页，短按KEY计K，长按循环MPU、PPG、BAT、BLE、姿态、计步、振动、时间
  *  - 姿态页MENU长按标定，按键/姿态唤醒，10秒无有效操作熄屏
  *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
@@ -37,7 +37,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F13-INT-20261119-01";
+static const char firmware_version[] = "F03-INT-20261119-01";
 #endif
 
 /**
@@ -90,6 +90,8 @@ typedef struct {
     volatile tm6605_state_t haptic;
     volatile watch_status_t motion_process_status;
     volatile mpu6050_state_t motion;
+    volatile watch_status_t mpu_irq_status;
+    volatile board_mpu_irq_state_t mpu_irq;
     volatile watch_status_t ppg_process_status;
     volatile max30102_state_t ppg;
     volatile watch_status_t ppg_irq_status;
@@ -328,6 +330,9 @@ static void motion_update_task(void *ctx)
     mpu6050_state_t state;
     mpu6050_get_state(&state);
     diag.motion = state;
+    board_mpu_irq_state_t irq;
+    diag.mpu_irq_status = board_mpu_irq_get_state(&irq);
+    diag.mpu_irq = irq;
     motion_sample_t sample;
     uint32_t steps;
     /* read只领取新样本；其他5ms轮询不会重复计步。无效时保数并重置检测。 */
@@ -498,6 +503,7 @@ int main(void)
     startup_baseline = board_millis();
     diag.haptic_request_status = tm6605_init();
     haptic_last_retry_ms = board_millis();
+    diag.mpu_irq_status = board_mpu_irq_init();
     (void)mpu6050_init();
     diag.ppg_irq_status = board_ppg_irq_init();
     (void)max30102_init();

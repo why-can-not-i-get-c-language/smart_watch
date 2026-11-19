@@ -2,7 +2,8 @@
 #define WATCH_MPU6050_H
 #include "watch_types.h"
 /* 传感器读数按配置换算为g和度/秒；时间戳为主控开始读取的毫秒时刻。
- * process推进初始化及采样，每次至多一次有超时的总线操作；INT无需接线。 */
+ * process推进初始化及采样，每次至多一次有超时的总线操作；数据采样仍轮询，
+ * INT可另接PB0做接口边沿对照，数据读取不依赖IRQ。 */
 typedef struct {
     watch_status_t status;
     bool ready, identity_read;

@@ -16,9 +16,15 @@ watch_status_t board_uart_init(uint32_t baudrate);
 typedef struct {
     bool initialized, pin_high;
     uint32_t count, last_edge_ms;
-} board_ppg_irq_state_t;
+} board_irq_state_t;
+typedef board_irq_state_t board_ppg_irq_state_t;
+typedef board_irq_state_t board_mpu_irq_state_t;
 watch_status_t board_ppg_irq_init(void);
 watch_status_t board_ppg_irq_get_state(board_ppg_irq_state_t *state);
 /* 仅由EXTI1_IRQHandler转发。 */
 void board_ppg_irq_handle(void);
+/* MPU数据就绪高有效推挽输出：PB0/EXTI0上升沿，PA0仍轮询。 */
+watch_status_t board_mpu_irq_init(void);
+watch_status_t board_mpu_irq_get_state(board_mpu_irq_state_t *state);
+void board_mpu_irq_handle(void);
 #endif

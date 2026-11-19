@@ -11,6 +11,56 @@
 
 #include "stm32f4xx_hal.h"
 
+/* MPU INT端口：EXTI0仅选择PB0，板载PA0的按键轮询不受此选择影响。 */
+static volatile bool mpu_irq_initialized;
+static volatile uint32_t mpu_irq_count, mpu_irq_last_ms;
+
+watch_status_t board_mpu_irq_init(void)
+{
+    HAL_NVIC_DisableIRQ(EXTI0_IRQn);
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    mpu_irq_initialized = false;
+    mpu_irq_count = 0U;
+    mpu_irq_last_ms = 0U;
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin = WATCH_MPU_INT_PIN;
+    gpio.Mode = GPIO_MODE_IT_RISING;
+    /* 推挽高有效脉冲；弱下拉使INT支线拔除后PB0保持低。 */
+    gpio.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(WATCH_MPU_INT_PORT, &gpio);
+    __HAL_GPIO_EXTI_CLEAR_IT(WATCH_MPU_INT_PIN);
+    HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn);
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 5U, 0U);
+    mpu_irq_initialized = true;
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+    return WATCH_OK;
+}
+
+void board_mpu_irq_handle(void)
+{
+    if (__HAL_GPIO_EXTI_GET_IT(WATCH_MPU_INT_PIN) != 0U) {
+        __HAL_GPIO_EXTI_CLEAR_IT(WATCH_MPU_INT_PIN);
+        if (mpu_irq_initialized) {
+            if (mpu_irq_count != UINT32_MAX) { ++mpu_irq_count; }
+            mpu_irq_last_ms = HAL_GetTick();
+        }
+    }
+}
+
+watch_status_t board_mpu_irq_get_state(board_mpu_irq_state_t *state)
+{
+    if (state == NULL) { return WATCH_INVALID_ARGUMENT; }
+    uint32_t mask = __get_PRIMASK();
+    __disable_irq();
+    state->initialized = mpu_irq_initialized;
+    state->count = mpu_irq_count;
+    state->last_edge_ms = mpu_irq_last_ms;
+    state->pin_high = HAL_GPIO_ReadPin(WATCH_MPU_INT_PORT, WATCH_MPU_INT_PIN) == GPIO_PIN_SET;
+    __set_PRIMASK(mask);
+    return state->initialized ? WATCH_OK : WATCH_NOT_READY;
+}
+
 /* MAX30102 INT端口；不修改PA0/PB0的EXTI0选择。 */
 static volatile bool ppg_irq_initialized;
 static volatile uint32_t ppg_irq_count, ppg_irq_last_ms;
@@ -215,6 +265,15 @@ watch_status_t board_uart_init(uint32_t baudrate)
 }
 
 #else  /* !WATCH_TARGET_STM32 - 主机实现 */
+
+watch_status_t board_mpu_irq_init(void) { return WATCH_NOT_IMPLEMENTED; }
+void board_mpu_irq_handle(void) { }
+watch_status_t board_mpu_irq_get_state(board_mpu_irq_state_t *state)
+{
+    if (state == NULL) { return WATCH_INVALID_ARGUMENT; }
+    memset(state, 0, sizeof(*state));
+    return WATCH_NOT_IMPLEMENTED;
+}
 
 watch_status_t board_ppg_irq_init(void) { return WATCH_NOT_IMPLEMENTED; }
 void board_ppg_irq_handle(void) { }

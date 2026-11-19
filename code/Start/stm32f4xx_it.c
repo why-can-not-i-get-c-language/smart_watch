@@ -9,6 +9,12 @@
 #include "board_port.h"
 #include <stdint.h>
 
+/* PB0/EXTI0来自MPU，不接收PA0板载键。 */
+void EXTI0_IRQHandler(void)
+{
+    board_mpu_irq_handle();
+}
+
 /* 只记录PB1边沿并清挂起位；传感器状态/FIFO仍由主循环领取。 */
 void EXTI1_IRQHandler(void)
 {

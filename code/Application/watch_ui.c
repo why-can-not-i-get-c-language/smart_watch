@@ -44,9 +44,10 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-/* INT接口检查默认PPG页；ADC及其他页面继续保留。 */
-typedef enum { PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_PPG;
+/* 默认MPU INT页；KEY短按计数用于检查PA0轮询与PB0中断同时工作。 */
+typedef enum { PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_MOTION;
+static uint32_t motion_key_count;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
@@ -218,7 +219,7 @@ static void draw_motion_page(void)
 {
     mpu6050_state_t motion;
     mpu6050_get_state(&motion);
-    text(2U, 0U, "MPU6050 8G CFG");
+    text(2U, 0U, "MPU INT CHECK");
     number(86U, 0U, WATCH_MPU_SAMPLE_HZ); text(104U, 0U, "HZ");
     text(2U, 8U, "ID");
     if (motion.identity_read) {
@@ -237,21 +238,27 @@ static void draw_motion_page(void)
         text(2U, 16U, "AX MG"); signed_milli(44U, 16U, motion.sample.ax_g);
         text(2U, 24U, "AY MG"); signed_milli(44U, 24U, motion.sample.ay_g);
         text(2U, 32U, "AZ MG"); signed_milli(44U, 32U, motion.sample.az_g);
-        text(2U, 40U, "HOST MS"); number(50U, 40U, motion.sample.timestamp_ms);
     } else {
         text(2U, 16U, motion.status == WATCH_INVALID_DATA && motion.who_am_i != 0x68U ?
              "CHECK CHIP" : motion.status == WATCH_IO_ERROR || motion.status == WATCH_TIMEOUT ||
              motion.status == WATCH_INVALID_DATA ? "CHECK WIRE" : "WAIT SAMPLE");
         text(2U, 24U, "ACCEL INVALID");
-        text(2U, 40U, "HOST MS --");
     }
     text(2U, 48U, "ACT HZ");
     if (motion.rate_valid) {
         fixed_number(44U, 48U, motion.actual_rate_millihz / 1000U, 2U);
         text(56U, 48U, "."); number(62U, 48U, (motion.actual_rate_millihz % 1000U) / 100U);
     } else { text(44U, 48U, "--"); }
-    text(2U, 56U, "N"); number(14U, 56U, motion.sample_count);
-    text(86U, 56U, "KEY UI");
+    text(2U, 40U, "N"); number(14U, 40U, motion.sample_count > 999999U ? 999999U : motion.sample_count);
+    text(62U, 40U, "E"); number(74U, 40U, motion.error_count > 999999U ? 999999U : motion.error_count);
+    board_mpu_irq_state_t irq;
+    watch_status_t irq_status = board_mpu_irq_get_state(&irq);
+    text(2U, 56U, "IRQ");
+    if (irq_status == WATCH_OK) {
+        number(26U, 56U, irq.count > 999999U ? 999999U : irq.count);
+        text(74U, 56U, "P"); number(86U, 56U, irq.pin_high ? 1U : 0U);
+    } else { text(26U, 56U, "--"); }
+    text(98U, 56U, "K"); number(110U, 56U, motion_key_count > 99U ? 99U : motion_key_count);
 }
 
 static void draw_steps_page(uint32_t now_ms)
@@ -548,6 +555,13 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
     if (phase == UI_NORMAL && (event & BUTTON_BOARD_LONG) != 0U) {
         active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
         last_refresh_ms = now_ms - 1000U;
+        return;
+    }
+    if (phase == UI_NORMAL && active_page == PAGE_MOTION) {
+        if ((event & BUTTON_BOARD_SHORT) != 0U) {
+            if (motion_key_count != UINT32_MAX) { ++motion_key_count; }
+            last_refresh_ms = now_ms - 1000U;
+        }
         return;
     }
     if (phase == UI_NORMAL && active_page == PAGE_WRIST) {

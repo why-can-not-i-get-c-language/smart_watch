@@ -117,8 +117,10 @@ watch_status_t mpu6050_process(uint32_t now_ms)
         phase = MPU_INTERRUPT;
         break;
     case MPU_INTERRUPT:
-        /* 仅轮询DATA_RDY；没有配置STM32 EXTI，也无需连接INT。 */
-        status = write_byte(0x38U, 0x01U);
+        /* INT_PIN_CFG=0：推挽、高有效、50us脉冲；使能DATA_RDY。
+         * 采样仍按0x3A状态轮询，不由IRQ计数驱动或重复领取。 */
+        data[0] = 0U; data[1] = 0x01U;
+        status = i2c_bus_write(WATCH_MPU_ADDR7, 0x37U, data, 2U);
         if (status != WATCH_OK) { return fail(status); }
         phase = MPU_VERIFY_POWER;
         break;
@@ -141,9 +143,9 @@ watch_status_t mpu6050_process(uint32_t now_ms)
         phase = MPU_VERIFY_INTERRUPT;
         break;
     case MPU_VERIFY_INTERRUPT:
-        status = i2c_bus_read(WATCH_MPU_ADDR7, 0x38U, data, 1U);
+        status = i2c_bus_read(WATCH_MPU_ADDR7, 0x37U, data, 2U);
         if (status != WATCH_OK) { return fail(status); }
-        if (data[0] != 0x01U) { return fail(WATCH_INVALID_DATA); }
+        if (data[0] != 0U || data[1] != 0x01U) { return fail(WATCH_INVALID_DATA); }
         current.ready = true;
         phase_started_ms = now_ms;
         last_poll_ms = now_ms - WATCH_MPU_SAMPLE_MS;
