@@ -7,6 +7,7 @@
 #include "max30102.h"
 #include "pedometer.h"
 #include "wrist_wake.h"
+#include "battery_adc.h"
 #include "board_config.h"
 #include "ble_link.h"
 #include <string.h>
@@ -42,8 +43,9 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-typedef enum { PAGE_PPG, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_PPG;
+/* F08-P01 BAT ADC页作为首页，KEY长按循环：BAT ADC、PPG、BLE、WRIST、STEPS、MOTION、HAPTIC、TIME */
+typedef enum { PAGE_BAT, PAGE_PPG, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_BAT;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
@@ -387,6 +389,54 @@ static void draw_ble_page(void)
     text(2U, 56U, "MENU SEND TEST");
 }
 
+static void draw_battery_page(void)
+{
+    battery_adc_state_t bat;
+    (void)battery_adc_get_state(&bat);
+    text(26U, 0U, "BAT ADC CHECK");
+
+    /* 第2行：RAW */
+    text(2U, 8U, "RAW");
+    if (bat.valid) { number(26U, 8U, bat.raw_pin); }
+    else { text(26U, 8U, "--"); }
+
+    /* 第3行：REF */
+    text(2U, 16U, "REF");
+    if (bat.valid) { number(26U, 16U, bat.raw_vref); }
+    else { text(26U, 16U, "--"); }
+
+    /* 第4行：VDD MV */
+    text(2U, 24U, "VDD MV");
+    if (bat.valid) { number(44U, 24U, bat.vdda_mv); }
+    else { text(44U, 24U, "--"); }
+
+    /* 第5行：PIN MV */
+    text(2U, 32U, "PIN MV");
+    if (bat.valid) { number(44U, 32U, bat.pin_mv); }
+    else { text(44U, 32U, "--"); }
+
+    /* 第6行：BAT MV */
+    text(2U, 40U, "BAT MV");
+    if (bat.valid) { number(44U, 40U, bat.battery_mv); }
+    else { text(44U, 40U, "--"); }
+
+    /* 第7行：N E */
+    text(2U, 48U, "N"); number(14U, 48U, bat.sample_count > 999999U ? 999999U : bat.sample_count);
+    text(62U, 48U, "E"); number(74U, 48U, bat.error_count > 999999U ? 999999U : bat.error_count);
+
+    /* 第8行：状态 */
+    const char *status_text = "VOLT ONLY";
+    if (!bat.valid) {
+        if (bat.status == WATCH_NOT_READY) { status_text = "STARTING"; }
+        else if (bat.status == WATCH_TIMEOUT) { status_text = "TIMEOUT RETRY"; }
+        else if (bat.status == WATCH_IO_ERROR) { status_text = "IO ERROR RETRY"; }
+        else if (bat.status == WATCH_INVALID_DATA) { status_text = "DATA ERROR RETRY"; }
+        else if (bat.status == WATCH_NOT_IMPLEMENTED) { status_text = "NOT IMPLEMENTED"; }
+        else { status_text = "STALE RETRY"; }
+    }
+    text(2U, 56U, status_text);
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -404,6 +454,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_BAT) {
+        draw_battery_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_PPG) {
         draw_ppg_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_BLE) {

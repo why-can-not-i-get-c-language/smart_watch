@@ -1,15 +1,16 @@
 /**
- * F13-P01 MAX30102身份与原始采样 - STM32F411CEU6
- * 版本：F13-P01-20261117-01
+ * F08-P01 电池电压ADC诊断 - STM32F411CEU6
+ * 版本：F08-P01-20261119-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认PPG页，KEY长按循环PPG、BLE、姿态、计步、MPU、振动、北京时间页
+ *  - 默认BAT ADC页，KEY长按循环BAT、PPG、BLE、姿态、计步、MPU、振动、北京时间页
  *  - 姿态页MENU长按标定，按键/姿态唤醒，10秒无有效操作熄屏
  *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
  *  - 振动命令异步推进，切出验收页时请求停止
  *  - 时间页保留本地编辑/保存/取消，RTC继续走时
  *  - 保留LED心跳、I2C/SPI诊断与掉屏恢复，UART只由BLE任务接收
+ *  - 电池ADC每5ms至多一次转换，16对后发布，不表示电池百分比或已校准
  */
 
 #include "board_port.h"
@@ -29,13 +30,14 @@
 #include "max30102.h"
 #include "pedometer.h"
 #include "wrist_wake.h"
+#include "battery_adc.h"
 #include <stdint.h>
 #include <string.h>
 
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F13-P01-20261117-01";
+static const char firmware_version[] = "F08-P01-20261119-01";
 #endif
 
 /**
@@ -94,6 +96,8 @@ typedef struct {
     volatile pedometer_status_t pedometer;
     volatile watch_status_t wrist_status;
     volatile wrist_wake_status_t wrist;
+    volatile watch_status_t battery_adc_status;
+    volatile battery_adc_state_t battery_adc;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -354,6 +358,16 @@ static void ppg_update_task(void *ctx)
     diag.ppg = state;
 }
 
+/* 电池ADC每5ms推进，每轮至多一次ADC转换。 */
+static void battery_adc_task(void *ctx)
+{
+    (void)ctx;
+    diag.battery_adc_status = battery_adc_process(board_millis());
+    battery_adc_state_t bat_state;
+    (void)battery_adc_get_state(&bat_state);
+    diag.battery_adc = bat_state;
+}
+
 /* 常规时基及串口诊断，与振动命令状态分别记录。 */
 static void update_status(void *ctx)
 {
@@ -483,9 +497,11 @@ int main(void)
     (void)max30102_init();
     (void)pedometer_reset();
     (void)wrist_wake_reset();
+    (void)battery_adc_init();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = battery_adc_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = ppg_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = motion_update_task, .context = NULL},
