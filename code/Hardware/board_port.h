@@ -10,4 +10,15 @@ watch_status_t board_enter_stop(void);
 watch_status_t board_i2c_init(void);
 watch_status_t board_spi_init(void);
 watch_status_t board_uart_init(uint32_t baudrate);
+
+/* MAX30102低有效开漏INT：PB1下降沿计数，不在中断中访问I2C。
+ * count是边沿数，不能当成PPG样本数或STOP唤醒次数。 */
+typedef struct {
+    bool initialized, pin_high;
+    uint32_t count, last_edge_ms;
+} board_ppg_irq_state_t;
+watch_status_t board_ppg_irq_init(void);
+watch_status_t board_ppg_irq_get_state(board_ppg_irq_state_t *state);
+/* 仅由EXTI1_IRQHandler转发。 */
+void board_ppg_irq_handle(void);
 #endif

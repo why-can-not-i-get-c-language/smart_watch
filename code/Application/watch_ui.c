@@ -9,6 +9,7 @@
 #include "wrist_wake.h"
 #include "battery_adc.h"
 #include "board_config.h"
+#include "board_port.h"
 #include "ble_link.h"
 #include <string.h>
 #include <math.h>
@@ -43,9 +44,9 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-/* F08-P01 BAT ADC页作为首页，KEY长按循环：BAT ADC、PPG、BLE、WRIST、STEPS、MOTION、HAPTIC、TIME */
-typedef enum { PAGE_BAT, PAGE_PPG, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_BAT;
+/* INT接口检查默认PPG页；ADC及其他页面继续保留。 */
+typedef enum { PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_MOTION, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_PPG;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
@@ -327,7 +328,7 @@ static void draw_ppg_page(void)
 {
     max30102_state_t state;
     max30102_get_state(&state);
-    text(2U, 0U, "PPG RAW CHECK");
+    text(2U, 0U, "PPG INT CHECK");
     text(2U, 8U, "ID");
     static const char hex[] = "0123456789ABCDEF";
     if (state.identity_read) {
@@ -356,9 +357,13 @@ static void draw_ppg_page(void)
         !state.sample.valid ? "WAIT RAW DATA" :
         state.saturated ? "SATURATED" : state.low_signal ? "LOW SIGNAL" : "RAW ONLY";
     text(2U, 48U, signal);
-    text(2U, 56U, "T MS");
-    if (state.sample.valid) { number(32U, 56U, state.sample.timestamp_ms); }
-    else { text(32U, 56U, "--"); }
+    board_ppg_irq_state_t irq;
+    watch_status_t irq_status = board_ppg_irq_get_state(&irq);
+    text(2U, 56U, "IRQ");
+    if (irq_status == WATCH_OK) {
+        number(26U, 56U, irq.count > 999999U ? 999999U : irq.count);
+        text(80U, 56U, "P"); number(92U, 56U, irq.pin_high ? 1U : 0U);
+    } else { text(26U, 56U, "--"); }
 }
 
 static void draw_ble_page(void)

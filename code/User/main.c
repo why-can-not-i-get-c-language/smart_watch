@@ -1,9 +1,9 @@
 /**
- * F08-P01 电池电压ADC诊断 - STM32F411CEU6
- * 版本：F08-P01-20261119-02
+ * MAX30102 INT接口检查 - STM32F411CEU6
+ * 版本：F13-INT-20261119-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认BAT ADC页，KEY长按循环BAT、PPG、BLE、姿态、计步、MPU、振动、北京时间页
+ *  - 默认PPG INT页，KEY长按循环PPG、BAT、BLE、姿态、计步、MPU、振动、北京时间页
  *  - 姿态页MENU长按标定，按键/姿态唤醒，10秒无有效操作熄屏
  *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
  *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
@@ -37,7 +37,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F08-P01-20261119-02";
+static const char firmware_version[] = "F13-INT-20261119-01";
 #endif
 
 /**
@@ -92,6 +92,8 @@ typedef struct {
     volatile mpu6050_state_t motion;
     volatile watch_status_t ppg_process_status;
     volatile max30102_state_t ppg;
+    volatile watch_status_t ppg_irq_status;
+    volatile board_ppg_irq_state_t ppg_irq;
     volatile watch_status_t pedometer_status;
     volatile pedometer_status_t pedometer;
     volatile watch_status_t wrist_status;
@@ -356,6 +358,9 @@ static void ppg_update_task(void *ctx)
     max30102_state_t state;
     max30102_get_state(&state);
     diag.ppg = state;
+    board_ppg_irq_state_t irq;
+    diag.ppg_irq_status = board_ppg_irq_get_state(&irq);
+    diag.ppg_irq = irq;
 }
 
 /* 电池ADC每5ms推进，每轮至多一次ADC转换。 */
@@ -494,6 +499,7 @@ int main(void)
     diag.haptic_request_status = tm6605_init();
     haptic_last_retry_ms = board_millis();
     (void)mpu6050_init();
+    diag.ppg_irq_status = board_ppg_irq_init();
     (void)max30102_init();
     (void)pedometer_reset();
     (void)wrist_wake_reset();
