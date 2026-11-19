@@ -1,6 +1,6 @@
 /**
  * F08-P01 电池电压ADC诊断 - STM32F411CEU6
- * 版本：F08-P01-20261119-01
+ * 版本：F08-P01-20261119-02
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认BAT ADC页，KEY长按循环BAT、PPG、BLE、姿态、计步、MPU、振动、北京时间页
@@ -37,7 +37,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F08-P01-20261119-01";
+static const char firmware_version[] = "F08-P01-20261119-02";
 #endif
 
 /**

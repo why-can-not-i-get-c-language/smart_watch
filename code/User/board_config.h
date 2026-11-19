@@ -159,10 +159,11 @@
 #define WATCH_BATTERY_ADC_PIN GPIO_PIN_1
 #define WATCH_BATTERY_ADC_CHANNEL ADC_CHANNEL_1
 #endif
-/* 上100k、下100k、节点并100nF到地；上电阻接总开关输出/稳压器Vi+。
- * 关断时切断分压外部电源；不连接稳压器3.3V输出或电池常电端。 */
-#define WATCH_BATTERY_DIV_TOP_K 100U
-#define WATCH_BATTERY_DIV_BOTTOM_K 100U
+/* PCB名义100k/100k、节点并100nF到地；本轮按台架实测上97.8k/下106.7k换算。
+ * 单位Ω。上电阻接总开关输出/稳压器Vi+，不接3.3V输出或电池常电端。
+ * 更换电阻后须重新记录阻值及校准，不能沿用本组参数。 */
+#define WATCH_BATTERY_DIV_TOP_OHMS 97800U
+#define WATCH_BATTERY_DIV_BOTTOM_OHMS 106700U
 /* ADC采样配置 */
 #define WATCH_BATTERY_ADC_AVERAGING 16U
 #define WATCH_BATTERY_ADC_STALE_MS 1000U

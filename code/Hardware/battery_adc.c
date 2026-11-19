@@ -143,8 +143,8 @@ watch_status_t battery_adc_process(uint32_t now_ms)
     uint64_t denominator = (uint64_t)sum_ref * 4095U;
     uint64_t numerator = (uint64_t)sum_pin * reference;
     uint64_t pin = (numerator + denominator / 2U) / denominator;
-    uint64_t battery_den = denominator * WATCH_BATTERY_DIV_BOTTOM_K;
-    uint64_t battery = (numerator * (WATCH_BATTERY_DIV_TOP_K + WATCH_BATTERY_DIV_BOTTOM_K) + battery_den / 2U) / battery_den;
+    uint64_t battery_den = denominator * WATCH_BATTERY_DIV_BOTTOM_OHMS;
+    uint64_t battery = (numerator * (WATCH_BATTERY_DIV_TOP_OHMS + WATCH_BATTERY_DIV_BOTTOM_OHMS) + battery_den / 2U) / battery_den;
     int64_t corrected = ((int64_t)battery * WATCH_BATTERY_ADC_GAIN_PPM + 500000LL) / 1000000LL + WATCH_BATTERY_ADC_OFFSET_MV;
     if (vdda < 1700U || vdda > 3600U || pin > UINT16_MAX || corrected < 0 || corrected > UINT16_MAX) {
         return fail(WATCH_INVALID_DATA, now_ms);
