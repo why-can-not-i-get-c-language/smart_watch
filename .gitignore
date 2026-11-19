@@ -1,6 +1,7 @@
 # 只发布源码和项目复刻资料。
 /*
 !/.gitignore
+!/.gitattributes
 !/README.md
 !/registry.md
 !/code/
@@ -20,6 +21,17 @@
 /plan/design/*
 !/plan/design/wiring.md
 !/plan/design/functions/
+!/plan/design/eda/
+/plan/design/eda/*
+!/plan/design/eda/smart_watch.eprj3
+!/plan/design/eda/sch/
+!/plan/design/eda/pcb/
+!/plan/design/eda/panel/
+!/plan/design/eda/exports/
+/plan/design/eda/exports/*
+!/plan/design/eda/exports/*.png
+!/plan/design/eda/exports/*.pdf
+!/plan/design/eda/exports/smart_watch.net
 /plan/design/functions/*
 !/plan/design/functions/F*.md
 

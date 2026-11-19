@@ -1,0 +1,9 @@
+# 嘉立创原理图记录以 LF 分隔，避免 Windows 检出时改写格式。
+plan/design/eda/**/*.esch2 text eol=lf
+plan/design/eda/**/*.epcb2 text eol=lf
+plan/design/eda/**/*.epan2 text eol=lf
+plan/design/eda/**/*.ecfg text eol=lf
+plan/design/eda/*.eprj3 text eol=lf
+plan/design/eda/exports/*.net text eol=lf
+plan/design/eda/exports/*.png binary
+plan/design/eda/exports/*.pdf binary
