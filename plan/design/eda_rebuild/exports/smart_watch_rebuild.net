@@ -39,7 +39,7 @@ Description
 DESIGNATOR
 S1
 FOOTPRINT
-
+SPDT_1x3_P2.54
 PARTTYPE
 总开关_SPDT
 DESCRIPTION
@@ -65,7 +65,7 @@ Name
 Value
 总开关_SPDT
 封装状态
-未绑定；等待所需尺寸
+三脚2.54mm孔位已绑定；本体及固定结构待套合
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -219,7 +219,7 @@ Description
 DESIGNATOR
 M4
 FOOTPRINT
-WeAct_MiniF4_V31_44P
+WeAct_MiniF4_V31_40P
 PARTTYPE
 WeAct_MiniF4_F411
 DESCRIPTION
@@ -246,42 +246,6 @@ Value
 WeAct_MiniF4_F411
 封装状态
 已绑定；装配仍须核对
-Description
-端口名为丝印逻辑名；物理编号和模块封装未冻结
-
-*
-]
-[
-DESIGNATOR
-J1
-FOOTPRINT
-
-PARTTYPE
-SWD_调试接口
-DESCRIPTION
-端口名为丝印逻辑名；物理编号和模块封装未冻结
-Component Kind
-Standard
-Add into BOM
-yes
-Convert to PCB
-yes
-Designator
-J1
-Device
-SWD_调试接口
-PCB Layer
-Default
-Symbol
-SWD_调试接口
-Unique ID
-d9fee7a95ccc43a7
-Name
-SWD四线（VTREF仅检测）
-Value
-SWD四线（VTREF仅检测）
-封装状态
-未绑定；等待所需尺寸
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -516,7 +480,6 @@ M3-Vo- DFR0568_3V3-Vo- Passive
 R2-2 R-2 Passive
 C1-2 C-2 Passive
 M4-GND WeAct_MiniF4_F411-GND Passive
-J1-GND SWD_调试接口-GND Passive
 M5-GND DFR0650_OLED-GND Passive
 M6-GND GY-521_MPU6050-GND Passive
 M6-AD0 GY-521_MPU6050-AD0 Passive
@@ -535,7 +498,6 @@ R1-1 R-1 Passive
 3V3
 M3-Vo+ DFR0568_3V3-Vo+ Passive
 M4-3V3 WeAct_MiniF4_F411-3V3 Passive
-J1-VTREF SWD_调试接口-VTREF Passive
 M5-VCC DFR0650_OLED-VCC Passive
 M6-VCC GY-521_MPU6050-VCC Passive
 M7-VIN HW-605_MAX30102-VIN Passive
@@ -591,14 +553,4 @@ M9-RX TEL0073_BLE-Link-RX Passive
 BLE_TX
 M4-PA10 WeAct_MiniF4_F411-PA10 Passive
 M9-TX TEL0073_BLE-Link-TX Passive
-)
-(
-SWDIO
-M4-PA13 WeAct_MiniF4_F411-PA13 Passive
-J1-SWDIO SWD_调试接口-SWDIO Passive
-)
-(
-SWCLK
-M4-PA14 WeAct_MiniF4_F411-PA14 Passive
-J1-SWCLK SWD_调试接口-SWCLK Passive
 )
