@@ -111,7 +111,7 @@ Description
 DESIGNATOR
 R1
 FOOTPRINT
-
+R_Axial_P10.16mm
 PARTTYPE
 R
 DESCRIPTION
@@ -137,7 +137,7 @@ Name
 Value
 100kΩ 1%
 封装状态
-未绑定；等待所需尺寸
+针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -147,7 +147,7 @@ Description
 DESIGNATOR
 R2
 FOOTPRINT
-
+R_Axial_P10.16mm
 PARTTYPE
 R
 DESCRIPTION
@@ -173,7 +173,7 @@ Name
 Value
 100kΩ 1%
 封装状态
-未绑定；等待所需尺寸
+针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -183,7 +183,7 @@ Description
 DESIGNATOR
 C1
 FOOTPRINT
-
+C_Monolithic_P5.08mm
 PARTTYPE
 C
 DESCRIPTION
@@ -209,7 +209,7 @@ Name
 Value
 100nF
 封装状态
-未绑定；等待所需尺寸
+针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -399,7 +399,7 @@ Description
 DESIGNATOR
 SW_MENU
 FOOTPRINT
-
+Tactile_Adjustable_12.70x5.08mm
 PARTTYPE
 常开按键_触点
 DESCRIPTION
@@ -425,7 +425,7 @@ MENU常开触点
 Value
 MENU常开触点
 封装状态
-未绑定；等待所需尺寸
+针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -435,7 +435,7 @@ Description
 DESIGNATOR
 SW_SOS
 FOOTPRINT
-
+Tactile_Adjustable_12.70x5.08mm
 PARTTYPE
 常开按键_触点
 DESCRIPTION
@@ -461,7 +461,7 @@ SOS常开触点
 Value
 SOS常开触点
 封装状态
-未绑定；等待所需尺寸
+针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
 
@@ -486,7 +486,9 @@ M6-AD0 GY-521_MPU6050-AD0 Passive
 M7-GND1 HW-605_MAX30102-GND1 Passive
 M9-GND TEL0073_BLE-Link-GND Passive
 SW_MENU-GND 常开按键_触点-GND Passive
+SW_MENU-GND2 常开按键_触点-GND2 Passive
 SW_SOS-GND 常开按键_触点-GND Passive
+SW_SOS-GND2 常开按键_触点-GND2 Passive
 )
 (
 BAT_SW
@@ -538,11 +540,13 @@ M7-INT HW-605_MAX30102-INT Passive
 MENU_KEY
 M4-PB12 WeAct_MiniF4_F411-PB12 Passive
 SW_MENU-SIG 常开按键_触点-SIG Passive
+SW_MENU-SIG2 常开按键_触点-SIG2 Passive
 )
 (
 SOS_KEY
 M4-PB13 WeAct_MiniF4_F411-PB13 Passive
 SW_SOS-SIG 常开按键_触点-SIG Passive
+SW_SOS-SIG2 常开按键_触点-SIG2 Passive
 )
 (
 BLE_RX
