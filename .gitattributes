@@ -7,3 +7,10 @@ plan/design/eda/*.eprj3 text eol=lf
 plan/design/eda/exports/*.net text eol=lf
 plan/design/eda/exports/*.png binary
 plan/design/eda/exports/*.pdf binary
+plan/design/eda_rebuild/**/*.esch2 text eol=lf
+plan/design/eda_rebuild/**/*.epcb2 text eol=lf
+plan/design/eda_rebuild/**/*.ecfg text eol=lf
+plan/design/eda_rebuild/*.eprj3 text eol=lf
+plan/design/eda_rebuild/exports/*.net text eol=lf
+plan/design/eda_rebuild/exports/*.png binary
+plan/design/eda_rebuild/exports/*.pdf binary
