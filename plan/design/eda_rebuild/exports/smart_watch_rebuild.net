@@ -1,0 +1,604 @@
+PROTEL NETLIST 2.0
+[
+DESIGNATOR
+M1
+FOOTPRINT
+
+PARTTYPE
+FIT0120
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+no
+Designator
+M1
+Device
+FIT0120
+PCB Layer
+Default
+Symbol
+FIT0120
+Unique ID
+9d16e962baa94545
+Name
+FIT0120
+Value
+FIT0120
+封装状态
+外接电池，本体不转PCB
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+S1
+FOOTPRINT
+
+PARTTYPE
+总开关_SPDT
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+S1
+Device
+总开关_SPDT
+PCB Layer
+Default
+Symbol
+总开关_SPDT
+Unique ID
+fefd7a4a75114c2e
+Name
+总开关_SPDT
+Value
+总开关_SPDT
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+M3
+FOOTPRINT
+DFR0568_13x17_Holes7.62x15mm
+PARTTYPE
+DFR0568_3V3
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+M3
+Device
+DFR0568_3V3
+PCB Layer
+Default
+Symbol
+DFR0568_3V3
+Unique ID
+581883c807a04720
+Name
+DFR0568_3V3
+Value
+DFR0568_3V3
+封装状态
+已绑定；装配仍须核对
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+R1
+FOOTPRINT
+
+PARTTYPE
+R
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+R1
+Device
+R
+PCB Layer
+Default
+Symbol
+R
+Unique ID
+83aaaec0cfba4520
+Name
+100kΩ 1%
+Value
+100kΩ 1%
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+R2
+FOOTPRINT
+
+PARTTYPE
+R
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+R2
+Device
+R
+PCB Layer
+Default
+Symbol
+R
+Unique ID
+35669039e66e48e2
+Name
+100kΩ 1%
+Value
+100kΩ 1%
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+C1
+FOOTPRINT
+
+PARTTYPE
+C
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+C1
+Device
+C
+PCB Layer
+Default
+Symbol
+C
+Unique ID
+99c4380665584daa
+Name
+100nF
+Value
+100nF
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+M4
+FOOTPRINT
+WeAct_MiniF4_V31_44P
+PARTTYPE
+WeAct_MiniF4_F411
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+M4
+Device
+WeAct_MiniF4_F411
+PCB Layer
+Default
+Symbol
+WeAct_MiniF4_F411
+Unique ID
+4deec7ea031b4ac8
+Name
+WeAct_MiniF4_F411
+Value
+WeAct_MiniF4_F411
+封装状态
+已绑定；装配仍须核对
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+J1
+FOOTPRINT
+
+PARTTYPE
+SWD_调试接口
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+J1
+Device
+SWD_调试接口
+PCB Layer
+Default
+Symbol
+SWD_调试接口
+Unique ID
+d9fee7a95ccc43a7
+Name
+SWD四线（VTREF仅检测）
+Value
+SWD四线（VTREF仅检测）
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+M5
+FOOTPRINT
+DFR0650_30x30_P2.54
+PARTTYPE
+DFR0650_OLED
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+M5
+Device
+DFR0650_OLED
+PCB Layer
+Default
+Symbol
+DFR0650_OLED
+Unique ID
+2b806f5f54de4fc3
+Name
+DFR0650_OLED
+Value
+DFR0650_OLED
+封装状态
+已绑定；装配仍须核对
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+M6
+FOOTPRINT
+GY521_1x8_P2.54
+PARTTYPE
+GY-521_MPU6050
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+M6
+Device
+GY-521_MPU6050
+PCB Layer
+Default
+Symbol
+GY-521_MPU6050
+Unique ID
+4566c56f72fd4829
+Name
+GY-521_MPU6050
+Value
+GY-521_MPU6050
+封装状态
+针孔阵列已绑定；板边、安装空间待核对
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+M7
+FOOTPRINT
+HW605_2x4_P2.54_Row10.16mm
+PARTTYPE
+HW-605_MAX30102
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+M7
+Device
+HW-605_MAX30102
+PCB Layer
+Default
+Symbol
+HW-605_MAX30102
+Unique ID
+62f1ff3b951243f1
+Name
+HW-605_MAX30102
+Value
+HW-605_MAX30102
+封装状态
+已绑定；装配仍须核对
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+M9
+FOOTPRINT
+TEL0073_2x10_P2_Row22mm
+PARTTYPE
+TEL0073_BLE-Link
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+M9
+Device
+TEL0073_BLE-Link
+PCB Layer
+Default
+Symbol
+TEL0073_BLE-Link
+Unique ID
+ef334949927f4544
+Name
+TEL0073_BLE-Link
+Value
+TEL0073_BLE-Link
+封装状态
+针孔阵列已绑定；板边、安装空间待核对
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+SW_MENU
+FOOTPRINT
+
+PARTTYPE
+常开按键_触点
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+SW_MENU
+Device
+常开按键_触点
+PCB Layer
+Default
+Symbol
+常开按键_触点
+Unique ID
+2e7f6556f7a74e87
+Name
+MENU常开触点
+Value
+MENU常开触点
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+[
+DESIGNATOR
+SW_SOS
+FOOTPRINT
+
+PARTTYPE
+常开按键_触点
+DESCRIPTION
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+Component Kind
+Standard
+Add into BOM
+yes
+Convert to PCB
+yes
+Designator
+SW_SOS
+Device
+常开按键_触点
+PCB Layer
+Default
+Symbol
+常开按键_触点
+Unique ID
+bc8ec70b65e048c6
+Name
+SOS常开触点
+Value
+SOS常开触点
+封装状态
+未绑定；等待所需尺寸
+Description
+端口名为丝印逻辑名；物理编号和模块封装未冻结
+
+*
+]
+(
+BAT_RAW
+M1-BAT+ FIT0120-BAT+ Passive
+S1-COM 总开关_SPDT-COM Passive
+)
+(
+GND
+M1-BAT- FIT0120-BAT- Passive
+M3-Vi- DFR0568_3V3-Vi- Passive
+M3-Vo- DFR0568_3V3-Vo- Passive
+R2-2 R-2 Passive
+C1-2 C-2 Passive
+M4-GND WeAct_MiniF4_F411-GND Passive
+J1-GND SWD_调试接口-GND Passive
+M5-GND DFR0650_OLED-GND Passive
+M6-GND GY-521_MPU6050-GND Passive
+M6-AD0 GY-521_MPU6050-AD0 Passive
+M7-GND1 HW-605_MAX30102-GND1 Passive
+M9-GND TEL0073_BLE-Link-GND Passive
+SW_MENU-GND 常开按键_触点-GND Passive
+SW_SOS-GND 常开按键_触点-GND Passive
+)
+(
+BAT_SW
+S1-OUT 总开关_SPDT-OUT Passive
+M3-Vi+ DFR0568_3V3-Vi+ Passive
+R1-1 R-1 Passive
+)
+(
+3V3
+M3-Vo+ DFR0568_3V3-Vo+ Passive
+M4-3V3 WeAct_MiniF4_F411-3V3 Passive
+J1-VTREF SWD_调试接口-VTREF Passive
+M5-VCC DFR0650_OLED-VCC Passive
+M6-VCC GY-521_MPU6050-VCC Passive
+M7-VIN HW-605_MAX30102-VIN Passive
+M9-VCC TEL0073_BLE-Link-VCC Passive
+)
+(
+BAT_ADC
+R1-2 R-2 Passive
+R2-1 R-1 Passive
+C1-1 C-1 Passive
+M4-PA1 WeAct_MiniF4_F411-PA1 Passive
+)
+(
+I2C_SCL
+M4-PB6 WeAct_MiniF4_F411-PB6 Passive
+M5-SCL DFR0650_OLED-SCL Passive
+M6-SCL GY-521_MPU6050-SCL Passive
+M7-SCL HW-605_MAX30102-SCL Passive
+)
+(
+I2C_SDA
+M4-PB7 WeAct_MiniF4_F411-PB7 Passive
+M5-SDA DFR0650_OLED-SDA Passive
+M6-SDA GY-521_MPU6050-SDA Passive
+M7-SDA HW-605_MAX30102-SDA Passive
+)
+(
+MPU_INT
+M4-PB0 WeAct_MiniF4_F411-PB0 Passive
+M6-INT GY-521_MPU6050-INT Passive
+)
+(
+PPG_INT
+M4-PB1 WeAct_MiniF4_F411-PB1 Passive
+M7-INT HW-605_MAX30102-INT Passive
+)
+(
+MENU_KEY
+M4-PB12 WeAct_MiniF4_F411-PB12 Passive
+SW_MENU-SIG 常开按键_触点-SIG Passive
+)
+(
+SOS_KEY
+M4-PB13 WeAct_MiniF4_F411-PB13 Passive
+SW_SOS-SIG 常开按键_触点-SIG Passive
+)
+(
+BLE_RX
+M4-PA9 WeAct_MiniF4_F411-PA9 Passive
+M9-RX TEL0073_BLE-Link-RX Passive
+)
+(
+BLE_TX
+M4-PA10 WeAct_MiniF4_F411-PA10 Passive
+M9-TX TEL0073_BLE-Link-TX Passive
+)
+(
+SWDIO
+M4-PA13 WeAct_MiniF4_F411-PA13 Passive
+J1-SWDIO SWD_调试接口-SWDIO Passive
+)
+(
+SWCLK
+M4-PA14 WeAct_MiniF4_F411-PA14 Passive
+J1-SWCLK SWD_调试接口-SWCLK Passive
+)
