@@ -3,7 +3,6 @@ PROTEL NETLIST 2.0
 DESIGNATOR
 M1
 FOOTPRINT
-
 PARTTYPE
 FIT0120
 DESCRIPTION
@@ -32,7 +31,6 @@ FIT0120
 外接电池，本体不转PCB
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -68,7 +66,6 @@ Value
 三脚2.54mm孔位已绑定；本体及固定结构待套合
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -104,7 +101,6 @@ DFR0568_3V3
 已绑定；装配仍须核对
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -140,7 +136,6 @@ Value
 针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -176,7 +171,6 @@ Value
 针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -212,7 +206,6 @@ Value
 针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -248,7 +241,6 @@ WeAct_MiniF4_F411
 已绑定；装配仍须核对
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -284,7 +276,6 @@ DFR0650_OLED
 已绑定；装配仍须核对
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -320,7 +311,6 @@ GY-521_MPU6050
 针孔阵列已绑定；板边、安装空间待核对
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -356,7 +346,41 @@ HW-605_MAX30102
 已绑定；装配仍须核对
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
+*
+]
+[
+DESIGNATOR
+J2
+FOOTPRINT
+Haptic_Wire_1x4_P2.54
+PARTTYPE
+DRI0056_WIRE4
+DESCRIPTION
+DRI0056外接焊线接口；不是新增模块
+Component Kind
+Standard
+Add into BOM
+no
+Convert to PCB
+yes
+Designator
+J2
+Device
+DRI0056_WIRE4
+PCB Layer
+Default
+Symbol
+DRI0056_WIRE4
+Unique ID
+575cf62fe0b04b8e
+Name
+DRI0056线接接口
+Value
+4个焊线孔
+封装状态
+四孔接线焊盘，外置模块经导线连接
+Description
+DRI0056外接焊线接口；不是新增模块
 *
 ]
 [
@@ -392,7 +416,6 @@ TEL0073_BLE-Link
 针孔阵列已绑定；板边、安装空间待核对
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -428,7 +451,6 @@ MENU常开触点
 针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 [
@@ -464,7 +486,6 @@ SOS常开触点
 针孔已绑定；安装套合待确认
 Description
 端口名为丝印逻辑名；物理编号和模块封装未冻结
-
 *
 ]
 (
@@ -484,6 +505,7 @@ M5-GND DFR0650_OLED-GND Passive
 M6-GND GY-521_MPU6050-GND Passive
 M6-AD0 GY-521_MPU6050-AD0 Passive
 M7-GND1 HW-605_MAX30102-GND1 Passive
+J2-2 DRI0056_WIRE4-GND (-) Passive
 M9-GND TEL0073_BLE-Link-GND Passive
 SW_MENU-GND 常开按键_触点-GND Passive
 SW_MENU-GND2 常开按键_触点-GND2 Passive
@@ -503,6 +525,7 @@ M4-3V3 WeAct_MiniF4_F411-3V3 Passive
 M5-VCC DFR0650_OLED-VCC Passive
 M6-VCC GY-521_MPU6050-VCC Passive
 M7-VIN HW-605_MAX30102-VIN Passive
+J2-1 DRI0056_WIRE4-3V3 (+) Passive
 M9-VCC TEL0073_BLE-Link-VCC Passive
 )
 (
@@ -518,6 +541,7 @@ M4-PB6 WeAct_MiniF4_F411-PB6 Passive
 M5-SCL DFR0650_OLED-SCL Passive
 M6-SCL GY-521_MPU6050-SCL Passive
 M7-SCL HW-605_MAX30102-SCL Passive
+J2-3 DRI0056_WIRE4-SCL (C) Passive
 )
 (
 I2C_SDA
@@ -525,6 +549,7 @@ M4-PB7 WeAct_MiniF4_F411-PB7 Passive
 M5-SDA DFR0650_OLED-SDA Passive
 M6-SDA GY-521_MPU6050-SDA Passive
 M7-SDA HW-605_MAX30102-SDA Passive
+J2-4 DRI0056_WIRE4-SDA (D) Passive
 )
 (
 MPU_INT
