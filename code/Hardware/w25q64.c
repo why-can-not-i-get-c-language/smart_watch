@@ -15,6 +15,7 @@ static uint32_t address, started_ms, verified, total, completed, current;
 static uint8_t pending[PAGE_SIZE];
 static bool erasing, test_waiting, recovering, disabled;
 static bool settings_claimed, settings_operation;
+static bool history_claimed, history_operation;
 static const uint8_t cross_pattern[6]={0xA5U,0U,0x5AU,0xC3U,0x3CU,0x81U};
 _Static_assert(WATCH_EXT_FLASH_SIZE==0x800000UL,"Flash design size mismatch");
 _Static_assert(SPI_BUS_MAX_TRANSFER_SIZE>=PAGE_SIZE,"SPI segment must hold a page");
@@ -92,11 +93,11 @@ watch_status_t w25q64_read(uint32_t offset,uint8_t *data,size_t size)
 }
 static watch_status_t enqueue(uint32_t offset,const uint8_t *data,size_t size,bool erase)
 {
-    if (!profile_ready() || state.busy || !state.owned || settings_claimed) return WATCH_NOT_READY;
+    if (!profile_ready() || state.busy || !state.owned || settings_claimed || history_claimed) return WATCH_NOT_READY;
     if (offset<W25Q64_TEST_BASE || offset>=WATCH_EXT_FLASH_SIZE ||
         size>WATCH_EXT_FLASH_SIZE-offset) return WATCH_INVALID_ARGUMENT;
     address=offset;total=(uint32_t)size;completed=0U;verified=0U;erasing=erase;
-    recovering=state.test_stage==FLASH_TEST_CLEANING;settings_operation=false;
+    recovering=state.test_stage==FLASH_TEST_CLEANING;settings_operation=false;history_operation=false;
     disabled=false;
     if (!erase) memcpy(pending,data,size);
     op=OP_SR0;state.busy=true;state.operation_status=WATCH_NOT_READY;
@@ -115,7 +116,7 @@ watch_status_t w25q64_erase_sector(uint32_t offset)
 /* 持有整个参数事务，防止两个异步客户端相互领取完成状态。 */
 watch_status_t w25q64_settings_claim(void)
 {
-    if (!profile_ready() || state.busy || settings_claimed || state.owned ||
+    if (!profile_ready() || state.busy || settings_claimed || history_claimed || state.owned ||
         state.dirty || test_waiting ||
         (state.test_stage>=FLASH_TEST_SCAN && state.test_stage<=FLASH_TEST_ERASE))
         return WATCH_NOT_READY;
@@ -135,7 +136,7 @@ watch_status_t w25q64_settings_write(uint32_t offset,const uint8_t *data,size_t 
     if (!in_a && !in_b) return WATCH_INVALID_ARGUMENT;
     if (!profile_ready() || state.busy || !settings_claimed) return WATCH_NOT_READY;
     address=offset;total=(uint32_t)size;completed=0U;verified=0U;erasing=false;
-    recovering=false;disabled=false;settings_operation=true;
+    recovering=false;disabled=false;settings_operation=true;history_operation=false;
     memcpy(pending,data,size);
     op=OP_SR0;state.busy=true;state.operation_status=WATCH_NOT_READY;
     return WATCH_OK;
@@ -146,7 +147,43 @@ watch_status_t w25q64_settings_erase_sector(uint32_t offset)
     if (!range_valid(offset,WATCH_SETTINGS_SIZE)) return WATCH_INVALID_ARGUMENT;
     if (!profile_ready() || state.busy || !settings_claimed) return WATCH_NOT_READY;
     address=offset;total=WATCH_SETTINGS_SIZE;completed=0U;verified=0U;erasing=true;
-    recovering=false;disabled=false;settings_operation=true;
+    recovering=false;disabled=false;settings_operation=true;history_operation=false;
+    op=OP_SR0;state.busy=true;state.operation_status=WATCH_NOT_READY;
+    return WATCH_OK;
+}
+/* 历史存储Flash接口：互斥claim/release，只允许历史区。 */
+watch_status_t w25q64_history_claim(void)
+{
+    if (!profile_ready() || state.busy || settings_claimed || history_claimed || state.owned ||
+        state.dirty || test_waiting ||
+        (state.test_stage>=FLASH_TEST_SCAN && state.test_stage<=FLASH_TEST_ERASE))
+        return WATCH_NOT_READY;
+    history_claimed=true;return WATCH_OK;
+}
+watch_status_t w25q64_history_release(void)
+{
+    if (!history_claimed || state.busy) return WATCH_NOT_READY;
+    history_claimed=false;return WATCH_OK;
+}
+watch_status_t w25q64_history_write(uint32_t offset, const uint8_t *data, size_t size)
+{
+    if (data==NULL || size==0U || size>PAGE_SIZE || !range_valid(offset,size)) return WATCH_INVALID_ARGUMENT;
+    if (offset<WATCH_HISTORY_BASE || offset>=WATCH_HISTORY_END ||
+        size>WATCH_HISTORY_END-offset) return WATCH_INVALID_ARGUMENT;
+    if (!profile_ready() || state.busy || !history_claimed) return WATCH_NOT_READY;
+    address=offset;total=(uint32_t)size;completed=0U;verified=0U;erasing=false;
+    recovering=false;disabled=false;settings_operation=false;history_operation=true;
+    memcpy(pending,data,size);
+    op=OP_SR0;state.busy=true;state.operation_status=WATCH_NOT_READY;
+    return WATCH_OK;
+}
+watch_status_t w25q64_history_erase_sector(uint32_t offset)
+{
+    if (offset%W25Q64_TEST_SIZE!=0U || !range_valid(offset,W25Q64_TEST_SIZE)) return WATCH_INVALID_ARGUMENT;
+    if (offset<WATCH_HISTORY_BASE || offset>=WATCH_HISTORY_END) return WATCH_INVALID_ARGUMENT;
+    if (!profile_ready() || state.busy || !history_claimed) return WATCH_NOT_READY;
+    address=offset;total=W25Q64_TEST_SIZE;completed=0U;verified=0U;erasing=true;
+    recovering=false;disabled=false;settings_operation=false;history_operation=true;
     op=OP_SR0;state.busy=true;state.operation_status=WATCH_NOT_READY;
     return WATCH_OK;
 }
@@ -211,7 +248,7 @@ static watch_status_t operation_process(uint32_t now_ms)
         break;
     case OP_ENABLE:
         command=0x06U;s=spi_bus_transfer(&command,NULL,1U);
-        if (!settings_operation) state.dirty=true; /* 失败可能已被器件接受。 */
+        if (!settings_operation && !history_operation) state.dirty=true; /* 失败可能已被器件接受。 */
         if (s==WATCH_OK) op=OP_WEL;
         break;
     case OP_WEL:
@@ -256,7 +293,7 @@ static watch_status_t operation_process(uint32_t now_ms)
             }
             verified+=size;
             if (!erasing || verified==W25Q64_TEST_SIZE) {
-                if (erasing && !settings_operation) state.dirty=false;
+                if (erasing && !settings_operation && !history_operation) state.dirty=false;
                 if (erasing) return finish(WATCH_OK);
                 completed+=current;
                 if (completed==total) return finish(WATCH_OK);
@@ -271,7 +308,7 @@ static watch_status_t operation_process(uint32_t now_ms)
 }
 watch_status_t w25q64_test_start(void)
 {
-    if (!profile_ready() || state.busy || state.dirty || settings_claimed ||
+    if (!profile_ready() || state.busy || state.dirty || settings_claimed || history_claimed ||
         (state.test_stage>=FLASH_TEST_SCAN && state.test_stage<=FLASH_TEST_ERASE)) return WATCH_NOT_READY;
     state.owned=false;state.test_progress=0U;state.test_status=WATCH_NOT_READY;
     state.failed_stage=FLASH_TEST_IDLE;

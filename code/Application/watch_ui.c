@@ -13,6 +13,7 @@
 #include "ble_link.h"
 #include "w25q64.h"
 #include "settings.h"
+#include "record_store.h"
 #include <string.h>
 #include <math.h>
 
@@ -46,9 +47,9 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-/* 默认参数持久化页；既有页面仍由KEY长按循环。 */
-typedef enum { PAGE_SETTINGS, PAGE_FLASH, PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_SETTINGS;
+/* F07-P03默认历史页；既有页面仍由KEY长按循环。 */
+typedef enum { PAGE_HISTORY, PAGE_SETTINGS, PAGE_FLASH, PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_HISTORY;
 static uint32_t motion_key_count;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
@@ -78,6 +79,25 @@ static uint32_t settings_draft;
 static bool settings_load_requested=true;
 static bool settings_save_requested;
 static watch_status_t settings_client_status=WATCH_NOT_READY;
+
+/* 历史页只显示实际读回的记录；排队成功不能提前更新值。 */
+static record_t history_last_record;
+static uint32_t history_cached_id;
+static bool history_have_record, history_append_requested;
+static bool history_read_requested=true;
+static watch_status_t history_action_status=WATCH_NOT_READY;
+
+static void history_sync(const record_store_state_t *st)
+{
+    if (!st->ready || st->busy || st->count==0U) return;
+    if (!history_read_requested && history_have_record && history_cached_id==st->newest_id) return;
+    record_t record;
+    history_action_status=record_store_read(st->newest_id,&record);
+    if (history_action_status==WATCH_OK) {
+        history_last_record=record;history_cached_id=st->newest_id;
+        history_have_record=true;history_read_requested=false;
+    }
+}
 
 static uint32_t settings_ui_read32(const uint8_t *p)
 {
@@ -478,6 +498,40 @@ static void draw_battery_page(void)
     text(2U, 56U, status_text);
 }
 
+static void draw_history_page(uint32_t now_ms)
+{
+    (void)now_ms;
+    record_store_state_t st;
+    (void)record_store_get_state(&st);history_sync(&st);
+    text(2U,0U,"F07 HISTORY 01");
+    const char *message=!st.ready ? "LOADING" : st.busy ? "APPENDING" :
+        st.readonly ? "READONLY ERROR" :
+        history_append_requested && st.last_append_status==WATCH_OK ? "APPENDED" :
+        st.count==0U ? "EMPTY" : "READY";
+    text(2U,8U,message);
+    if (!st.ready) {text(50U,8U,"SCAN");number(82U,8U,st.scan_progress);}
+    text(2U,16U,"N");text(62U,16U,"C");
+    if (st.ready) number(14U,16U,st.count);
+    else text(14U,16U,"--");
+    number(74U,16U,st.capacity);
+    text(2U,24U,"OLD");text(2U,32U,"NEW");
+    if (st.ready && st.count!=0U) {
+        number(40U,24U,st.oldest_id);number(40U,32U,st.newest_id);
+    } else {text(40U,24U,"--");text(40U,32U,"--");}
+    bool current=history_have_record && history_cached_id==st.newest_id && st.count!=0U;
+    text(2U,40U,"V");text(80U,40U,"T");
+    if (current) {
+        number(14U,40U,history_last_record.value);number(92U,40U,history_last_record.type);
+    } else {text(14U,40U,"--");text(92U,40U,"--");}
+    watch_status_t error=st.readonly ? st.load_status : history_action_status;
+    if (st.readonly || (st.ready && !st.busy && error!=WATCH_OK && error!=WATCH_NOT_READY)) {
+        text(2U,48U,"ERR");number(26U,48U,error);text(44U,48U,"KEEP DATA");
+    } else text(2U,48U,current ? (history_last_record.utc_seconds!=0U ? "TIME VALID" : "NO TIME") :
+               st.count==0U ? "NO RECORD" : "READ PENDING");
+    text(2U,56U,!st.ready || st.busy ? "PLEASE WAIT" : st.readonly ?
+         "KEEP DATA SOS READ" : "MENU EVENT SOS READ");
+}
+
 static void draw_settings_page(uint32_t now_ms)
 {
     (void)now_ms;
@@ -564,6 +618,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_HISTORY) {
+        draw_history_page(now_ms);
     } else if (phase == UI_NORMAL && active_page == PAGE_SETTINGS) {
         draw_settings_page(now_ms);
     } else if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
@@ -658,6 +714,27 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
         active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
         last_refresh_ms = now_ms - 1000U;
         return;
+    }
+    if (phase == UI_NORMAL && active_page == PAGE_HISTORY) {
+        record_store_state_t st;
+        (void)record_store_get_state(&st);
+        if (!st.ready || st.busy) return;
+        if ((event & BUTTON_SOS_SHORT)!=0U) {
+            history_append_requested=false;history_read_requested=true;
+            history_action_status=st.count==0U ? WATCH_INVALID_ARGUMENT : WATCH_NOT_READY;
+            history_sync(&st);
+        } else if ((event & BUTTON_MENU_SHORT)!=0U) {
+            record_t record;
+            if (time_service_get(&record.utc_seconds)!=WATCH_OK) record.utc_seconds=0U;
+            record.value=st.count==0U ? 1U : st.newest_id+1U;
+            record.type=RECORD_STORE_TYPE_MANUAL_EVENT;
+            history_action_status=record_store_append(&record);
+            history_append_requested=history_action_status==WATCH_OK;
+            if (history_append_requested) {
+                history_action_status=WATCH_NOT_READY;history_read_requested=true;
+            }
+        }
+        action_status=history_action_status;last_refresh_ms=now_ms-1000U;return;
     }
     if (phase == UI_NORMAL && active_page == PAGE_SETTINGS) {
         settings_state_t st;
