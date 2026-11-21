@@ -188,10 +188,31 @@
 #define WATCH_APP_BASE 0x08010000UL
 #define WATCH_APP_SIZE 0x70000UL
 #define WATCH_EXT_FLASH_SIZE 0x800000UL
+
+/* F07-P02 Flash分区定义：不重叠非越界分区。
+ * 元数据0x0000/0x1000保留未来使用，参数专用两个4KiB槽0x2000/0x3000，
+ * 新固件0x10000、备份0x80000、历史0x100000（本步不实现）。
+ * P01测试区0x7FF000已验证，不占用。各区大小及边界明确声明。 */
 #define WATCH_META_A 0x000000UL
 #define WATCH_META_B 0x001000UL
+#define WATCH_META_SIZE 4096U
+#define WATCH_SETTINGS_BASE_A 0x2000UL
+#define WATCH_SETTINGS_BASE_B 0x3000UL
+#define WATCH_SETTINGS_SIZE 4096U
 #define WATCH_NEW_IMAGE 0x010000UL
 #define WATCH_BACKUP_IMAGE 0x080000UL
+#define WATCH_IMAGE_SLOT_SIZE 0x70000UL
 #define WATCH_HISTORY_BASE 0x100000UL
+#define WATCH_HISTORY_END 0x7FF000UL
+_Static_assert(WATCH_META_A + WATCH_META_SIZE <= WATCH_META_B, "Meta A overlaps B");
+_Static_assert(WATCH_META_B + WATCH_META_SIZE <= WATCH_SETTINGS_BASE_A, "Meta B overlaps settings A");
+_Static_assert(WATCH_SETTINGS_BASE_A + WATCH_SETTINGS_SIZE <= WATCH_SETTINGS_BASE_B, "Settings A overlaps B");
+_Static_assert(WATCH_SETTINGS_BASE_B + WATCH_SETTINGS_SIZE <= WATCH_NEW_IMAGE, "Settings B overlaps firmware new");
+_Static_assert(WATCH_NEW_IMAGE + WATCH_IMAGE_SLOT_SIZE <= WATCH_BACKUP_IMAGE, "Firmware new overlaps backup");
+_Static_assert(WATCH_BACKUP_IMAGE + WATCH_IMAGE_SLOT_SIZE <= WATCH_HISTORY_BASE, "Firmware backup overlaps history");
+_Static_assert(WATCH_SETTINGS_SIZE==4096U && WATCH_SETTINGS_BASE_A%4096U==0U &&
+    WATCH_SETTINGS_BASE_B%4096U==0U, "Settings sectors must be aligned");
+_Static_assert(WATCH_HISTORY_BASE < WATCH_HISTORY_END, "History invalid range");
+_Static_assert(WATCH_HISTORY_END + 4096U <= WATCH_EXT_FLASH_SIZE, "History end exceeds flash");
 
 #endif

@@ -32,13 +32,14 @@
 #include "pedometer.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
+#include "settings.h"
 #include <stdint.h>
 #include <string.h>
 
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F07-P01-20261121-03";
+static const char firmware_version[] = "F07-P02-20261121-01";
 #endif
 
 /**
@@ -172,6 +173,13 @@ static void flash_process_task(void *ctx)
     w25q64_state_t flash;
     (void)w25q64_get_state(&flash);
     diag.flash=flash;
+}
+
+/* 参数持久化每5ms推进，与Flash测试互斥。 */
+static void settings_process_task(void *ctx)
+{
+    (void)ctx;
+    (void)settings_process(board_millis());
 }
 
 /* 每5ms至多读16字节并写一次；无数据时不自动发包，不重试失败的半包。 */
@@ -518,10 +526,12 @@ int main(void)
     (void)pedometer_reset();
     (void)wrist_wake_reset();
     (void)battery_adc_init();
+    (void)settings_init();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
         {.period_ms = 5, .last_ms = startup_baseline, .callback = flash_process_task, .context = NULL},
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = settings_process_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = battery_adc_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = ppg_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},

@@ -38,6 +38,13 @@ watch_status_t w25q64_read(uint32_t offset, uint8_t *data, size_t length);
  * 非已落盘；最终结果为operation_status。写数据立即复制，最多256字节，支持跨页。 */
 watch_status_t w25q64_write(uint32_t offset, const uint8_t *data, size_t length);
 watch_status_t w25q64_erase_sector(uint32_t offset);
+/* F07-P02参数持久化：受限开放两个设置扇区。OK表示排队成功，非已落盘；
+ * 最终结果为operation_status。数据立即复制，支持跨页，最多256字节。
+ * claim覆盖完整事务，release仅在无底层操作时成功；P01与参数事务互斥。 */
+watch_status_t w25q64_settings_claim(void);
+watch_status_t w25q64_settings_release(void);
+watch_status_t w25q64_settings_write(uint32_t offset, const uint8_t *data, size_t length);
+watch_status_t w25q64_settings_erase_sector(uint32_t offset);
 /* 显式启动，不自动擦除非空区；恢复只接受本次开机owned+dirty。
  * 断电后无法证明归属的非空区只报错，不能按测试残留清理。 */
 watch_status_t w25q64_test_start(void);

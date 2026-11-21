@@ -12,6 +12,7 @@
 #include "board_port.h"
 #include "ble_link.h"
 #include "w25q64.h"
+#include "settings.h"
 #include <string.h>
 #include <math.h>
 
@@ -45,9 +46,9 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-/* 默认Flash只读识别页；既有页面仍由KEY长按循环。 */
-typedef enum { PAGE_FLASH, PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_FLASH;
+/* 默认参数持久化页；既有页面仍由KEY长按循环。 */
+typedef enum { PAGE_SETTINGS, PAGE_FLASH, PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_SETTINGS;
 static uint32_t motion_key_count;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
@@ -71,6 +72,33 @@ static rtc_calendar_t edit_draft;
 static edit_field_t edit_field;
 static watch_status_t action_status = WATCH_NOT_READY;
 static const char *notice = "";
+
+/* 诊断载荷显式编码：4字节版本1、4字节计数，均为小端。 */
+static uint32_t settings_draft;
+static bool settings_load_requested=true;
+static bool settings_save_requested;
+static watch_status_t settings_client_status=WATCH_NOT_READY;
+
+static uint32_t settings_ui_read32(const uint8_t *p)
+{
+    return (uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);
+}
+static watch_status_t settings_ui_load(uint32_t *counter)
+{
+    uint8_t bytes[8];
+    watch_status_t s=settings_load(bytes,sizeof(bytes));
+    if (s!=WATCH_OK) return s;
+    if (settings_ui_read32(bytes)!=1U) return WATCH_INVALID_DATA;
+    *counter=settings_ui_read32(bytes+4U);return WATCH_OK;
+}
+static void settings_ui_sync(const settings_state_t *st)
+{
+    if (!settings_load_requested || !st->ready || st->busy) return;
+    uint32_t value=0U;
+    settings_client_status=settings_ui_load(&value);
+    if (settings_client_status==WATCH_OK || st->empty) settings_draft=value;
+    settings_load_requested=false;
+}
 
 static void pixel(unsigned x, unsigned y)
 {
@@ -450,6 +478,38 @@ static void draw_battery_page(void)
     text(2U, 56U, status_text);
 }
 
+static void draw_settings_page(uint32_t now_ms)
+{
+    (void)now_ms;
+    settings_state_t st;
+    (void)settings_get_state(&st);
+    settings_ui_sync(&st);
+    uint32_t current=0U;
+    watch_status_t load_status=settings_ui_load(&current);
+    text(2U,0U,"F07 SETTINGS 01");
+    w25q64_state_t flash;
+    (void)w25q64_get_state(&flash);
+    text(2U,8U,flash.model==W25Q64_MODEL_PY25Q64HA_ID && flash.stable_samples>=2U ?
+         "FLASH READY" : "FLASH NOT READY");
+    const char *message=!st.ready ? "LOADING" : st.busy ? "SAVING" :
+        settings_save_requested ? (st.last_save_status==WATCH_OK ? "SAVED" : "SAVE ERROR") :
+        load_status==WATCH_OK ? "LOADED" : st.empty ? "DEFAULT UNSAVED" : "LOAD ERROR";
+    text(2U,16U,message);
+    text(2U,24U,"COUNT");
+    if (load_status==WATCH_OK) number(44U,24U,current);
+    else text(44U,24U,"--");
+    text(2U,32U,"GEN");
+    if (st.valid) number(32U,32U,st.generation);
+    else text(32U,32U,"--");
+    text(2U,40U,"DRAFT");number(44U,40U,settings_draft);
+    watch_status_t error=settings_save_requested ? st.last_save_status : settings_client_status;
+    if (st.busy) text(2U,48U,"PLEASE WAIT");
+    else if (error!=WATCH_OK && (error!=WATCH_NOT_READY || !st.empty || settings_save_requested)) {
+        text(2U,48U,"ERR");number(26U,48U,error);text(44U,48U,"REPOWER SOS");
+    }
+    text(2U,56U,"M+ HOLD SAVE SOS LOAD");
+}
+
 static void draw_flash_page(uint32_t now_ms)
 {
     w25q64_state_t flash;
@@ -504,6 +564,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_SETTINGS) {
+        draw_settings_page(now_ms);
     } else if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
         draw_flash_page(now_ms);
     } else if (phase == UI_NORMAL && active_page == PAGE_BAT) {
@@ -596,6 +658,30 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
         active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
         last_refresh_ms = now_ms - 1000U;
         return;
+    }
+    if (phase == UI_NORMAL && active_page == PAGE_SETTINGS) {
+        settings_state_t st;
+        (void)settings_get_state(&st);settings_ui_sync(&st);
+        if (!st.ready || st.busy) return;
+        if ((event & BUTTON_SOS_SHORT)!=0U) {
+            settings_client_status=settings_init();
+            if (settings_client_status==WATCH_OK) {
+                settings_load_requested=true;settings_save_requested=false;
+            }
+        } else if ((event & BUTTON_MENU_LONG)!=0U) {
+            uint32_t current=0U;
+            watch_status_t s=settings_ui_load(&current);
+            if (s!=WATCH_OK && !st.empty) settings_client_status=s;
+            else {
+                uint8_t bytes[8]={1U,0U,0U,0U,0U,0U,0U,0U};
+                for (unsigned i=0U;i<4U;++i) bytes[4U+i]=(uint8_t)(settings_draft>>(8U*i));
+                settings_client_status=settings_save(bytes,sizeof(bytes));
+                settings_save_requested=settings_client_status==WATCH_OK;
+            }
+        } else if ((event & BUTTON_MENU_SHORT)!=0U) {
+            ++settings_draft;settings_save_requested=false;
+        }
+        action_status=settings_client_status;last_refresh_ms=now_ms-1000U;return;
     }
     if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
         if ((event & BUTTON_SOS_LONG)!=0U) action_status=w25q64_test_recover();
