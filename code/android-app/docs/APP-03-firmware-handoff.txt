@@ -1,0 +1,44 @@
+APP-03 手表固件端 AI 对接交接
+2026-11-21 · 基于任务书 R6
+
+你负责智能手表项目的 STM32 固件端。我负责 Android 手机端。请先检查你手上的固件源码，并回复首轮对接方案。目标是让手机读取设备信息和真实状态，再校时并读回确认。
+
+一、先看这些资料
+
+- 仓库 https://github.com/why-can-not-i-get-c-language/smart_watch
+- 需求入口是 main 分支的 plan/task.md，请先确认是否有更新。
+  https://github.com/why-can-not-i-get-c-language/smart_watch/blob/main/plan/task.md
+- 本交接依据 2026-11-21-R6，文件提交 f14e6c8596e25c543586e3172c55adf345851b52。
+  https://github.com/why-can-not-i-get-c-language/smart_watch/blob/f14e6c8596e25c543586e3172c55adf345851b52/plan/task.md
+- Android 工程在 software 分支的 code/android-app/。联调基线是 Android 1.8.0（versionCode 12），提交 4983dca6d8104460b05f6e9d28783724005f34ad。
+  https://github.com/why-can-not-i-get-c-language/smart_watch/tree/4983dca6d8104460b05f6e9d28783724005f34ad/code/android-app
+- Android 1.8.0 安装包
+  https://github.com/why-can-not-i-get-c-language/smart_watch/releases/download/android-v1.8.0/SmartWatch-1.8.0-BLE-Update.apk
+
+二、已经验证的部分
+
+- 小米 15 / Android 16、Android APK 1.8.0 和手表固件 F06-P01-20261115-01 的 APP-02 A01–A06 真机测试全部符合。范围包括原始字节回显、主动上报、分片、重连和手表熄屏收发。
+- 数据通道沿用 TEL0073 的 DFB1 特征（0000dfb1-0000-1000-8000-00805f9b34fb），DFB2 用于模块初始化。1.8.0 的串口工具按 17 字节发送分片。每条业务消息的长度和边界需在 APP-03 单独约定。
+- 当前实测固件使用原始字节回显。Android 1.8.0 提供真实 BLE 串口入口，能用 HEX 发送和查看回包。正式业务帧仍待双方确认。
+
+三、请先核对三条指令
+
+1. DeviceInfo（查询设备信息）
+   请确认固件能返回哪些真实字段，如设备标识、硬件版本、固件版本、协议版本和支持能力。
+2. GetStatus（查询当前状态）
+   请先确认能否读取手表时间与有效性，并列出步数、电量等实际可取字段及其单位。心率、血氧等尚不支持或无效的读数，请明确如何表示。
+3. SetTime（校时）
+   手机发送 UTC Unix 秒，手表按北京时间 UTC+8 显示。请确认手表能否回复成功或失败，并返回实际保存的 UTC 秒。然后由手机再次发 GetStatus，读取手表时间并核对。字段宽度、字节序和时间误差容许范围一起确认。
+
+四、请回给手机端的内容
+
+1. 固件依据
+   给出分支、提交号、可联调固件版本，以及 BLE 接收、设备状态、RTC 读写所在的源码路径。每条指令标明已实现、待实现或受什么条件阻塞。
+2. 最小协议草案
+   给出公共帧的字段顺序、偏移、字节宽度和字节序，包括帧头、协议版本、命令编号、请求序号、载荷长度、载荷和校验。说明最大帧长、校验算法和覆盖范围、怎样把多次收到的字节拼成完整帧、怎样从一次收到的数据中拆出多帧。说明超时、重试、重复请求和错误码。请确认校时重试是否沿用同一请求序号，以及怎样避免重复执行。
+3. 可复算的 HEX 样例
+   给 DeviceInfo、GetStatus、SetTime 各提供一组完整请求和成功回包，再给一组失败回包。逐项标出命令编号、序号、长度及校验计算。请注明样例是草案算例、自动测试结果还是实物抓包。
+4. 双方确认和验收方式
+   请列出需要手机端确认的待定项。双方确认后把正式格式和样例写入 main 分支 plan/task.md 的 APP-03 交接区。第一轮验证真实设备信息、真实状态、校时后回读一致，并检查至少一次失败回包和一次断线重连。记录 APK、固件、实际收发 HEX 和结果。
+
+请把现有实现、草案参数和实测结果分别标明。双方确认后，再用同一份格式各自实现手机端与固件端。
