@@ -10,7 +10,8 @@ watch_status_t watch_ui_update(uint32_t now_ms);
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms);
 /* 返回最近的保存/取消状态：WATCH_NOT_READY初始，WATCH_OK保存成功，其他为具体错误码。 */
 watch_status_t watch_ui_get_action_status(void);
-/* KEY长按循环MPU、PPG、电池ADC、BLE、姿态、计步、振动、时间页，编辑中不切换。
+/* KEY长按循环Flash、MPU、PPG、电池ADC、BLE、姿态、计步、振动、时间页，编辑中不切换。
+ * Flash页MENU长按启动测试区查空和自检；失败且本次开机归属明确时SOS长按清理。
  * MPU页亮屏时KEY短按累加K，用于PA0轮询对照，不控制采样或中断。
  * 熄屏不退出振动页，按键过滤由主分发入口统一执行。 */
 bool watch_ui_haptic_active(void);

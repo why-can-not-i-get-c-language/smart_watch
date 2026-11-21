@@ -155,7 +155,7 @@
             <asFals>1</asFals>
             <asDbgD>1</asDbgD>
             <asForm>1</asForm>
-            <ldLst>0</ldLst>
+            <ldLst>1</ldLst>
             <ldmm>1</ldmm>
             <ldXref>1</ldXref>
             <BigEnd>0</BigEnd>

@@ -4,7 +4,7 @@
 
 /* Flash SPI端口：按计划任务实现并经用户烧录验收。 */
 
-#define SPI_MAX_TRANSFER_SIZE 256
+#define SPI_MAX_TRANSFER_SIZE SPI_BUS_MAX_TRANSFER_SIZE
 
 #ifdef WATCH_TARGET_STM32
 
@@ -66,17 +66,22 @@ static void spi_bus_recover(void)
 }
 
 /**
- * spi_bus_transfer - SPI1单次传输（软件CS管理，最多256字节）
- * tx: 发送缓冲（可为NULL，则发0xFF）
- * rx: 接收缓冲（可为NULL，则丢弃）
- * length: 传输长度（限制256）
+ * SPI1连续事务：最多两段，每段最多256字节；全段验证后才拉低CS。
+ * 同一次CS下允许4字节命令和256字节整页，HAL单次仍不超过256字节。
  * 失败后CS拉高、有限RCC复位+重置HAL句柄，返回当前错误；下次可恢复
  */
-watch_status_t spi_bus_transfer(const uint8_t *tx, uint8_t *rx, size_t length)
+watch_status_t spi_bus_transaction(const spi_bus_segment_t *segments, size_t count)
 {
-    if (length == 0U || length > SPI_MAX_TRANSFER_SIZE || (tx == NULL && rx == NULL)) {
+    if (segments == NULL || count == 0U || count > 2U) {
         spi_last_status = WATCH_INVALID_ARGUMENT;
         return WATCH_INVALID_ARGUMENT;
+    }
+    for (size_t i = 0U; i < count; ++i) {
+        if (segments[i].length == 0U || segments[i].length > SPI_MAX_TRANSFER_SIZE ||
+            (segments[i].tx == NULL && segments[i].rx == NULL)) {
+            spi_last_status = WATCH_INVALID_ARGUMENT;
+            return WATCH_INVALID_ARGUMENT;
+        }
     }
 
     if (!spi_initialized) {
@@ -89,18 +94,14 @@ watch_status_t spi_bus_transfer(const uint8_t *tx, uint8_t *rx, size_t length)
 
     HAL_StatusTypeDef status = HAL_OK;
 
-    if (tx != NULL && rx != NULL) {
-        /* 全双工 */
-        status = HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)tx, rx, (uint16_t)length, WATCH_SPI1_TIMEOUT_MS);
-    } else if (tx != NULL) {
-        /* 仅发送 */
-        uint8_t dummy[SPI_MAX_TRANSFER_SIZE] = {0};
-        status = HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)tx, dummy, (uint16_t)length, WATCH_SPI1_TIMEOUT_MS);
-    } else {
-        /* 仅接收，发0xFF */
-        uint8_t dummy_tx[SPI_MAX_TRANSFER_SIZE];
-        memset(dummy_tx, 0xFF, length);
-        status = HAL_SPI_TransmitReceive(&hspi1, dummy_tx, rx, (uint16_t)length, WATCH_SPI1_TIMEOUT_MS);
+    uint8_t dummy_tx[SPI_MAX_TRANSFER_SIZE];
+    uint8_t dummy_rx[SPI_MAX_TRANSFER_SIZE];
+    memset(dummy_tx, 0xFF, sizeof(dummy_tx));
+    for (size_t i = 0U; i < count && status == HAL_OK; ++i) {
+        status = HAL_SPI_TransmitReceive(&hspi1,
+            segments[i].tx != NULL ? (uint8_t *)segments[i].tx : dummy_tx,
+            segments[i].rx != NULL ? segments[i].rx : dummy_rx,
+            (uint16_t)segments[i].length, WATCH_SPI1_TIMEOUT_MS);
     }
 
     /* CS拉高，无论成功或失败 */
@@ -134,13 +135,17 @@ watch_status_t spi_bus_get_status(void)
 
 #else  /* !WATCH_TARGET_STM32 - 主机实现 */
 
-watch_status_t spi_bus_transfer(const uint8_t *tx, uint8_t *rx, size_t length)
+watch_status_t spi_bus_transaction(const spi_bus_segment_t *segments, size_t count)
 {
-    if (length == 0U || length > SPI_MAX_TRANSFER_SIZE || (tx == NULL && rx == NULL)) {
+    if (segments == NULL || count == 0U || count > 2U) {
         return WATCH_INVALID_ARGUMENT;
     }
-    if (rx != NULL) {
-        memset(rx, 0, length);
+    for (size_t i = 0U; i < count; ++i) {
+        if (segments[i].length == 0U || segments[i].length > SPI_MAX_TRANSFER_SIZE ||
+            (segments[i].tx == NULL && segments[i].rx == NULL)) return WATCH_INVALID_ARGUMENT;
+    }
+    for (size_t i = 0U; i < count; ++i) {
+        if (segments[i].rx != NULL) memset(segments[i].rx, 0, segments[i].length);
     }
     return WATCH_NOT_IMPLEMENTED;
 }
@@ -151,3 +156,9 @@ watch_status_t spi_bus_get_status(void)
 }
 
 #endif  /* WATCH_TARGET_STM32 */
+
+watch_status_t spi_bus_transfer(const uint8_t *tx, uint8_t *rx, size_t length)
+{
+    const spi_bus_segment_t segment = {tx, rx, length};
+    return spi_bus_transaction(&segment, 1U);
+}

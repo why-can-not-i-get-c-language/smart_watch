@@ -3766,6 +3766,17 @@
       "source_sha256": "67c565c377824d5aa498cea05a1e18463ed6d3689481a1606b82240be6b90998",
       "source_encoding": "UTF-8",
       "text_extraction": "保留源码与版权声明；规范化换行及行尾空白；不修改逻辑"
+    },
+    {
+      "text": "text/29_PY25Q64HA_V1.6.txt",
+      "source": "主控与存储一体核心板/WeAct_MiniSTM32F4x1_官方资料与SDK.zip",
+      "source_entry": "WeActStudio.MiniSTM32F4x1-013cd6cd2140d97b9d65dc122d34786a521884f1/Datasheet/PY25Q64HA_Datasheet_V1.6.pdf",
+      "source_sha256": "d1731d1b39054a13b42cbae3961dafde1b3c415351dbf63b46993010c43278bf",
+      "source_size": 4082498,
+      "pages": 108,
+      "sha256": "90db2077de0fd2f5c27d1d94a0b22e89ecd2857e839606a164cd0bc2296b5792",
+      "text_extraction": "pypdf; PDF physical page markers; trailing whitespace normalized; original PDF retained inside nested SDK archive",
+      "verified_date": "2026-11-21"
     }
   ],
   "summary": {

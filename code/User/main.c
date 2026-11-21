@@ -18,6 +18,7 @@
 #include "stm32f4xx_hal.h"
 #include "i2c_bus.h"
 #include "spi_bus.h"
+#include "w25q64.h"
 #include "uart_port.h"
 #include "ble_link.h"
 #include "buttons.h"
@@ -37,7 +38,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F03-INT-20261119-01";
+static const char firmware_version[] = "F07-P01-20261121-03";
 #endif
 
 /**
@@ -65,6 +66,7 @@ typedef struct {
     volatile uint8_t spi_jedec[3];
     volatile uint8_t spi_transfer_ok;
     volatile watch_status_t spi_last_status;
+    volatile w25q64_state_t flash;
 
     /* 本地UART传输快照；不表示真实BLE连接或手机收到了数据。 */
     volatile ble_link_state_t ble;
@@ -151,19 +153,25 @@ static void i2c_diag_task(void *ctx)
 static void spi_diag_task(void *ctx)
 {
     (void)ctx;
-    uint8_t cmd[4] = {0x9F, 0xFF, 0xFF, 0xFF};
-    uint8_t result[4] = {0};
-
-    watch_status_t status = spi_bus_transfer(cmd, result, 4);
-    if (status == WATCH_OK) {
-        diag.spi_jedec[0] = result[1];
-        diag.spi_jedec[1] = result[2];
-        diag.spi_jedec[2] = result[3];
-        diag.spi_transfer_ok = 1;
-    } else {
-        diag.spi_transfer_ok = 0;
-    }
+    watch_status_t status = w25q64_probe(board_millis());
+    w25q64_state_t flash;
+    (void)w25q64_get_state(&flash);
+    diag.flash = flash;
+    diag.spi_jedec[0] = (uint8_t)(flash.raw_jedec_id >> 16);
+    diag.spi_jedec[1] = (uint8_t)(flash.raw_jedec_id >> 8);
+    diag.spi_jedec[2] = (uint8_t)flash.raw_jedec_id;
+    diag.spi_transfer_ok = (status == WATCH_OK) ? 1U : 0U;
     diag.spi_last_status = status;
+}
+
+/* Flash内部编程/擦除完成由5ms调度推进，其余任务继续运行。 */
+static void flash_process_task(void *ctx)
+{
+    (void)ctx;
+    (void)w25q64_process(board_millis());
+    w25q64_state_t flash;
+    (void)w25q64_get_state(&flash);
+    diag.flash=flash;
 }
 
 /* 每5ms至多读16字节并写一次；无数据时不自动发包，不重试失败的半包。 */
@@ -513,6 +521,7 @@ int main(void)
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = flash_process_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = battery_adc_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = ppg_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},

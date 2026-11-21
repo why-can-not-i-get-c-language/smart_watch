@@ -11,6 +11,7 @@
 #include "board_config.h"
 #include "board_port.h"
 #include "ble_link.h"
+#include "w25q64.h"
 #include <string.h>
 #include <math.h>
 
@@ -44,9 +45,9 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-/* 默认MPU INT页；KEY短按计数用于检查PA0轮询与PB0中断同时工作。 */
-typedef enum { PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_MOTION;
+/* 默认Flash只读识别页；既有页面仍由KEY长按循环。 */
+typedef enum { PAGE_FLASH, PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
+static ui_page_t active_page = PAGE_FLASH;
 static uint32_t motion_key_count;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
@@ -449,6 +450,43 @@ static void draw_battery_page(void)
     text(2U, 56U, status_text);
 }
 
+static void draw_flash_page(uint32_t now_ms)
+{
+    w25q64_state_t flash;
+    (void)w25q64_get_state(&flash);
+    text(2U, 0U, "F07 FLASH TEST 03");
+    text(2U, 8U, "RAW ID");
+    static const char hex[] = "0123456789ABCDEF";
+    if (flash.status == WATCH_OK || flash.status == WATCH_INVALID_DATA) {
+        for (unsigned i = 0U; i < 6U; ++i) {
+            character(50U + i * 6U, 8U, hex[(flash.raw_jedec_id >> (20U - i * 4U)) & 15U]);
+        }
+    } else { text(50U, 8U, "------"); }
+    const char *message="WAIT PROFILE";
+    if (flash.model==W25Q64_MODEL_PY25Q64HA_ID && flash.stable_samples>=2U) message="READY TO TEST";
+    if (flash.test_stage==FLASH_TEST_SCAN) message="CHECKING EMPTY";
+    else if (flash.test_stage>=FLASH_TEST_FULL && flash.test_stage<=FLASH_TEST_ERASE) message="TEST RUNNING";
+    else if (flash.test_stage==FLASH_TEST_PASS) message="PASS AND CLEAN";
+    else if (flash.test_stage==FLASH_TEST_FAILED) message="FAILED KEEP DATA";
+    else if (flash.test_stage==FLASH_TEST_NONEMPTY) message="NONEMPTY STOPPED";
+    else if (flash.test_stage==FLASH_TEST_CLEANING) message="CLEANING OWN DATA";
+    else if (flash.test_stage==FLASH_TEST_CLEAN) message="CLEANED NOT PASS";
+    text(2U,16U,message);
+    text(2U,24U,"STEP");number(32U,24U,flash.test_stage==FLASH_TEST_FAILED ? flash.failed_stage : flash.test_stage);
+    text(56U,24U,"ERR");
+    if (flash.test_stage==FLASH_TEST_FAILED || flash.test_stage==FLASH_TEST_NONEMPTY) number(80U,24U,flash.test_status);
+    else text(80U,24U,"--");
+    text(2U,32U,flash.capacity_bytes==WATCH_EXT_FLASH_SIZE ? "8M BY ID NOT MEASURED" : "CAP UNCONFIRMED");
+    text(2U,40U,"TEST 7FF000-7FFFFF");
+    text(2U,48U,"OWN");number(26U,48U,flash.owned ? 1U : 0U);
+    text(44U,48U,"DIRTY");number(80U,48U,flash.dirty ? 1U : 0U);
+    bool running=(flash.test_stage>=FLASH_TEST_SCAN && flash.test_stage<=FLASH_TEST_ERASE) ||
+        flash.test_stage==FLASH_TEST_CLEANING;
+    text(2U,56U,running ? "PLEASE WAIT" : flash.dirty && flash.owned ? "SOS HOLD CLEAN" :
+        flash.dirty || flash.test_stage==FLASH_TEST_NONEMPTY ? "KEEP EXISTING DATA" : "MENU HOLD TEST");
+    (void)now_ms;
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -466,6 +504,8 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
+    } else if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
+        draw_flash_page(now_ms);
     } else if (phase == UI_NORMAL && active_page == PAGE_BAT) {
         draw_battery_page();
     } else if (phase == UI_NORMAL && active_page == PAGE_PPG) {
@@ -555,6 +595,12 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
     if (phase == UI_NORMAL && (event & BUTTON_BOARD_LONG) != 0U) {
         active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
         last_refresh_ms = now_ms - 1000U;
+        return;
+    }
+    if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
+        if ((event & BUTTON_SOS_LONG)!=0U) action_status=w25q64_test_recover();
+        else if ((event & BUTTON_MENU_LONG)!=0U) action_status=w25q64_test_start();
+        last_refresh_ms=now_ms-1000U;
         return;
     }
     if (phase == UI_NORMAL && active_page == PAGE_MOTION) {
