@@ -1,17 +1,20 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：UI-MENU-20261122-01
+ * 版本：F08-P02-20261122-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认HOME（时间+会话步数+电池mV），MENU短按或KEY长按进功能菜单（STEPS/HISTORY/TOOLS）
+ *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
  *  - 功能菜单：KEY短按下一项，SOS短按上一项，MENU短按进入，KEY长按返回HOME
  *  - TOOLS菜单8项滚动显示，KEY/SOS短按导航，MENU短按进入，KEY长按返回功能菜单
  *  - 各详情页KEY长按返回拥有菜单；HOME页MENU长按进入时间编辑，保存/取消返回HOME
  *  - 计步页MENU长按清零，历史页MENU短按追加/SOS短按读取，参数页保留M+/MH/SOS操作
  *  - Flash页MENU长按测试、SOS长按清理，MPU页KEY短按累K，姿态页MENU长按标定
- *  - 振动页切出时停止，BLE页MENU短按发测试；熄屏重连保持导航位置
+ *  - 振动页切出时停止，BLE页MENU短按发测试；电池页MENU短按切换汇总/ADC详情
+ *  - 熄屏重连保持导航位置
  *  - 保留LED心跳、I2C/SPI诊断与掉屏恢复，UART只由BLE任务接收
- *  - 电池ADC每5ms至多一次转换，16对后发布，不表示电池百分比或已校准
+ *  - 电池ADC每5ms至多一次转换，16对后发布；服务推进估算与低电判断
+ *  - 电量EST按线性3300-4200mV映射0-100%，仅示意，非实测放电曲线
+ *  - 低电≤3500mV持续5秒确认，≥3650mV持续5秒恢复，中间保持，确认进入时唤醒屏幕一次
  */
 
 #include "board_port.h"
@@ -33,6 +36,7 @@
 #include "pedometer.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
+#include "battery_service.h"
 #include "settings.h"
 #include "record_store.h"
 #include <stdint.h>
@@ -41,7 +45,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "UI-MENU-20261122-01";
+static const char firmware_version[] = "F08-P02-20261122-01";
 #endif
 
 /**
@@ -107,6 +111,8 @@ typedef struct {
     volatile wrist_wake_status_t wrist;
     volatile watch_status_t battery_adc_status;
     volatile battery_adc_state_t battery_adc;
+    volatile watch_status_t battery_service_status;
+    volatile battery_service_state_t battery_service;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -114,6 +120,9 @@ static uint32_t haptic_last_retry_ms;
 
 /* 至多保留一个手动发送请求，UART写入统一在BLE任务中执行。 */
 static bool ble_test_pending;
+
+/* 低电提醒episode标志：确认进入低电时唤醒屏幕一次，确认恢复后复位。 */
+static bool low_battery_notified;
 
 /* LED timing state */
 static volatile uint32_t startup_baseline = 0;
@@ -396,14 +405,29 @@ static void ppg_update_task(void *ctx)
     diag.ppg_irq = irq;
 }
 
-/* 电池ADC每5ms推进，每轮至多一次ADC转换。 */
+/* 电池ADC每5ms推进，每轮至多一次ADC转换；推进后更新服务估算和低电判断。 */
 static void battery_adc_task(void *ctx)
 {
     (void)ctx;
-    diag.battery_adc_status = battery_adc_process(board_millis());
+    uint32_t now = board_millis();
+    diag.battery_adc_status = battery_adc_process(now);
     battery_adc_state_t bat_state;
     (void)battery_adc_get_state(&bat_state);
     diag.battery_adc = bat_state;
+    /* 在ADC推进后立即推进服务，只在新批次上更新低电状态。 */
+    diag.battery_service_status = battery_service_process(now);
+    battery_service_state_t svc_state;
+    (void)battery_service_get_state(&svc_state);
+    diag.battery_service = svc_state;
+    /* 只在有效且low_known时检查：确认进入低电时唤醒一次，恢复正常复位标志。无效不清flag。 */
+    if (svc_state.status == WATCH_OK && svc_state.battery.valid && svc_state.low_known) {
+        if (svc_state.low && !low_battery_notified) {
+            low_battery_notified = true;
+            watch_ui_wake(now);
+        } else if (!svc_state.low) {
+            low_battery_notified = false;
+        }
+    }
 }
 
 /* 常规时基及串口诊断，与振动命令状态分别记录。 */
@@ -538,6 +562,8 @@ int main(void)
     (void)pedometer_reset();
     (void)wrist_wake_reset();
     (void)battery_adc_init();
+    (void)battery_service_init();
+    low_battery_notified = false;
     (void)settings_init();
     (void)record_store_init();
 

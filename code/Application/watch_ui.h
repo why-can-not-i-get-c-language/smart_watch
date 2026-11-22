@@ -12,9 +12,11 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms);
 watch_status_t watch_ui_get_action_status(void);
 /* HOME为默认时间页，时间页MENU短按或KEY长按进入功能菜单（STEPS/HISTORY/TOOLS）。
  * 功能菜单：KEY短按下一项，SOS短按上一项，MENU短按进入选定项，KEY长按返回HOME。
- * TOOLS菜单8项（BAT ADC/PPG/MPU/WRIST/BLE/HAPTIC/PARAMETERS/FLASH），滚屏显示标题和页脚。
+ * TOOLS菜单8项（BATTERY/PPG/MPU/WRIST/BLE/HAPTIC/PARAMETERS/FLASH），滚屏显示标题和页脚。
  * TOOLS菜单：KEY/SOS短按上下滚动，MENU短按进入，KEY长按返回功能菜单。
  * 各功能详情页保留原有MENU/SOS操作，KEY长按返回拥有菜单。
+ * BATTERY默认显示估算汇总，MENU短按切换原ADC详情，再按返回汇总。
+ * 有效低电时主页底行或其他正常页标题行提示LOW BAT CHARGE；编辑和自检不覆盖。
  * 历史页MENU短按追加真实手动事件，SOS短按重新读取最新记录。
  * Flash页MENU长按启动测试区查空和自检；失败且本次开机归属明确时SOS长按清理。
  * 参数页MENU短按修改草稿计数、MENU长按提交保存、SOS短按重新读取。

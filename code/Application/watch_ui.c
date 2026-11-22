@@ -8,6 +8,7 @@
 #include "pedometer.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
+#include "battery_service.h"
 #include "board_config.h"
 #include "board_port.h"
 #include "ble_link.h"
@@ -39,7 +40,7 @@ static const glyph_t glyphs[] = {
     {'6',{14,16,16,30,17,17,14}}, {'7',{31,1,2,4,8,8,8}},
     {'8',{14,17,17,14,17,17,14}}, {'9',{14,17,17,15,1,1,14}},
     {':',{0,4,4,0,4,4,0}}, {'-',{0,0,0,31,0,0,0}},
-    {'+',{0,4,4,31,4,4,0}}, {'.',{0,0,0,0,0,4,4}}, {'?',{14,17,1,2,4,0,4}}
+    {'+',{0,4,4,31,4,4,0}}, {'.',{0,0,0,0,0,4,4}}, {'%',{24,25,2,4,8,19,3}}, {'?',{14,17,1,2,4,0,4}}
 };
 
 typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_NORMAL, UI_EDIT } ui_phase_t;
@@ -74,6 +75,9 @@ static bool idle_sleeping;
 static uint32_t last_activity_ms;
 static uint8_t keys_down;
 static uint8_t keys_blocked;
+
+/* 电池工具页：在汇总/ADC详情间切换。 */
+static bool battery_show_summary = true;
 
 /* 编辑状态机 */
 static rtc_calendar_t edit_draft;
@@ -460,49 +464,64 @@ static void draw_ble_detail(void)
 static void draw_battery_detail(void)
 {
     battery_adc_state_t bat;
+    battery_service_state_t svc;
     (void)battery_adc_get_state(&bat);
-    text(2U, 0U, "BAT ADC K HOLD BACK");
+    (void)battery_service_get_state(&svc);
 
-    /* 第2行：RAW */
-    text(2U, 8U, "RAW");
-    if (bat.valid) { number(26U, 8U, bat.raw_pin); }
-    else { text(26U, 8U, "--"); }
-
-    /* 第3行：REF */
-    text(2U, 16U, "REF");
-    if (bat.valid) { number(26U, 16U, bat.raw_vref); }
-    else { text(26U, 16U, "--"); }
-
-    /* 第4行：VDD MV */
-    text(2U, 24U, "VDD MV");
-    if (bat.valid) { number(44U, 24U, bat.vdda_mv); }
-    else { text(44U, 24U, "--"); }
-
-    /* 第5行：PIN MV */
-    text(2U, 32U, "PIN MV");
-    if (bat.valid) { number(44U, 32U, bat.pin_mv); }
-    else { text(44U, 32U, "--"); }
-
-    /* 第6行：BAT MV */
-    text(2U, 40U, "BAT MV");
-    if (bat.valid) { number(44U, 40U, bat.battery_mv); }
-    else { text(44U, 40U, "--"); }
-
-    /* 第7行：N E */
-    text(2U, 48U, "N"); number(14U, 48U, bat.sample_count > 999999U ? 999999U : bat.sample_count);
-    text(62U, 48U, "E"); number(74U, 48U, bat.error_count > 999999U ? 999999U : bat.error_count);
-
-    /* 第8行：采集状态；返回提示位于标题。 */
-    const char *status_text = "VOLT ONLY";
-    if (!bat.valid) {
-        if (bat.status == WATCH_NOT_READY) { status_text = "STARTING"; }
-        else if (bat.status == WATCH_TIMEOUT) { status_text = "TIMEOUT RETRY"; }
-        else if (bat.status == WATCH_IO_ERROR) { status_text = "IO ERROR RETRY"; }
-        else if (bat.status == WATCH_INVALID_DATA) { status_text = "DATA ERROR RETRY"; }
-        else if (bat.status == WATCH_NOT_IMPLEMENTED) { status_text = "NOT IMPLEMENTED"; }
-        else { status_text = "STALE RETRY"; }
+    if (battery_show_summary) {
+        /* 汇总页：EST百分比、BAT MV、低电状态、阈值、操作提示。 */
+        text(2U, 0U, "BATTERY K HOLD BACK");
+        text(2U, 8U, "EST");
+        if (svc.status == WATCH_OK && svc.battery.valid) {
+            number(32U, 8U, svc.battery.percent);
+            text(56U, 8U, "%");
+        } else { text(32U, 8U, "--"); }
+        text(2U, 16U, "BAT MV");
+        if (bat.valid) { number(44U, 16U, bat.battery_mv); }
+        else { text(44U, 16U, "--"); }
+        /* 低电状态：仅在valid且low_known时显示。 */
+        const char *low_msg = "CHECKING";
+        if (svc.status != WATCH_OK || !svc.battery.valid) { low_msg = "CHECK ADC"; }
+        else if (!svc.low_known) { low_msg = "CHECKING"; }
+        else if (svc.low) { low_msg = "LOW"; }
+        else { low_msg = "NORMAL"; }
+        text(2U, 24U, "STATUS"); text(56U, 24U, low_msg);
+        /* 阈值显示。 */
+        text(2U, 32U, "LOW MV"); number(50U, 32U, WATCH_BATTERY_LOW_MV);
+        text(2U, 40U, "RECOVER"); number(56U, 40U, WATCH_BATTERY_RECOVER_MV);
+        text(2U, 48U, "MENU ADC DETAILS");
+        text(2U, 56U, "KEY HOLD BACK");
+    } else {
+        /* ADC详情页：保留全部原始反馈。 */
+        text(2U, 0U, "ADC MENU EST K BACK");
+        text(2U, 8U, "RAW");
+        if (bat.valid) { number(26U, 8U, bat.raw_pin); }
+        else { text(26U, 8U, "--"); }
+        text(2U, 16U, "REF");
+        if (bat.valid) { number(26U, 16U, bat.raw_vref); }
+        else { text(26U, 16U, "--"); }
+        text(2U, 24U, "VDD MV");
+        if (bat.valid) { number(44U, 24U, bat.vdda_mv); }
+        else { text(44U, 24U, "--"); }
+        text(2U, 32U, "PIN MV");
+        if (bat.valid) { number(44U, 32U, bat.pin_mv); }
+        else { text(44U, 32U, "--"); }
+        text(2U, 40U, "BAT MV");
+        if (bat.valid) { number(44U, 40U, bat.battery_mv); }
+        else { text(44U, 40U, "--"); }
+        text(2U, 48U, "N"); number(14U, 48U, bat.sample_count > 999999U ? 999999U : bat.sample_count);
+        text(62U, 48U, "E"); number(74U, 48U, bat.error_count > 999999U ? 999999U : bat.error_count);
+        const char *status_text = "VOLT ONLY";
+        if (!bat.valid) {
+            if (bat.status == WATCH_NOT_READY) { status_text = "STARTING"; }
+            else if (bat.status == WATCH_TIMEOUT) { status_text = "TIMEOUT RETRY"; }
+            else if (bat.status == WATCH_IO_ERROR) { status_text = "IO ERROR RETRY"; }
+            else if (bat.status == WATCH_INVALID_DATA) { status_text = "DATA ERROR RETRY"; }
+            else if (bat.status == WATCH_NOT_IMPLEMENTED) { status_text = "NOT IMPLEMENTED"; }
+            else { status_text = "STALE RETRY"; }
+        }
+        text(2U, 56U, status_text);
     }
-    text(2U, 56U, status_text);
 }
 
 static void draw_history_detail(uint32_t now_ms)
@@ -624,7 +643,7 @@ static void draw_tools_menu(void)
     text(2U, 0U, "TOOLS K HOLD BACK");
     text(2U, 8U, "KEY NEXT SOS PREV");
     /* 8项工具，滚动显示最多4项内容，标题占一行，底部留提示行，中间4行显示菜单项。 */
-    static const char *tools[] = {"BAT ADC", "PPG", "MPU", "WRIST", "BLE", "HAPTIC", "PARAMETERS", "FLASH"};
+    static const char *tools[] = {"BATTERY", "PPG", "MPU", "WRIST", "BLE", "HAPTIC", "PARAMETERS", "FLASH"};
     /* 确保选中项可见：滚动偏移使选中项在可见窗口内。 */
     if (tool_selection < tool_scroll_offset) {
         tool_scroll_offset = tool_selection;
@@ -648,7 +667,15 @@ static void draw_home(void)
     bool clock_ready = time_service_clock_source() == TIME_CLOCK_LSE;
     bool valid = clock_ready && status == WATCH_OK && time_utc_to_local(utc, &local) == WATCH_OK;
     text(26U, 0U, "SMART WATCH");
+    /* BJT UTC+8行显示时间，右侧显示EST百分比（68开始，数字92，百分号110）。 */
     text(2U, 8U, "BJT UTC+8");
+    battery_service_state_t svc;
+    (void)battery_service_get_state(&svc);
+    if (svc.status == WATCH_OK && svc.battery.valid) {
+        text(68U, 8U, "EST"); number(92U, 8U, svc.battery.percent); text(110U, 8U, "%");
+    } else {
+        text(68U, 8U, "EST --");
+    }
     if (valid) {
         fixed_number(2U, 16U, local.year, 4U); text(26U, 16U, "-");
         fixed_number(32U, 16U, local.month, 2U); text(44U, 16U, "-");
@@ -670,7 +697,16 @@ static void draw_home(void)
     if (bat.valid) { number(44U, 40U, bat.battery_mv); }
     else { text(44U, 40U, "--"); }
     text(2U, 48U, notice[0] != '\0' ? notice : "MENU OPEN KEY HOLD");
-    text(2U, 56U, clock_ready ? "MENU HOLD SET CLK" : "CLK ERROR");
+    /* row56显示低电提醒、无效提示或常规提示。 */
+    const char *row56_msg = "MENU HOLD SET CLK";
+    if (svc.status != WATCH_OK || !svc.battery.valid) {
+        row56_msg = "BAT CHECK ADC";
+    } else if (svc.low_known && svc.low) {
+        row56_msg = "LOW BAT CHARGE";
+    } else if (!clock_ready) {
+        row56_msg = "CLK ERROR";
+    }
+    text(2U, 56U, row56_msg);
 }
 
 static void draw(uint32_t now_ms)
@@ -725,6 +761,15 @@ static void draw(uint32_t now_ms)
         text(2U, 40U, "MENU NEXT HOLD SAVE");
         text(2U, 48U, "SOS HOLD CANCEL");
         text(2U, 56U, notice);
+    }
+    /* 非HOME的UI_NORMAL页面，在有效低电时覆盖顶部标题行显示LOW BAT CHARGE。 */
+    if (phase == UI_NORMAL && nav_level != NAV_HOME) {
+        battery_service_state_t svc;
+        (void)battery_service_get_state(&svc);
+        if (svc.status == WATCH_OK && svc.battery.valid && svc.low_known && svc.low) {
+            memset(frame, 0, SSD1306_WIDTH);
+            text(2U, 0U, "LOW BAT CHARGE");
+        }
     }
 }
 
@@ -822,6 +867,10 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
             if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_MENU_LONG) == 0U) {
                 function_selection = FUNC_TOOLS;
                 nav_level = NAV_DETAIL;
+                /* 进入BATTERY工具页时默认显示汇总。 */
+                if (tool_selection == TOOL_BAT) {
+                    battery_show_summary = true;
+                }
                 last_refresh_ms = now_ms - 1000U;
                 return;
             }
@@ -912,6 +961,14 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
                 if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U &&
                     (event & BUTTON_BOARD_LONG) == 0U) {
                     action_status = wrist_wake_calibrate(now_ms);
+                    last_refresh_ms = now_ms - 1000U;
+                }
+                return;
+            } else if (tool_selection == TOOL_BAT) {
+                /* MENU短按切换汇总/详情，不组合长按。 */
+                if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_BOARD_LONG) == 0U &&
+                    (event & BUTTON_MENU_LONG) == 0U) {
+                    battery_show_summary = !battery_show_summary;
                     last_refresh_ms = now_ms - 1000U;
                 }
                 return;
