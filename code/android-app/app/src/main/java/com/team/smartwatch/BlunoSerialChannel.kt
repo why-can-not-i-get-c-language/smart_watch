@@ -21,7 +21,11 @@ private fun bluetoothUuid(shortId: String) = UUID.fromString("0000$shortId-0000-
 /** 所有入口由活动的主线程调用。每个会话仅允许一个待回调的 GATT 操作。 */
 @SuppressLint("MissingPermission")
 @Suppress("DEPRECATION")
-internal class BlunoSerialChannel(private val gatt: BluetoothGatt, private val handler: Handler) {
+internal class BlunoSerialChannel(
+    private val gatt: BluetoothGatt,
+    private val handler: Handler,
+    private val onFailure: (String) -> Unit,
+) {
     private enum class Step(val label: String) {
         SUBSCRIBE("启用 CCCD"), READ_MODEL("读取模块型号"), AUTHENTICATE("写入模块认证命令"),
         UART("初始化串口波特率"), SEND("写入串口数据"),
@@ -248,6 +252,7 @@ internal class BlunoSerialChannel(private val gatt: BluetoothGatt, private val h
         needsReconnect = true
         close()
         status = "${step.label}失败（$reason）。请断开并重连。"
+        onFailure(status)
     }
 
     private fun record(label: String, bytes: ByteArray) {

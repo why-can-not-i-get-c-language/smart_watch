@@ -2,6 +2,7 @@ package com.team.smartwatch
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -13,7 +14,10 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
@@ -50,6 +54,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import java.text.SimpleDateFormat
@@ -90,10 +95,23 @@ class BleIntegrationActivity : ComponentActivity() {
         stopScan()
         scanStatus = scanUnavailableReason() ?: completedScan()
     }
-    private val connectionDeadline = Runnable { closeConnection("连接或服务发现超时，请重试。") }
+    private val connectionDeadline = Runnable {
+        closeConnection(connectionUnavailableReason() ?: "连接或服务发现超时，请重试。")
+    }
+    private val bluetoothOff = "手机蓝牙已关闭。开启后请重新连接。"
+    private val bluetoothPermissionMissing = "请重新授予附近设备权限后连接。"
+    private val bluetoothStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) refreshBluetoothState()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ContextCompat.registerReceiver(
+            this, bluetoothStateReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED),
+            ContextCompat.RECEIVER_EXPORTED,
+        )
         setContent {
             MaterialTheme {
                 val listState = rememberLazyListState()
@@ -211,6 +229,37 @@ class BleIntegrationActivity : ComponentActivity() {
     private fun hasNearbyPermissions() = Build.VERSION.SDK_INT < 31 ||
         (hasPermission(Manifest.permission.BLUETOOTH_SCAN) && hasPermission(Manifest.permission.BLUETOOTH_CONNECT))
 
+    private fun connectionUnavailableReason(): String? = try {
+        val available = adapter
+        when {
+            Build.VERSION.SDK_INT >= 31 && !hasPermission(Manifest.permission.BLUETOOTH_CONNECT) ->
+                bluetoothPermissionMissing
+            available == null -> "此手机没有可用的蓝牙适配器。"
+            !available.isEnabled -> bluetoothOff
+            else -> null
+        }
+    } catch (_: SecurityException) {
+        bluetoothPermissionMissing
+    }
+
+    private fun refreshBluetoothState() {
+        val problem = connectionUnavailableReason()
+        if (problem != null) {
+            if (scanning) {
+                stopScan()
+                scanStatus = scanUnavailableReason() ?: completedScan()
+            } else if (problem == bluetoothOff) {
+                scanStatus = "扫描失败：$bluetoothOff"
+            }
+            if (gatt != null || (showingDetails && problem == bluetoothOff)) closeConnection(problem)
+        } else {
+            if (scanStatus == "扫描失败：$bluetoothOff") {
+                scanStatus = "手机蓝牙已开启，可开始扫描或从本轮列表重新连接。"
+            }
+            if (connectionStatus == bluetoothOff) connectionStatus = "手机蓝牙已开启，请重新连接设备。"
+        }
+    }
+
     private fun requestScan() {
         if (scanning || gatt != null) return
         val missing = mutableListOf<String>()
@@ -231,7 +280,7 @@ class BleIntegrationActivity : ComponentActivity() {
         when {
             !hasNearbyPermissions() -> "扫描失败：未授权「附近设备」。请允许蓝牙扫描和连接。"
             available == null -> "扫描失败：此手机没有可用的蓝牙适配器。"
-            !available.isEnabled -> "扫描失败：手机蓝牙已关闭，请开启后重试。"
+            !available.isEnabled -> "扫描失败：$bluetoothOff"
             !hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ->
                 "扫描失败：完整扫描需要前台精确位置权限。请在系统权限中授权。"
             !LocationManagerCompat.isLocationEnabled(getSystemService(LocationManager::class.java)) ->
@@ -378,8 +427,8 @@ class BleIntegrationActivity : ComponentActivity() {
             stopScan()
             scanStatus = completedScan()
         }
-        if (Build.VERSION.SDK_INT >= 31 && !hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-            connectionStatus = "请重新授予附近设备权限后连接。"
+        connectionUnavailableReason()?.let {
+            connectionStatus = it
             return
         }
         try {
@@ -402,8 +451,12 @@ class BleIntegrationActivity : ComponentActivity() {
             handler.post {
                 if (gatt !== connection) return@post
                 when {
-                    result != BluetoothGatt.GATT_SUCCESS -> closeConnection("连接失败或中断（$result），请重试。")
-                    newState == BluetoothProfile.STATE_DISCONNECTED -> closeConnection("设备已断开。")
+                    result != BluetoothGatt.GATT_SUCCESS || newState == BluetoothProfile.STATE_DISCONNECTED ->
+                        closeConnection(connectionUnavailableReason() ?: if (result == BluetoothGatt.GATT_SUCCESS) {
+                            "设备已断开，请重新连接。"
+                        } else {
+                            "连接失败或中断（$result），请重新连接。"
+                        })
                     newState == BluetoothProfile.STATE_CONNECTED -> {
                         connectionStatus = "BLE 已连接，正在发现 GATT 服务…"
                         try {
@@ -420,6 +473,10 @@ class BleIntegrationActivity : ComponentActivity() {
             handler.post {
                 if (gatt !== connection) return@post
                 handler.removeCallbacks(connectionDeadline)
+                connectionUnavailableReason()?.let {
+                    closeConnection(it)
+                    return@post
+                }
                 if (result != BluetoothGatt.GATT_SUCCESS || connection.services.isEmpty()) {
                     closeConnection("未能发现 GATT 服务（$result），请重试。")
                     return@post
@@ -428,7 +485,11 @@ class BleIntegrationActivity : ComponentActivity() {
                     Service(service.uuid.toString(), service.characteristics.map(::describe))
                 }
                 connectionStatus = "BLE 已连接，发现 ${services.size} 个 GATT 服务。"
-                serialChannel = BlunoSerialChannel(connection, handler).also { it.prepare() }
+                val channel = BlunoSerialChannel(connection, handler) { failure ->
+                    if (gatt === connection) closeConnection(connectionUnavailableReason() ?: failure)
+                }
+                serialChannel = channel
+                channel.prepare()
             }
         }
 
@@ -503,12 +564,24 @@ class BleIntegrationActivity : ComponentActivity() {
         connectionStatus = message
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshBluetoothState()
+    }
+
     override fun onStop() {
         super.onStop()
         if (scanning) {
             stopScan()
             scanStatus = completedScan()
         }
-        if (gatt != null) closeConnection("联调页已离开，BLE 连接已关闭。")
+        // Home、锁屏和暂时打开系统设置时，联调页仍可恢复同一个 GATT 会话。
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(bluetoothStateReceiver)
+        stopScan()
+        closeConnection(null)
+        super.onDestroy()
     }
 }
