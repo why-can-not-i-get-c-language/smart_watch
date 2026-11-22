@@ -45,11 +45,18 @@ static const glyph_t glyphs[] = {
 typedef enum { UI_WHITE, UI_CHECKER, UI_CORNERS, UI_OFF, UI_NORMAL, UI_EDIT } ui_phase_t;
 typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_SECOND, EDIT_COUNT } edit_field_t;
 
+/* 导航层级与选项，不影响现有ui_phase_t状态机。 */
+typedef enum { NAV_HOME=0, NAV_FUNCTION_MENU, NAV_TOOLS_MENU, NAV_DETAIL } nav_level_t;
+typedef enum { FUNC_STEPS=0, FUNC_HISTORY, FUNC_TOOLS, FUNC_COUNT } function_item_t;
+typedef enum { TOOL_BAT=0, TOOL_PPG, TOOL_MPU, TOOL_WRIST, TOOL_BLE, TOOL_HAPTIC, TOOL_PARAMETERS, TOOL_FLASH, TOOL_COUNT } tool_item_t;
+
 static uint8_t frame[SSD1306_FRAME_SIZE];
 static ui_phase_t phase;
-/* F07-P03默认历史页；既有页面仍由KEY长按循环。 */
-typedef enum { PAGE_HISTORY, PAGE_SETTINGS, PAGE_FLASH, PAGE_MOTION, PAGE_PPG, PAGE_BAT, PAGE_BLE, PAGE_WRIST, PAGE_STEPS, PAGE_HAPTIC, PAGE_TIME, PAGE_COUNT } ui_page_t;
-static ui_page_t active_page = PAGE_HISTORY;
+/* 默认首页HOME（时间+会话步数+电池），MENU短按或KEY长按进入功能菜单。 */
+static nav_level_t nav_level = NAV_HOME;
+static function_item_t function_selection = FUNC_STEPS;
+static tool_item_t tool_selection = TOOL_BAT;
+static unsigned tool_scroll_offset = 0U;
 static uint32_t motion_key_count;
 static bool steps_cleared;
 static uint32_t steps_cleared_ms;
@@ -235,7 +242,7 @@ static uint8_t month_days(uint16_t year, uint8_t month)
     return month == 2U && is_leap ? 29U : days[month - 1U];
 }
 
-static void draw_haptic_page(uint32_t now_ms)
+static void draw_haptic_detail(uint32_t now_ms)
 {
     tm6605_state_t current;
     tm6605_get_state(&current);
@@ -253,7 +260,7 @@ static void draw_haptic_page(uint32_t now_ms)
     text(2U, 24U, "EFFECT"); number(50U, 24U, current.effect);
     text(2U, 32U, "UPTIME S"); number(62U, 32U, now_ms / 1000U);
     text(2U, 40U, "MENU TAP14 HOLD RPT");
-    text(2U, 48U, "KEY TAP STOP HOLD UI");
+    text(2U, 48U, "KEY STOP HOLD BACK");
     text(2U, 56U, "SOS TAP SLP HOLD WK");
 }
 
@@ -264,11 +271,11 @@ static void signed_milli(unsigned x, unsigned y, float value)
     number(x + 6U, y, (uint32_t)(milli < 0 ? -milli : milli));
 }
 
-static void draw_motion_page(void)
+static void draw_mpu_detail(void)
 {
     mpu6050_state_t motion;
     mpu6050_get_state(&motion);
-    text(2U, 0U, "MPU INT CHECK");
+    text(2U, 0U, "MPU K BACK");
     number(86U, 0U, WATCH_MPU_SAMPLE_HZ); text(104U, 0U, "HZ");
     text(2U, 8U, "ID");
     if (motion.identity_read) {
@@ -310,7 +317,7 @@ static void draw_motion_page(void)
     text(98U, 56U, "K"); number(110U, 56U, motion_key_count > 99U ? 99U : motion_key_count);
 }
 
-static void draw_steps_page(uint32_t now_ms)
+static void draw_steps_detail(uint32_t now_ms)
 {
     pedometer_status_t counter;
     mpu6050_state_t motion;
@@ -340,10 +347,10 @@ static void draw_steps_page(uint32_t now_ms)
     } else { text(44U, 32U, "--"); }
     text(2U, 40U, motion.sample.valid ? "MPU ONLINE" : "CHECK SENSOR");
     text(2U, 48U, "MENU HOLD CLEAR");
-    text(2U, 56U, "KEY HOLD PAGE");
+    text(2U, 56U, "KEY HOLD BACK");
 }
 
-static void draw_wrist_page(void)
+static void draw_wrist_detail(void)
 {
     wrist_wake_status_t wrist;
     (void)wrist_wake_get_state(&wrist);
@@ -352,7 +359,7 @@ static void draw_wrist_page(void)
         "TURN TOO FAST", "COOLDOWN", "TRIGGERED", "SENSOR ERROR", "SET FAILED",
         "ACCEL RANGE"
     };
-    text(32U, 0U, "WRIST CHECK");
+    text(2U, 0U, "WRIST K HOLD BACK");
     text(2U, 8U, wrist.calib_state == WRIST_CALIB_DONE ? "REF SET" :
          wrist.calib_state == WRIST_CALIB_PENDING ? "REF CAPTURING" : "REF NOT SET");
     text(2U, 16U, (unsigned)wrist.pose < sizeof(poses) / sizeof(poses[0]) ? poses[wrist.pose] : "STATE ERROR");
@@ -380,11 +387,11 @@ static void draw_wrist_page(void)
     }
 }
 
-static void draw_ppg_page(void)
+static void draw_ppg_detail(void)
 {
     max30102_state_t state;
     max30102_get_state(&state);
-    text(2U, 0U, "PPG INT CHECK");
+    text(2U, 0U, "PPG K HOLD BACK");
     text(2U, 8U, "ID");
     static const char hex[] = "0123456789ABCDEF";
     if (state.identity_read) {
@@ -422,7 +429,7 @@ static void draw_ppg_page(void)
     } else { text(26U, 56U, "--"); }
 }
 
-static void draw_ble_page(void)
+static void draw_ble_detail(void)
 {
     ble_link_state_t state;
     (void)ble_link_get_state(&state);
@@ -433,7 +440,7 @@ static void draw_ble_page(void)
     text(2U, 32U, "TX B"); number(38U, 32U, state.tx_bytes);
     bool error = state.rx_status != WATCH_OK && state.rx_status != WATCH_NOT_READY;
     error = error || (state.tx_status != WATCH_OK && state.tx_status != WATCH_NOT_READY);
-    text(2U, 40U, !state.initialized ? "UART NOT READY" : error ? "IO ERROR" :
+    text(2U, 40U, !state.initialized ? "CHECK UART" : error ? "IO ERROR" :
          state.rx_bytes == 0U ? "WAIT RX" : "RX SEEN");
     /* 两层错误计数取较大值，避免同一UART错误双重累计。 */
     uint32_t errors = state.errors > state.uart_errors ? state.errors : state.uart_errors;
@@ -447,14 +454,14 @@ static void draw_ble_page(void)
         character(38U + 18U * i, 48U, hex[state.last_rx[i] >> 4U]);
         character(44U + 18U * i, 48U, hex[state.last_rx[i] & 15U]);
     }
-    text(2U, 56U, "MENU SEND TEST");
+    text(2U, 56U, "MENU SEND KEY BACK");
 }
 
-static void draw_battery_page(void)
+static void draw_battery_detail(void)
 {
     battery_adc_state_t bat;
     (void)battery_adc_get_state(&bat);
-    text(26U, 0U, "BAT ADC CHECK");
+    text(2U, 0U, "BAT ADC K HOLD BACK");
 
     /* 第2行：RAW */
     text(2U, 8U, "RAW");
@@ -485,7 +492,7 @@ static void draw_battery_page(void)
     text(2U, 48U, "N"); number(14U, 48U, bat.sample_count > 999999U ? 999999U : bat.sample_count);
     text(62U, 48U, "E"); number(74U, 48U, bat.error_count > 999999U ? 999999U : bat.error_count);
 
-    /* 第8行：状态 */
+    /* 第8行：采集状态；返回提示位于标题。 */
     const char *status_text = "VOLT ONLY";
     if (!bat.valid) {
         if (bat.status == WATCH_NOT_READY) { status_text = "STARTING"; }
@@ -498,12 +505,12 @@ static void draw_battery_page(void)
     text(2U, 56U, status_text);
 }
 
-static void draw_history_page(uint32_t now_ms)
+static void draw_history_detail(uint32_t now_ms)
 {
     (void)now_ms;
     record_store_state_t st;
     (void)record_store_get_state(&st);history_sync(&st);
-    text(2U,0U,"F07 HISTORY 01");
+    text(2U,0U,"HISTORY K HOLD BACK");
     const char *message=!st.ready ? "LOADING" : st.busy ? "APPENDING" :
         st.readonly ? "READONLY ERROR" :
         history_append_requested && st.last_append_status==WATCH_OK ? "APPENDED" :
@@ -532,7 +539,7 @@ static void draw_history_page(uint32_t now_ms)
          "KEEP DATA SOS READ" : "MENU EVENT SOS READ");
 }
 
-static void draw_settings_page(uint32_t now_ms)
+static void draw_settings_detail(uint32_t now_ms)
 {
     (void)now_ms;
     settings_state_t st;
@@ -540,7 +547,7 @@ static void draw_settings_page(uint32_t now_ms)
     settings_ui_sync(&st);
     uint32_t current=0U;
     watch_status_t load_status=settings_ui_load(&current);
-    text(2U,0U,"F07 SETTINGS 01");
+    text(2U,0U,"PARAM K HOLD BACK");
     w25q64_state_t flash;
     (void)w25q64_get_state(&flash);
     text(2U,8U,flash.model==W25Q64_MODEL_PY25Q64HA_ID && flash.stable_samples>=2U ?
@@ -564,11 +571,11 @@ static void draw_settings_page(uint32_t now_ms)
     text(2U,56U,"M+ HOLD SAVE SOS LOAD");
 }
 
-static void draw_flash_page(uint32_t now_ms)
+static void draw_flash_detail(uint32_t now_ms)
 {
     w25q64_state_t flash;
     (void)w25q64_get_state(&flash);
-    text(2U, 0U, "F07 FLASH TEST 03");
+    text(2U, 0U, "FLASH K HOLD BACK");
     text(2U, 8U, "RAW ID");
     static const char hex[] = "0123456789ABCDEF";
     if (flash.status == WATCH_OK || flash.status == WATCH_INVALID_DATA) {
@@ -601,6 +608,71 @@ static void draw_flash_page(uint32_t now_ms)
     (void)now_ms;
 }
 
+static void draw_function_menu(void)
+{
+    text(2U, 0U, "MENU K HOLD HOME");
+    text(2U, 8U, "KEY NEXT SOS PREV");
+    /* 使用现有字库中的加号标出选中项。 */
+    text(2U, 20U, function_selection == FUNC_STEPS ? "+ STEPS" : "  STEPS");
+    text(2U, 32U, function_selection == FUNC_HISTORY ? "+ HISTORY" : "  HISTORY");
+    text(2U, 44U, function_selection == FUNC_TOOLS ? "+ TOOLS" : "  TOOLS");
+    text(2U, 56U, "MENU SELECT");
+}
+
+static void draw_tools_menu(void)
+{
+    text(2U, 0U, "TOOLS K HOLD BACK");
+    text(2U, 8U, "KEY NEXT SOS PREV");
+    /* 8项工具，滚动显示最多4项内容，标题占一行，底部留提示行，中间4行显示菜单项。 */
+    static const char *tools[] = {"BAT ADC", "PPG", "MPU", "WRIST", "BLE", "HAPTIC", "PARAMETERS", "FLASH"};
+    /* 确保选中项可见：滚动偏移使选中项在可见窗口内。 */
+    if (tool_selection < tool_scroll_offset) {
+        tool_scroll_offset = tool_selection;
+    } else if (tool_selection >= tool_scroll_offset + 4U) {
+        tool_scroll_offset = tool_selection - 3U;
+    }
+    unsigned y = 16U;
+    for (unsigned i = tool_scroll_offset; i < TOOL_COUNT && i < tool_scroll_offset + 4U; ++i) {
+        text(2U, y, i == tool_selection ? "+ " : "  ");
+        text(14U, y, tools[i]);
+        y += 10U;
+    }
+    text(2U, 56U, "MENU SELECT");
+}
+
+static void draw_home(void)
+{
+    uint32_t utc = 0U;
+    rtc_calendar_t local;
+    watch_status_t status = time_service_get(&utc);
+    bool clock_ready = time_service_clock_source() == TIME_CLOCK_LSE;
+    bool valid = clock_ready && status == WATCH_OK && time_utc_to_local(utc, &local) == WATCH_OK;
+    text(26U, 0U, "SMART WATCH");
+    text(2U, 8U, "BJT UTC+8");
+    if (valid) {
+        fixed_number(2U, 16U, local.year, 4U); text(26U, 16U, "-");
+        fixed_number(32U, 16U, local.month, 2U); text(44U, 16U, "-");
+        fixed_number(50U, 16U, local.day, 2U);
+        fixed_number(2U, 24U, local.hour, 2U); text(14U, 24U, ":");
+        fixed_number(20U, 24U, local.minute, 2U); text(32U, 24U, ":");
+        fixed_number(38U, 24U, local.second, 2U);
+    } else {
+        text(2U, 16U, clock_ready && status == WATCH_NOT_READY ? "TIME NOT SET" : "RTC ERROR");
+    }
+    /* 会话步数 SESSION */
+    pedometer_status_t counter;
+    (void)pedometer_get_state(&counter);
+    text(2U, 32U, "SESSION"); number(56U, 32U, counter.step_count);
+    /* 电池电压 mV */
+    battery_adc_state_t bat;
+    (void)battery_adc_get_state(&bat);
+    text(2U, 40U, "BAT MV");
+    if (bat.valid) { number(44U, 40U, bat.battery_mv); }
+    else { text(44U, 40U, "--"); }
+    text(2U, 48U, notice[0] != '\0' ? notice : "MENU OPEN KEY HOLD");
+    text(2U, 56U, clock_ready ? "MENU HOLD SET CLK" : "CLK ERROR");
+}
+
 static void draw(uint32_t now_ms)
 {
     memset(frame, 0, sizeof(frame));
@@ -618,49 +690,27 @@ static void draw(uint32_t now_ms)
         text(3U, 3U, "TL"); text(113U, 3U, "TR");
         text(3U, 54U, "BL"); text(113U, 54U, "BR");
         text(25U, 25U, "DISPLAY CHECK");
-    } else if (phase == UI_NORMAL && active_page == PAGE_HISTORY) {
-        draw_history_page(now_ms);
-    } else if (phase == UI_NORMAL && active_page == PAGE_SETTINGS) {
-        draw_settings_page(now_ms);
-    } else if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
-        draw_flash_page(now_ms);
-    } else if (phase == UI_NORMAL && active_page == PAGE_BAT) {
-        draw_battery_page();
-    } else if (phase == UI_NORMAL && active_page == PAGE_PPG) {
-        draw_ppg_page();
-    } else if (phase == UI_NORMAL && active_page == PAGE_BLE) {
-        draw_ble_page();
-    } else if (phase == UI_NORMAL && active_page == PAGE_WRIST) {
-        draw_wrist_page();
-    } else if (phase == UI_NORMAL && active_page == PAGE_STEPS) {
-        draw_steps_page(now_ms);
-    } else if (phase == UI_NORMAL && active_page == PAGE_MOTION) {
-        draw_motion_page();
-    } else if (phase == UI_NORMAL && active_page == PAGE_HAPTIC) {
-        draw_haptic_page(now_ms);
-    } else if (phase == UI_NORMAL) {
-        uint32_t utc = 0U;
-        rtc_calendar_t local;
-        watch_status_t status = time_service_get(&utc);
-        bool clock_ready = time_service_clock_source() == TIME_CLOCK_LSE;
-        bool valid = clock_ready && status == WATCH_OK && time_utc_to_local(utc, &local) == WATCH_OK;
-        text(31U, 0U, "SMART WATCH");
-        text(2U, 8U, "BJT UTC+8");
-        if (valid) {
-            fixed_number(2U, 16U, local.year, 4U); text(26U, 16U, "-");
-            fixed_number(32U, 16U, local.month, 2U); text(44U, 16U, "-");
-            fixed_number(50U, 16U, local.day, 2U);
-            fixed_number(2U, 24U, local.hour, 2U); text(14U, 24U, ":");
-            fixed_number(20U, 24U, local.minute, 2U); text(32U, 24U, ":");
-            fixed_number(38U, 24U, local.second, 2U);
-        } else {
-            text(2U, 16U, clock_ready && status == WATCH_NOT_READY ? "TIME NOT SET" : "RTC ERROR");
+    } else if (phase == UI_NORMAL && nav_level == NAV_HOME) {
+        draw_home();
+    } else if (phase == UI_NORMAL && nav_level == NAV_FUNCTION_MENU) {
+        draw_function_menu();
+    } else if (phase == UI_NORMAL && nav_level == NAV_TOOLS_MENU) {
+        draw_tools_menu();
+    } else if (phase == UI_NORMAL && nav_level == NAV_DETAIL) {
+        if (function_selection == FUNC_STEPS) {
+            draw_steps_detail(now_ms);
+        } else if (function_selection == FUNC_HISTORY) {
+            draw_history_detail(now_ms);
+        } else if (function_selection == FUNC_TOOLS) {
+            if (tool_selection == TOOL_BAT) { draw_battery_detail(); }
+            else if (tool_selection == TOOL_PPG) { draw_ppg_detail(); }
+            else if (tool_selection == TOOL_MPU) { draw_mpu_detail(); }
+            else if (tool_selection == TOOL_WRIST) { draw_wrist_detail(); }
+            else if (tool_selection == TOOL_BLE) { draw_ble_detail(); }
+            else if (tool_selection == TOOL_HAPTIC) { draw_haptic_detail(now_ms); }
+            else if (tool_selection == TOOL_PARAMETERS) { draw_settings_detail(now_ms); }
+            else if (tool_selection == TOOL_FLASH) { draw_flash_detail(now_ms); }
         }
-        text(2U, 32U, "UPTIME S"); number(62U, 32U, now_ms / 1000U);
-        text(2U, 40U, "MENU HOLD SET");
-        if (valid && action_status == WATCH_OK) { text(2U, 48U, "SAVED"); }
-        else if (clock_ready && notice[0] != '\0' && action_status == WATCH_NOT_READY) { text(2U, 48U, notice); }
-        text(2U, 56U, clock_ready ? "CLK LSE" : "CLK ERROR");
     } else if (phase == UI_EDIT) {
         static const char *fields[] = {"YEAR","MONTH","DAY","HOUR","MIN","SEC"};
         text(2U, 0U, "SET BJT UTC+8");
@@ -710,97 +760,180 @@ static void adjust_field(int direction)
 
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
 {
-    if (phase == UI_NORMAL && (event & BUTTON_BOARD_LONG) != 0U) {
-        active_page = (ui_page_t)(((unsigned)active_page + 1U) % PAGE_COUNT);
-        last_refresh_ms = now_ms - 1000U;
-        return;
-    }
-    if (phase == UI_NORMAL && active_page == PAGE_HISTORY) {
-        record_store_state_t st;
-        (void)record_store_get_state(&st);
-        if (!st.ready || st.busy) return;
-        if ((event & BUTTON_SOS_SHORT)!=0U) {
-            history_append_requested=false;history_read_requested=true;
-            history_action_status=st.count==0U ? WATCH_INVALID_ARGUMENT : WATCH_NOT_READY;
-            history_sync(&st);
-        } else if ((event & BUTTON_MENU_SHORT)!=0U) {
-            record_t record;
-            if (time_service_get(&record.utc_seconds)!=WATCH_OK) record.utc_seconds=0U;
-            record.value=st.count==0U ? 1U : st.newest_id+1U;
-            record.type=RECORD_STORE_TYPE_MANUAL_EVENT;
-            history_action_status=record_store_append(&record);
-            history_append_requested=history_action_status==WATCH_OK;
-            if (history_append_requested) {
-                history_action_status=WATCH_NOT_READY;history_read_requested=true;
+    /* 导航：仅在UI_NORMAL阶段响应；编辑器忽略KEY长按，保存/取消返回HOME。 */
+    if (phase == UI_NORMAL) {
+        /* HOME页：MENU短按或KEY长按进入功能菜单。 */
+        if (nav_level == NAV_HOME) {
+            if ((event & (BUTTON_MENU_SHORT | BUTTON_BOARD_LONG)) != 0U &&
+                (event & (BUTTON_MENU_LONG | BUTTON_SOS_LONG)) == 0U) {
+                nav_level = NAV_FUNCTION_MENU;
+                function_selection = FUNC_STEPS;
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
+            /* HOME MENU长按进入时间编辑，后面统一处理。 */
+        }
+        /* 功能菜单：KEY短按下一项，SOS短按上一项，MENU短按进入，KEY长按返回HOME。 */
+        else if (nav_level == NAV_FUNCTION_MENU) {
+            if ((event & BUTTON_BOARD_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
+                nav_level = NAV_HOME;
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
+            if ((event & BUTTON_BOARD_SHORT) != 0U && (event & BUTTON_BOARD_LONG) == 0U) {
+                function_selection = (function_item_t)(((unsigned)function_selection + 1U) % FUNC_COUNT);
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
+            if ((event & BUTTON_SOS_SHORT) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
+                function_selection = (function_item_t)(((unsigned)function_selection + FUNC_COUNT - 1U) % FUNC_COUNT);
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
+            if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_MENU_LONG) == 0U) {
+                if (function_selection == FUNC_TOOLS) {
+                    nav_level = NAV_TOOLS_MENU;
+                    tool_selection = TOOL_BAT;
+                    tool_scroll_offset = 0U;
+                } else {
+                    nav_level = NAV_DETAIL;
+                }
+                last_refresh_ms = now_ms - 1000U;
+                return;
             }
         }
-        action_status=history_action_status;last_refresh_ms=now_ms-1000U;return;
-    }
-    if (phase == UI_NORMAL && active_page == PAGE_SETTINGS) {
-        settings_state_t st;
-        (void)settings_get_state(&st);settings_ui_sync(&st);
-        if (!st.ready || st.busy) return;
-        if ((event & BUTTON_SOS_SHORT)!=0U) {
-            settings_client_status=settings_init();
-            if (settings_client_status==WATCH_OK) {
-                settings_load_requested=true;settings_save_requested=false;
+        /* TOOLS菜单：KEY/SOS短按滚动，MENU短按进入，KEY长按返回功能菜单。 */
+        else if (nav_level == NAV_TOOLS_MENU) {
+            if ((event & BUTTON_BOARD_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
+                nav_level = NAV_FUNCTION_MENU;
+                last_refresh_ms = now_ms - 1000U;
+                return;
             }
-        } else if ((event & BUTTON_MENU_LONG)!=0U) {
-            uint32_t current=0U;
-            watch_status_t s=settings_ui_load(&current);
-            if (s!=WATCH_OK && !st.empty) settings_client_status=s;
-            else {
-                uint8_t bytes[8]={1U,0U,0U,0U,0U,0U,0U,0U};
-                for (unsigned i=0U;i<4U;++i) bytes[4U+i]=(uint8_t)(settings_draft>>(8U*i));
-                settings_client_status=settings_save(bytes,sizeof(bytes));
-                settings_save_requested=settings_client_status==WATCH_OK;
+            if ((event & BUTTON_BOARD_SHORT) != 0U && (event & BUTTON_BOARD_LONG) == 0U) {
+                tool_selection = (tool_item_t)(((unsigned)tool_selection + 1U) % TOOL_COUNT);
+                last_refresh_ms = now_ms - 1000U;
+                return;
             }
-        } else if ((event & BUTTON_MENU_SHORT)!=0U) {
-            ++settings_draft;settings_save_requested=false;
+            if ((event & BUTTON_SOS_SHORT) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
+                tool_selection = (tool_item_t)(((unsigned)tool_selection + TOOL_COUNT - 1U) % TOOL_COUNT);
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
+            if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_MENU_LONG) == 0U) {
+                function_selection = FUNC_TOOLS;
+                nav_level = NAV_DETAIL;
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
         }
-        action_status=settings_client_status;last_refresh_ms=now_ms-1000U;return;
-    }
-    if (phase == UI_NORMAL && active_page == PAGE_FLASH) {
-        if ((event & BUTTON_SOS_LONG)!=0U) action_status=w25q64_test_recover();
-        else if ((event & BUTTON_MENU_LONG)!=0U) action_status=w25q64_test_start();
-        last_refresh_ms=now_ms-1000U;
-        return;
-    }
-    if (phase == UI_NORMAL && active_page == PAGE_MOTION) {
-        if ((event & BUTTON_BOARD_SHORT) != 0U) {
-            if (motion_key_count != UINT32_MAX) { ++motion_key_count; }
-            last_refresh_ms = now_ms - 1000U;
+        /* 详情页：KEY长按返回拥有菜单（STEPS/HISTORY返回功能菜单，TOOLS项返回TOOLS菜单）。 */
+        else if (nav_level == NAV_DETAIL) {
+            if ((event & BUTTON_BOARD_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
+                if (function_selection == FUNC_TOOLS) {
+                    nav_level = NAV_TOOLS_MENU;
+                } else {
+                    nav_level = NAV_FUNCTION_MENU;
+                }
+                last_refresh_ms = now_ms - 1000U;
+                return;
+            }
         }
-        return;
     }
-    if (phase == UI_NORMAL && active_page == PAGE_WRIST) {
-        if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
-            action_status = wrist_wake_calibrate(now_ms);
-            last_refresh_ms = now_ms - 1000U;
+
+    /* 详情页功能按键：保留原有MENU/SOS操作，由功能自己处理。 */
+    if (phase == UI_NORMAL && nav_level == NAV_DETAIL) {
+        if (function_selection == FUNC_HISTORY) {
+            record_store_state_t st;
+            (void)record_store_get_state(&st);
+            if (!st.ready || st.busy) return;
+            if ((event & BUTTON_SOS_SHORT)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                history_append_requested=false;history_read_requested=true;
+                history_action_status=st.count==0U ? WATCH_INVALID_ARGUMENT : WATCH_NOT_READY;
+                history_sync(&st);
+            } else if ((event & BUTTON_MENU_SHORT)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                record_t record;
+                if (time_service_get(&record.utc_seconds)!=WATCH_OK) record.utc_seconds=0U;
+                record.value=st.count==0U ? 1U : st.newest_id+1U;
+                record.type=RECORD_STORE_TYPE_MANUAL_EVENT;
+                history_action_status=record_store_append(&record);
+                history_append_requested=history_action_status==WATCH_OK;
+                if (history_append_requested) {
+                    history_action_status=WATCH_NOT_READY;history_read_requested=true;
+                }
+            } else { return; }
+            action_status=history_action_status;last_refresh_ms=now_ms-1000U;return;
+        } else if (function_selection == FUNC_STEPS) {
+            if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U &&
+                (event & BUTTON_BOARD_LONG) == 0U) {
+                action_status = pedometer_reset();
+                steps_cleared = action_status == WATCH_OK;
+                steps_cleared_ms = now_ms;
+                last_refresh_ms = now_ms - 1000U;
+            }
+            return;
+        } else if (function_selection == FUNC_TOOLS) {
+            if (tool_selection == TOOL_PARAMETERS) {
+                settings_state_t st;
+                (void)settings_get_state(&st);settings_ui_sync(&st);
+                if (!st.ready || st.busy) return;
+                if ((event & BUTTON_SOS_SHORT)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                    settings_client_status=settings_init();
+                    if (settings_client_status==WATCH_OK) {
+                        settings_load_requested=true;settings_save_requested=false;
+                    }
+                } else if ((event & BUTTON_MENU_LONG)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                    uint32_t current=0U;
+                    watch_status_t s=settings_ui_load(&current);
+                    if (s!=WATCH_OK && !st.empty) settings_client_status=s;
+                    else {
+                        uint8_t bytes[8]={1U,0U,0U,0U,0U,0U,0U,0U};
+                        for (unsigned i=0U;i<4U;++i) bytes[4U+i]=(uint8_t)(settings_draft>>(8U*i));
+                        settings_client_status=settings_save(bytes,sizeof(bytes));
+                        settings_save_requested=settings_client_status==WATCH_OK;
+                    }
+                } else if ((event & BUTTON_MENU_SHORT)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                    ++settings_draft;settings_save_requested=false;
+                } else { return; }
+                action_status=settings_client_status;last_refresh_ms=now_ms-1000U;return;
+            } else if (tool_selection == TOOL_FLASH) {
+                if ((event & BUTTON_SOS_LONG)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                    action_status=w25q64_test_recover();
+                } else if ((event & BUTTON_MENU_LONG)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
+                    action_status=w25q64_test_start();
+                } else { return; }
+                last_refresh_ms=now_ms-1000U;return;
+            } else if (tool_selection == TOOL_MPU) {
+                if ((event & BUTTON_BOARD_SHORT) != 0U && (event & BUTTON_BOARD_LONG) == 0U) {
+                    if (motion_key_count != UINT32_MAX) { ++motion_key_count; }
+                    last_refresh_ms = now_ms - 1000U;
+                }
+                return;
+            } else if (tool_selection == TOOL_WRIST) {
+                if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U &&
+                    (event & BUTTON_BOARD_LONG) == 0U) {
+                    action_status = wrist_wake_calibrate(now_ms);
+                    last_refresh_ms = now_ms - 1000U;
+                }
+                return;
+            }
+            /* TOOL_BLE, TOOL_PPG, TOOL_BAT, TOOL_HAPTIC 不额外处理事件，只显示状态。 */
+            return;
         }
-        return;
     }
-    if (phase == UI_NORMAL && active_page == PAGE_STEPS) {
-        if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U) {
-            action_status = pedometer_reset();
-            steps_cleared = action_status == WATCH_OK;
-            steps_cleared_ms = now_ms;
-            last_refresh_ms = now_ms - 1000U;
-        }
-        return;
-    }
-    if (phase == UI_NORMAL && active_page != PAGE_TIME) { return; }
 
     /* 自检期间不进入编辑；组合事件按取消、保存、切字段、加减的顺序处理。 */
+    /* 编辑器保存/取消返回HOME，不响应KEY长按。 */
     if (phase != UI_NORMAL && phase != UI_EDIT) { return; }
     if ((event & BUTTON_SOS_LONG) != 0U) {
         if (phase == UI_EDIT) {
             phase = UI_NORMAL;
+            nav_level = NAV_HOME;
             action_status = WATCH_NOT_READY;
             notice = "CANCELLED";
+            last_refresh_ms = now_ms - 1000U;
         }
-    } else if ((event & BUTTON_MENU_LONG) != 0U) {
-        if (phase == UI_NORMAL) {
+    } else if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_BOARD_LONG) == 0U) {
+        if (phase == UI_NORMAL && nav_level == NAV_HOME) {
             uint32_t utc = 0U;
             if (time_service_get(&utc) != WATCH_OK || time_utc_to_local(utc, &edit_draft) != WATCH_OK) {
                 edit_draft = (rtc_calendar_t){2026U,1U,1U,0U,0U,0U};
@@ -811,25 +944,31 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
             action_status = WATCH_NOT_READY;
             notice = "EDITING";
             phase = UI_EDIT;
-        } else {
+            last_refresh_ms = now_ms - 1000U;
+        } else if (phase == UI_EDIT) {
             uint32_t utc = 0U;
             action_status = time_local_to_utc(&edit_draft, &utc);
             if (action_status == WATCH_OK) { action_status = time_service_set(utc); }
             if (action_status == WATCH_OK) {
                 phase = UI_NORMAL;
+                nav_level = NAV_HOME;
                 notice = "SAVED";
             } else {
                 notice = action_status == WATCH_INVALID_ARGUMENT ? "OUT OF RANGE" : "SAVE FAILED";
             }
+            last_refresh_ms = now_ms - 1000U;
         }
     } else if (phase == UI_EDIT && (event & BUTTON_MENU_SHORT) != 0U) {
         edit_field = (edit_field_t)(((unsigned)edit_field + 1U) % EDIT_COUNT);
+        last_refresh_ms = now_ms - 1000U;
     } else if (phase == UI_EDIT) {
         bool increase = (event & BUTTON_BOARD_SHORT) != 0U;
         bool decrease = (event & BUTTON_SOS_SHORT) != 0U;
-        if (increase != decrease) { adjust_field(increase ? 1 : -1); }
+        if (increase != decrease) {
+            adjust_field(increase ? 1 : -1);
+            last_refresh_ms = now_ms - 1000U;
+        }
     }
-    last_refresh_ms = now_ms - 1000U;
 }
 
 
@@ -963,10 +1102,12 @@ watch_status_t watch_ui_update(uint32_t now_ms)
 
 bool watch_ui_haptic_active(void)
 {
-    return phase == UI_NORMAL && active_page == PAGE_HAPTIC;
+    return phase == UI_NORMAL && nav_level == NAV_DETAIL &&
+           function_selection == FUNC_TOOLS && tool_selection == TOOL_HAPTIC;
 }
 
 bool watch_ui_ble_active(void)
 {
-    return phase == UI_NORMAL && active_page == PAGE_BLE;
+    return phase == UI_NORMAL && nav_level == NAV_DETAIL &&
+           function_selection == FUNC_TOOLS && tool_selection == TOOL_BLE;
 }

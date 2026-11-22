@@ -6,16 +6,20 @@
  * 掉屏后重试且恢复当前页面，编辑草稿保留。
  * 按板级超时配置自动熄屏，配置0则禁用；首个唤醒手势不执行UI功能。 */
 watch_status_t watch_ui_update(uint32_t now_ms);
-/* 分发按键事件给编辑状态机及参数页；按键计数由main诊断维护。 */
+/* 分发按键事件给导航、编辑状态机及功能页；按键计数由main诊断维护。 */
 void watch_ui_notify_button(uint32_t event, uint32_t now_ms);
 /* 返回最近的保存/取消状态：WATCH_NOT_READY初始，WATCH_OK保存成功，其他为具体错误码。 */
 watch_status_t watch_ui_get_action_status(void);
-/* KEY长按循环历史、参数、Flash、MPU、PPG、电池ADC、BLE、姿态、计步、振动、时间页，编辑中不切换。
- * 历史页MENU短按追加真实手动事件，SOS短按重新读取最新记录，不生成每日步数。
+/* HOME为默认时间页，时间页MENU短按或KEY长按进入功能菜单（STEPS/HISTORY/TOOLS）。
+ * 功能菜单：KEY短按下一项，SOS短按上一项，MENU短按进入选定项，KEY长按返回HOME。
+ * TOOLS菜单8项（BAT ADC/PPG/MPU/WRIST/BLE/HAPTIC/PARAMETERS/FLASH），滚屏显示标题和页脚。
+ * TOOLS菜单：KEY/SOS短按上下滚动，MENU短按进入，KEY长按返回功能菜单。
+ * 各功能详情页保留原有MENU/SOS操作，KEY长按返回拥有菜单。
+ * 历史页MENU短按追加真实手动事件，SOS短按重新读取最新记录。
  * Flash页MENU长按启动测试区查空和自检；失败且本次开机归属明确时SOS长按清理。
- * 参数页MENU短按修改草稿计数、MENU长按提交保存、SOS短按重新读取；开机不自动写入。
- * MPU页亮屏时KEY短按累加K，用于PA0轮询对照，不控制采样或中断。
- * 熄屏不退出振动页，按键过滤由主分发入口统一执行。 */
+ * 参数页MENU短按修改草稿计数、MENU长按提交保存、SOS短按重新读取。
+ * MPU页KEY短按累加K用于PA0轮询对照；振动页切出时停止效果；BLE页MENU短按发测试。
+ * 编辑器中KEY长按仍被忽略，保存/取消返回HOME。重连保持导航位置。 */
 bool watch_ui_haptic_active(void);
 /* 供统一按键分发在过滤唤醒手势后判断主动发送请求。 */
 bool watch_ui_ble_active(void);

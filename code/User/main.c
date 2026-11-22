@@ -1,14 +1,15 @@
 /**
- * MPU INT与板载KEY接口检查 - STM32F411CEU6
- * 版本：F03-INT-20261119-01
+ * UI整合与菜单导航 - STM32F411CEU6
+ * 版本：UI-MENU-20261122-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
- *  - 默认MPU INT页，短按KEY计K，长按循环MPU、PPG、BAT、BLE、姿态、计步、振动、时间
- *  - 姿态页MENU长按标定，按键/姿态唤醒，10秒无有效操作熄屏
- *  - 仅本次开机RAM累计，计步页MENU长按清零；日汇总留后续任务
- *  - 六轴持续采样，掉线立即无效，节流重新配置后恢复
- *  - 振动命令异步推进，切出验收页时请求停止
- *  - 时间页保留本地编辑/保存/取消，RTC继续走时
+ *  - 默认HOME（时间+会话步数+电池mV），MENU短按或KEY长按进功能菜单（STEPS/HISTORY/TOOLS）
+ *  - 功能菜单：KEY短按下一项，SOS短按上一项，MENU短按进入，KEY长按返回HOME
+ *  - TOOLS菜单8项滚动显示，KEY/SOS短按导航，MENU短按进入，KEY长按返回功能菜单
+ *  - 各详情页KEY长按返回拥有菜单；HOME页MENU长按进入时间编辑，保存/取消返回HOME
+ *  - 计步页MENU长按清零，历史页MENU短按追加/SOS短按读取，参数页保留M+/MH/SOS操作
+ *  - Flash页MENU长按测试、SOS长按清理，MPU页KEY短按累K，姿态页MENU长按标定
+ *  - 振动页切出时停止，BLE页MENU短按发测试；熄屏重连保持导航位置
  *  - 保留LED心跳、I2C/SPI诊断与掉屏恢复，UART只由BLE任务接收
  *  - 电池ADC每5ms至多一次转换，16对后发布，不表示电池百分比或已校准
  */
@@ -40,7 +41,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F07-P03-20261121-01";
+static const char firmware_version[] = "UI-MENU-20261122-01";
 #endif
 
 /**
@@ -282,16 +283,19 @@ static void button_poll_task(void *ctx)
         /* 原始诊断已统计；唤醒手势在UI及振动命令分发前统一消费。 */
         events = watch_ui_filter_buttons(events, now);
         if (events == 0U) { return; }
-        /* 页面切换和时间编辑由UI负责；本分发点独占振动命令。 */
+        /* 导航和详情功能由UI负责；本分发点独占振动命令和BLE发送。 */
         bool was_haptic = watch_ui_haptic_active();
+        bool was_ble = watch_ui_ble_active();
         watch_ui_notify_button(events, now);
-        if (watch_ui_ble_active() && (events & BUTTON_MENU_SHORT) != 0U &&
+        /* BLE发送：仅当进入前已在BLE页、MENU短按且不组合长按、事件后仍在BLE页时才发送。 */
+        if (was_ble && watch_ui_ble_active() && (events & BUTTON_MENU_SHORT) != 0U &&
             (events & (BUTTON_BOARD_LONG | BUTTON_MENU_LONG | BUTTON_SOS_LONG)) == 0U) {
             ble_test_pending = true;
         }
+        /* 振动命令：仅当进入前已在HAPTIC页、事件后仍在HAPTIC页且不是KEY长按返回时才执行命令。 */
         if (was_haptic && !watch_ui_haptic_active()) {
             diag.haptic_request_status = tm6605_stop();
-        } else if (watch_ui_haptic_active() && (events & BUTTON_BOARD_LONG) == 0U) {
+        } else if (was_haptic && watch_ui_haptic_active() && (events & BUTTON_BOARD_LONG) == 0U) {
             if ((events & BUTTON_BOARD_SHORT) != 0U) { diag.haptic_request_status = tm6605_stop(); }
             else if ((events & BUTTON_SOS_LONG) != 0U) { diag.haptic_request_status = tm6605_sleep(false); }
             else if ((events & BUTTON_SOS_SHORT) != 0U) { diag.haptic_request_status = tm6605_sleep(true); }
