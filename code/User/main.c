@@ -1,6 +1,6 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：F08-P02-20261122-01
+ * 版本：F06-P02-20261123-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
@@ -9,7 +9,7 @@
  *  - 各详情页KEY长按返回拥有菜单；HOME页MENU长按进入时间编辑，保存/取消返回HOME
  *  - 计步页MENU长按清零，历史页MENU短按追加/SOS短按读取，参数页保留M+/MH/SOS操作
  *  - Flash页MENU长按测试、SOS长按清理，MPU页KEY短按累K，姿态页MENU长按标定
- *  - 振动页切出时停止，BLE页MENU短按发测试；电池页MENU短按切换汇总/ADC详情
+ *  - 振动页切出时停止，BLE只使用D3帧；电池页MENU短按切换汇总/ADC详情
  *  - 熄屏重连保持导航位置
  *  - 保留LED心跳、I2C/SPI诊断与掉屏恢复，UART只由BLE任务接收
  *  - 电池ADC每5ms至多一次转换，16对后发布；服务推进估算与低电判断
@@ -25,6 +25,7 @@
 #include "w25q64.h"
 #include "uart_port.h"
 #include "ble_link.h"
+#include "phone_sync.h"
 #include "buttons.h"
 #include "scheduler.h"
 #include "ssd1306.h"
@@ -45,7 +46,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F08-P02-20261122-01";
+static const char firmware_version[] = "F06-P02-20261123-01";
 #endif
 
 /**
@@ -77,6 +78,8 @@ typedef struct {
 
     /* 本地UART传输快照；不表示真实BLE连接或手机收到了数据。 */
     volatile ble_link_state_t ble;
+    volatile phone_sync_state_t phone;
+    volatile watch_status_t phone_status;
 
     /* 显示状态 */
     volatile watch_status_t display_status;
@@ -117,9 +120,6 @@ typedef struct {
 
 static volatile diag_state_t diag = {0};
 static uint32_t haptic_last_retry_ms;
-
-/* 至多保留一个手动发送请求，UART写入统一在BLE任务中执行。 */
-static bool ble_test_pending;
 
 /* 低电提醒episode标志：确认进入低电时唤醒屏幕一次，确认恢复后复位。 */
 static bool low_battery_notified;
@@ -200,20 +200,14 @@ static void record_store_process_task(void *ctx)
     (void)record_store_process(board_millis());
 }
 
-/* 每5ms至多读16字节并写一次；无数据时不自动发包，不重试失败的半包。 */
+/* 业务协议独占UART；每5ms至多收发16字节，不推断GATT连接。 */
 static void ble_update_task(void *ctx)
 {
     (void)ctx;
-    uint8_t data[WATCH_BLE_CHUNK_SIZE];
-    size_t received = 0U;
-    watch_status_t status = ble_link_receive(data, sizeof(data), &received);
-    if (status == WATCH_OK && received != 0U) {
-        (void)ble_link_send(data, received);
-    } else if (status == WATCH_OK && ble_test_pending) {
-        static const uint8_t message[] = "WATCH BLE\r\n";
-        ble_test_pending = false;
-        (void)ble_link_send(message, sizeof(message) - 1U);
-    }
+    diag.phone_status = phone_sync_process();
+    phone_sync_state_t phone;
+    (void)phone_sync_get_state(&phone);
+    diag.phone = phone;
     ble_link_state_t state;
     (void)ble_link_get_state(&state);
     diag.ble = state;
@@ -292,15 +286,9 @@ static void button_poll_task(void *ctx)
         /* 原始诊断已统计；唤醒手势在UI及振动命令分发前统一消费。 */
         events = watch_ui_filter_buttons(events, now);
         if (events == 0U) { return; }
-        /* 导航和详情功能由UI负责；本分发点独占振动命令和BLE发送。 */
+        /* 导航和详情功能由UI负责；本分发点独占振动命令。 */
         bool was_haptic = watch_ui_haptic_active();
-        bool was_ble = watch_ui_ble_active();
         watch_ui_notify_button(events, now);
-        /* BLE发送：仅当进入前已在BLE页、MENU短按且不组合长按、事件后仍在BLE页时才发送。 */
-        if (was_ble && watch_ui_ble_active() && (events & BUTTON_MENU_SHORT) != 0U &&
-            (events & (BUTTON_BOARD_LONG | BUTTON_MENU_LONG | BUTTON_SOS_LONG)) == 0U) {
-            ble_test_pending = true;
-        }
         /* 振动命令：仅当进入前已在HAPTIC页、事件后仍在HAPTIC页且不是KEY长按返回时才执行命令。 */
         if (was_haptic && !watch_ui_haptic_active()) {
             diag.haptic_request_status = tm6605_stop();
@@ -506,6 +494,8 @@ int main(void)
         fault_blink();
     }
     (void)ble_link_init();
+    const uint32_t uid[3] = {HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()};
+    diag.phone_status = phone_sync_init(firmware_version, uid);
 
     /* 初始化按键 */
     watch_status_t buttons_status = buttons_init();
@@ -585,7 +575,7 @@ int main(void)
         /* SPI诊断：每1000ms读JEDEC一次 */
         {.period_ms = 1000, .last_ms = startup_baseline, .callback = spi_diag_task, .context = NULL},
 
-        /* UART唯一接收者：原样回显及单次手动测试发送。 */
+        /* UART唯一接收者：D3组帧、命令执行及统一应答队列。 */
         {.period_ms = 5, .last_ms = startup_baseline, .callback = ble_update_task, .context = NULL},
 
         /* 按键轮询：每5ms调用一次 */

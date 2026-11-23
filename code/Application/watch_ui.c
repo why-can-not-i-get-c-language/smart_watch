@@ -437,7 +437,7 @@ static void draw_ble_detail(void)
 {
     ble_link_state_t state;
     (void)ble_link_get_state(&state);
-    text(2U, 0U, "BLE UART CHECK");
+    text(2U, 0U, "BLE D3 CHECK");
     text(2U, 8U, "UART"); number(32U, 8U, WATCH_UART1_BAUDRATE); text(80U, 8U, "8N1");
     text(2U, 16U, "LINK UNKNOWN");
     text(2U, 24U, "RX B"); number(38U, 24U, state.rx_bytes);
@@ -458,7 +458,7 @@ static void draw_ble_detail(void)
         character(38U + 18U * i, 48U, hex[state.last_rx[i] >> 4U]);
         character(44U + 18U * i, 48U, hex[state.last_rx[i] & 15U]);
     }
-    text(2U, 56U, "MENU SEND KEY BACK");
+    text(2U, 56U, "D3 FRAMES KEY BACK");
 }
 
 static void draw_battery_detail(void)

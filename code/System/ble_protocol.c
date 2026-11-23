@@ -3,6 +3,8 @@
 #include <string.h>
 /* 13字节头 + 128字节载荷 + 4字节CRC，传输块边界不作为帧边界。 */
 static uint8_t candidate[BLE_PROTOCOL_MAX_FRAME];
+/* 重同步后候选起点可能移动，保留到达时刻，不继承坏帧的年龄。 */
+static uint32_t arrived_ms[BLE_PROTOCOL_MAX_FRAME];
 static size_t used;
 static uint32_t first_ms, last_ms;
 static ble_protocol_handler_t receiver;
@@ -55,7 +57,8 @@ static void discard(size_t count)
 {
     used -= count;
     memmove(candidate, candidate + count, used);
-    /* 重新找头时沿用原候选年龄，不能用坏帧不断延长存活时间。 */
+    memmove(arrived_ms, arrived_ms + count, used * sizeof(arrived_ms[0]));
+    if (used != 0U) { first_ms = arrived_ms[0]; last_ms = arrived_ms[used - 1U]; }
 }
 
 static void parse(void)
@@ -101,6 +104,7 @@ watch_status_t ble_protocol_feed(const uint8_t *data, size_t length, uint32_t no
     for (size_t i = 0U; i < length; ++i) {
         if (used == 0U) { first_ms = now_ms; }
         last_ms = now_ms;
+        arrived_ms[used] = now_ms;
         candidate[used++] = data[i];
         parse();
     }

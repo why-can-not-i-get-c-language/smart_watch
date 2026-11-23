@@ -20,10 +20,10 @@ watch_status_t watch_ui_get_action_status(void);
  * 历史页MENU短按追加真实手动事件，SOS短按重新读取最新记录。
  * Flash页MENU长按启动测试区查空和自检；失败且本次开机归属明确时SOS长按清理。
  * 参数页MENU短按修改草稿计数、MENU长按提交保存、SOS短按重新读取。
- * MPU页KEY短按累加K用于PA0轮询对照；振动页切出时停止效果；BLE页MENU短按发测试。
+ * MPU页KEY短按累加K用于PA0轮询对照；振动页切出时停止效果；BLE页只显示D3收发诊断。
  * 编辑器中KEY长按仍被忽略，保存/取消返回HOME。重连保持导航位置。 */
 bool watch_ui_haptic_active(void);
-/* 供统一按键分发在过滤唤醒手势后判断主动发送请求。 */
+/* 查询BLE诊断页是否激活；业务协议不因页面按键发送裸文本。 */
 bool watch_ui_ble_active(void);
 /* 过滤按键事件：首次唤醒完整按键手势被消费，返回0掩码；之后恢复过滤后掩码。
  * 同帧RELEASE|SHORT组合吞掉，已被blocked的键释放时清blocked标志。

@@ -116,6 +116,8 @@ watch_status_t uart_port_receive(uint8_t *data, size_t capacity, size_t *receive
     __disable_irq();
     uint8_t has_error = uart_rx_error;
     uart_rx_error = 0;
+    /* 错误后缓冲可能缺字节，整段作废，不拼成看似合法的业务帧。 */
+    if (has_error) { uart_rx_tail = uart_rx_head; }
     __set_PRIMASK(primask);
 
     if (has_error) {
