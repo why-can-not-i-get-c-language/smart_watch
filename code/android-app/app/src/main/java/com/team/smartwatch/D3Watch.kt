@@ -9,6 +9,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+internal data class D3Snapshot(val status: D3Status, val receivedAtMs: Long)
+
 /** D3 state is scoped to the ready serial channel. Screens only display verified replies. */
 internal class D3Watch(
     private val scope: CoroutineScope,
@@ -16,6 +18,7 @@ internal class D3Watch(
     private val available: () -> Boolean,
     unconfirmedBeforeConnect: Boolean,
     private val onUnconfirmedChanged: (Boolean) -> Unit,
+    val diagnostics: D3CalibrationDiagnostics? = null,
 ) {
     private var job: Job? = null
     private var connected = true
@@ -25,11 +28,14 @@ internal class D3Watch(
         private set
     var identity by mutableStateOf<D3Identity?>(null)
         private set
-    var status by mutableStateOf<D3Status?>(null)
+    var snapshot by mutableStateOf<D3Snapshot?>(null)
         private set
+    val status: D3Status? get() = snapshot?.status
     var message by mutableStateOf("等待 BLE 串口就绪")
         private set
-    var timeResult by mutableStateOf<String?>(null)
+    var timeResult by mutableStateOf<String?>(
+        if (unconfirmedBeforeConnect) "上次校时结果待确认。重连后读取手表时间" else null,
+    )
         private set
     var timeAcknowledged by mutableStateOf<Long?>(null)
         private set
@@ -47,36 +53,47 @@ internal class D3Watch(
         queryStatus()
     }
 
+    fun autoRefresh() {
+        if (rawUsed || unconfirmed || identity?.supports(D3Command.STATUS) != true) return
+        perform { queryStatus(keepSnapshot = true) }
+    }
+
     private suspend fun waitForQuietLink() {
         // The phone cannot see bytes still queued on the UART bridge, including after process death.
         message = "等待串口静默（5.5 秒）"
+        client.trace("开始 5500 ms 恢复静默")
         delay(5_500L)
+        client.trace("恢复静默结束")
         rawUsed = false
     }
 
     private suspend fun ensureIdentity() {
         if (identity != null && !client.needsIdentity) return
         identity = null
-        status = null
+        snapshot = null
         client.newSession()
         message = "正在读取设备信息"
         val reply = client.request(D3Command.INFO)
         identity = d3Identity(reply.payload)
     }
 
-    private suspend fun queryStatus(): Pair<D3Reply, D3Status> {
+    private suspend fun queryStatus(keepSnapshot: Boolean = false): Pair<D3Reply, D3Status> {
         ensureIdentity()
         require(identity?.supports(D3Command.STATUS) == true) { "手表未声明状态查询能力" }
         message = "正在查询手表状态"
-        status = null
+        if (!keepSnapshot) snapshot = null
         val reply = client.request(D3Command.STATUS)
         val fresh = d3Status(reply.payload)
-        status = fresh
+        snapshot = D3Snapshot(fresh, reply.received.unixMs)
         message = "已读取手表状态"
         if (unconfirmed) {
             setUnconfirmed(false)
-            timeResult = if (fresh.time.value != null) "当前时间已核对。上次校时结果待确认"
-                else "手表当前时间不可用，可重新发起校时"
+            val offset = fresh.time.value?.minus(Math.floorDiv(reply.received.unixMs, 1000L))
+            timeResult = when {
+                offset == null -> "手表当前时间不可用，可重新发起校时"
+                kotlin.math.abs(offset) <= 2L -> "当前时间已核对（偏差 $offset 秒）。上次校时结果待确认"
+                else -> "上次校时结果待确认。已读回当前时间，偏差 $offset 秒，可重新校时"
+            }
         }
         return reply to fresh
     }
@@ -95,7 +112,8 @@ internal class D3Watch(
             timeResult = "正在发送手机当前时间"
             var requested = 0L
             try {
-                val set = client.request(D3Command.SET_TIME) { sent ->
+                val fault = diagnostics?.consume() ?: D3Fault.NONE
+                val set = client.request(D3Command.SET_TIME, fault) { sent ->
                     requested = Math.floorDiv(sent.unixMs, 1000L)
                     d3TimePayload(requested).also { setUnconfirmed(true) }
                 }
@@ -103,6 +121,8 @@ internal class D3Watch(
                 timeResult = "设备已应答，正在读取当前时间"
                 val (read, fresh) = queryStatus()
                 val report = d3TimeVerification(set, read, fresh)
+                client.trace("校时时序 t0=${set.sent.elapsedMs} t1=${set.received.elapsedMs} " +
+                    "t2=${read.sent.elapsedMs} t3=${read.received.elapsedMs}")
                 timeResult = when (report.outcome) {
                     D3TimeCheck.VERIFIED -> "低延迟校时已验证（偏差 ${report.offsetSeconds} 秒）"
                     D3TimeCheck.REVIEW_DELAY -> "当前时间已核对。校时用时较长或手机时间有变化，待复核（偏差 ${report.offsetSeconds} 秒）"
@@ -134,7 +154,7 @@ internal class D3Watch(
     fun beforeRawOperation(): Boolean {
         if (!canRefresh) return false
         identity = null
-        status = null
+        snapshot = null
         rawUsed = true
         message = "正在使用原始串口通道，可重新读取 D3 状态"
         return true
@@ -143,8 +163,10 @@ internal class D3Watch(
     fun close() {
         connected = false
         job?.cancel()
+        diagnostics?.select(D3Fault.NONE)
+        client.trace(if (unconfirmed) "连接关闭 · 校时结果待确认" else "连接关闭")
         identity = null
-        status = null
+        snapshot = null
         message = "BLE 已断开"
         if (unconfirmed) timeResult = "校时结果待确认。请重连后读取手表时间"
         busy = false
@@ -164,6 +186,7 @@ internal class D3Watch(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: RuntimeException) {
+                snapshot = null
                 if (error is D3DeviceError && error.code == 4) identity = null
                 if (connected) message = error.message ?: "D3 请求失败"
             } finally {

@@ -4,8 +4,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -143,4 +147,136 @@ class D3ProtocolTest {
 
     @Test
     fun fullOfflineExchangeUsesSpecificationSamples() = runBlocking { checkOfflineD3() }
+
+    @Test
+    fun liveSnapshotTracksVerifiedReadbacksAndClearsOnFailureOrDisconnect() = runBlocking {
+        val wall = 1_795_219_200_000L
+        var elapsed = 0L
+        var clockValue = wall / 1_000L - 20L
+        var failRead = false
+        var allowWrite: CompletableDeferred<Unit>? = null
+        val commands = mutableListOf<Int>()
+        val reader = D3FrameReader()
+        lateinit var client: D3Client
+        client = D3Client(write = { bytes ->
+            allowWrite?.await()
+            reader.feed(bytes, elapsed) { request ->
+                commands.add(request.command)
+                val payload = when (request.command) {
+                    D3Command.INFO.wire -> ByteArray(23).apply {
+                        this[17] = 7
+                        this[21] = 1
+                        this[22] = 'X'.code.toByte()
+                    }
+                    D3Command.SET_TIME.wire -> {
+                        val time = Math.floorDiv(wall + elapsed, 1_000L)
+                        assertArrayEquals(d3TimePayload(time), request.payload)
+                        clockValue = time
+                        byteArrayOf(0) + request.payload
+                    }
+                    else -> if (failRead) byteArrayOf(5) else ByteArray(43).apply {
+                        this[5] = D3DataState.VALID.ordinal.toByte()
+                        d3TimePayload(clockValue).copyInto(this, 6)
+                        this[10] = D3DataState.VALID.ordinal.toByte()
+                        this[12] = 123
+                        this[20] = D3DataState.VALID.ordinal.toByte()
+                        this[21] = 0x17
+                        this[22] = 0x0f
+                    }
+                }
+                elapsed += 20L
+                client.receive(request.copy(response = true, payload = payload).encode())
+            }
+            true
+        }, clock = { D3Timestamp(elapsed, wall + elapsed) }, nextSessionId = { 1L })
+        val watch = D3Watch(this, client, { true }, false, {})
+        suspend fun awaitOperation() = withTimeout(1_000L) { while (watch.busy) yield() }
+
+        watch.refresh()
+        awaitOperation()
+        val original = checkNotNull(watch.snapshot)
+        assertEquals(wall + 40L, original.receivedAtMs)
+        assertEquals(123L, original.status.steps.value)
+        assertEquals(0, original.status.stepsScope)
+        assertEquals(3863L, original.status.voltage.value)
+        assertNull(original.status.percentage.value)
+
+        val pendingWrite = CompletableDeferred<Unit>()
+        allowWrite = pendingWrite
+        watch.autoRefresh()
+        yield()
+        assertTrue(watch.busy)
+        assertEquals(original, watch.snapshot)
+        watch.autoRefresh()
+        watch.calibrate()
+        pendingWrite.complete(Unit)
+        allowWrite = null
+        awaitOperation()
+        assertEquals(listOf(1, 2, 2), commands)
+        assertEquals(wall + 60L, watch.snapshot?.receivedAtMs)
+
+        watch.calibrate()
+        awaitOperation()
+        assertEquals(listOf(1, 2, 2, 3, 2), commands)
+        val calibrated = checkNotNull(watch.snapshot)
+        assertEquals(wall + 100L, calibrated.receivedAtMs)
+        assertEquals(wall / 1_000L, calibrated.status.time.value)
+        assertTrue(watch.timeResult.orEmpty().contains("已验证"))
+
+        failRead = true
+        watch.autoRefresh()
+        awaitOperation()
+        assertNull(watch.snapshot)
+        failRead = false
+        watch.refresh()
+        awaitOperation()
+        assertEquals(3863L, watch.snapshot?.status?.voltage?.value)
+        watch.close()
+        watch.autoRefresh()
+        assertNull(watch.snapshot)
+        assertFalse(watch.canSetTime)
+    }
+
+    @Test
+    fun allD3FaultControlsExerciseTheExpectedPath() = runBlocking {
+        val passed = mutableListOf<String>()
+        checkOfflineD3Faults(passed::add)
+        assertEquals(D3Fault.entries.size - 1, passed.size)
+    }
+
+    @Test
+    fun freshSequenceStartsWithoutAnUnfinishedOlderReply() = runBlocking {
+        lateinit var client: D3Client
+        var requests = 0
+        client = D3Client({
+            requests++
+            val reply = if (requests == 1) D3Frame(true, 1, 1, 7L, byteArrayOf(0))
+                else D3Frame(true, 2, 2, 7L, byteArrayOf(0))
+            client.receive(reply.encode())
+            true
+        }, { D3Timestamp(10, 1_795_219_200_000L) }, { 7L }, responseTimeoutMs = 30)
+        client.newSession()
+        client.request(D3Command.INFO)
+        val oldPrefix = D3Frame(true, 1, 1, 7L, ByteArray(128)).encode().copyOf(13)
+        client.receive(oldPrefix)
+        assertArrayEquals(byteArrayOf(0), client.request(D3Command.STATUS).payload)
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun includesExactlyOneSecondAndTwoSecondsAtTheirBoundaries() {
+        val utc = 1_795_219_200_000L
+        val valid = D3Reading(D3DataState.VALID, 1_795_219_204L, null)
+        val missing = D3Reading(D3DataState.MISSING, null, null)
+        val status = D3Status(0, valid, missing, 0, missing, missing, missing, missing)
+        fun time(ms: Long) = D3Timestamp(ms, utc + ms)
+        fun reply(start: Long, end: Long) = D3Reply(byteArrayOf(), time(start), time(end), false)
+        val set = reply(0, 1000)
+        val read = reply(1000, 2000)
+        assertEquals(D3TimeCheck.VERIFIED, d3TimeVerification(set, read, status).outcome)
+        assertEquals(D3TimeCheck.REVIEW_DELAY, d3TimeVerification(reply(0, 1001), reply(1001, 2001), status).outcome)
+        assertEquals(D3TimeCheck.REVIEW_DELAY, d3TimeVerification(set, reply(1000, 2001), status).outcome)
+        val tooFar = status.copy(time = valid.copy(value = 1_795_219_205L))
+        assertEquals(D3TimeCheck.DIFFERENT, d3TimeVerification(set, read, tooFar).outcome)
+    }
 }

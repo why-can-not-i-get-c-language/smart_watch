@@ -58,9 +58,10 @@ android {
         applicationId = "com.team.smartwatch.prototype"
         minSdk = 24
         targetSdk = 37
-        versionCode = 14
-        versionName = "1.8.2"
+        versionCode = 20
+        versionName = "1.8.8"
         buildConfigField("boolean", "NEARBY_PERMISSION_PREVIEW", "false")
+        buildConfigField("boolean", "D3_FAULT_INJECTION", "false")
     }
 
     signingConfigs {
@@ -87,6 +88,7 @@ android {
             initWith(getByName("debug"))
             applicationIdSuffix = ".integration"
             versionNameSuffix = "-ble-integration"
+            buildConfigField("boolean", "D3_FAULT_INJECTION", "true")
             signingConfig = signingConfigs.getByName("smartwatchDevelopment")
             matchingFallbacks += listOf("debug")
         }

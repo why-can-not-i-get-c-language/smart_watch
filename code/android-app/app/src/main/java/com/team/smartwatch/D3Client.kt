@@ -23,8 +23,13 @@ internal class D3Client(
     private val clock: () -> D3Timestamp,
     private val nextSessionId: () -> Long = { generateD3SessionId() },
     private val responseTimeoutMs: Long = 2_000L,
+    private val diagnostic: ((String) -> Unit)? = null,
+    private val testDisconnect: ((String) -> Unit)? = null,
 ) {
-    private data class Pending(val frame: D3Frame, val reply: CompletableDeferred<TimedFrame>)
+    private data class Pending(
+        val frame: D3Frame, val reply: CompletableDeferred<TimedFrame>, val fault: D3Fault,
+        var attempt: Int = 0, var truncated: Boolean = false,
+    )
     private data class TimedFrame(val frame: D3Frame, val received: D3Timestamp)
 
     private val reader = D3FrameReader()
@@ -33,6 +38,10 @@ internal class D3Client(
     private var sequence = 0
     val remainingSequences get() = 65_535 - sequence
     val needsIdentity get() = session == 0L || sequence == 65_535
+
+    fun trace(message: String, elapsedMs: Long? = null) {
+        diagnostic?.invoke("${elapsedMs ?: clock().elapsedMs} ms · $message")
+    }
 
     fun newSession() {
         check(pending == null)
@@ -44,26 +53,64 @@ internal class D3Client(
     }
 
     fun receive(bytes: ByteArray, received: D3Timestamp = clock()) {
+        var testPrefix: ByteArray? = null
         reader.feed(bytes, received.elapsedMs) { frame ->
             val expected = pending
             if (expected != null && frame.response && frame.session == expected.frame.session &&
-                frame.sequence == expected.frame.sequence && frame.command == expected.frame.command) {
-                expected.reply.complete(TimedFrame(frame, received))
+                frame.sequence == expected.frame.sequence && frame.command == expected.frame.command &&
+                !expected.reply.isCompleted) {
+                when {
+                    expected.fault == D3Fault.PARTIAL_RESPONSE && expected.attempt == 0 -> {
+                        if (!expected.truncated) {
+                            expected.truncated = true
+                            testPrefix = frame.encode().copyOf(12)
+                            trace("复现：首条校时应答只保留前 12 字节", received.elapsedMs)
+                        }
+                    }
+                    expected.fault == D3Fault.DROP_RESPONSES ||
+                        expected.fault == D3Fault.DISCONNECT_BEFORE_RESPONSE ||
+                        expected.fault == D3Fault.DISCONNECT_AFTER_FIRST_CHUNK ->
+                        trace("复现：屏蔽校时应答 seq ${frame.sequence}", received.elapsedMs)
+                    else -> {
+                        trace("RX 命令 ${frame.command} · seq ${frame.sequence}", received.elapsedMs)
+                        expected.reply.complete(TimedFrame(frame, received))
+                    }
+                }
             }
+        }
+        testPrefix?.let {
+            reader.clear()
+            reader.feed(it, received.elapsedMs) { error("调试前缀不应构成完整帧") }
         }
     }
 
-    suspend fun request(command: D3Command, payloadAtSend: (D3Timestamp) -> ByteArray = { byteArrayOf() }): D3Reply {
+    suspend fun request(
+        command: D3Command,
+        fault: D3Fault = D3Fault.NONE,
+        payloadAtSend: (D3Timestamp) -> ByteArray = { byteArrayOf() },
+    ): D3Reply {
         check(!needsIdentity && pending == null)
         check(sequence != 0 || command == D3Command.INFO)
+        require(fault == D3Fault.NONE || (command == D3Command.SET_TIME && testDisconnect != null))
+        // A new sequence has no valid bytes yet. A prefix from an earlier reply must not mask it.
+        reader.clear()
         val sent = clock()
-        val frame = D3Frame(false, command.wire, ++sequence, session, payloadAtSend(sent))
+        val payload = payloadAtSend(sent)
+        val frame = D3Frame(false, command.wire, ++sequence, session, payload)
         val encoded = frame.encode()
         val reply = CompletableDeferred<TimedFrame>()
-        pending = Pending(frame, reply)
+        val operation = Pending(frame, reply, fault)
+        pending = operation
         try {
             repeat(3) { attempt ->
-                if (!write(encoded)) throw D3WriteFailed()
+                operation.attempt = attempt
+                val outgoing = if (fault == D3Fault.DISCONNECT_AFTER_FIRST_CHUNK) encoded.serialChunkAt(0) else encoded
+                trace("TX ${command.name} · session ${session.toString(16)} · seq ${frame.sequence} · 尝试 ${attempt + 1} · ${outgoing.size} B")
+                if (!write(outgoing)) throw D3WriteFailed()
+                if (fault == D3Fault.DISCONNECT_BEFORE_RESPONSE || fault == D3Fault.DISCONNECT_AFTER_FIRST_CHUNK) {
+                    testDisconnect?.invoke("故障演练：${fault.label}，已关闭 BLE 连接")
+                    throw D3WriteFailed()
+                }
                 var received = withTimeoutOrNull(responseTimeoutMs) { reply.await() }
                 if (attempt < 2) {
                     while (received == null) {
@@ -73,7 +120,24 @@ internal class D3Client(
                     }
                     if (received == null && reply.isCompleted) received = reply.await()
                 }
-                if (received != null) return D3Reply(received.frame.payload, sent, received.received, attempt > 0)
+                if (received != null) {
+                    val arrival = when (fault) {
+                        D3Fault.DELAY_RESPONSE -> {
+                            val releaseAt = sent.elapsedMs + 1_200L
+                            var remaining = releaseAt - clock().elapsedMs
+                            while (remaining > 0L) {
+                                delay(remaining)
+                                remaining = releaseAt - clock().elapsedMs
+                            }
+                            clock().also { trace("复现：交付延后应答", it.elapsedMs) }
+                        }
+                        D3Fault.CLOCK_CHANGE -> received.received.copy(wallRevision = sent.wallRevision + 1)
+                            .also { trace("复现：标记手机时钟跳变", it.elapsedMs) }
+                        else -> received.received
+                    }
+                    return D3Reply(received.frame.payload, sent, arrival, attempt > 0)
+                }
+                trace("未等到完整应答 · seq ${frame.sequence}")
             }
             throw D3ResponseTimeout()
         } finally {

@@ -35,6 +35,7 @@ data class HomeScenario(val title: String, val source: WatchHomeSource)
 
 object SimulatedWatch {
     const val DEMO_DATE = "11 月 6 日"
+    const val DEMO_STEP_GOAL = 6000
     val pastSteps = listOf(
         StepHistoryDay("31", "10 月 31 日", 3180),
         StepHistoryDay("1", "11 月 1 日", 5940),
@@ -57,6 +58,9 @@ object SimulatedWatch {
 
     val scenarios = listOf(
         HomeScenario("首次打开") { empty },
+        HomeScenario("同步成功 · 今日进度") {
+            synced.copy(steps = Reading.Valid(DailySteps(4260, DEMO_DATE), RECEIVED_AT))
+        },
         HomeScenario("同步成功 · 零步数") { synced },
         HomeScenario("健康读数无效") {
             synced.copy(

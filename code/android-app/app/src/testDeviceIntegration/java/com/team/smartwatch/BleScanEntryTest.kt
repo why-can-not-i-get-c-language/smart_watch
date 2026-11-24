@@ -1,7 +1,9 @@
 package com.team.smartwatch
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BleScanEntryTest {
@@ -39,6 +41,15 @@ class BleScanEntryTest {
         assertEquals("new", last.name)
         assertEquals(300L, last.timestampNanos)
         assertEquals(-48, last.rssi)
+    }
+
+    @Test
+    fun autoConnectRequiresFavoriteAddressAndDoesNotRequireAnAdvertisedNameOrService() {
+        val unnamed = observe(100).copy(connectable = true)
+        assertTrue(unnamed.eligibleForAutoConnect(isFavorite = true))
+        assertFalse(unnamed.copy(advertisedName = "SMARTWATCH").eligibleForAutoConnect(isFavorite = false))
+        assertFalse(unnamed.copy(connectable = false).eligibleForAutoConnect(isFavorite = true))
+        assertTrue(unnamed.copy(connectable = null).eligibleForAutoConnect(isFavorite = true))
     }
 
     private fun observe(

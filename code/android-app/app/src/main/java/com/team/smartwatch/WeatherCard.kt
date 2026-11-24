@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 private enum class WeatherScenario(val status: String) {
@@ -37,7 +36,7 @@ internal fun WeatherCard(connection: Connection, connectionRevision: Int) {
 
     Card(
         Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4D9)),
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text("当日天气 · 模拟数据", style = MaterialTheme.typography.labelLarge)

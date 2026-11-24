@@ -32,6 +32,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -45,17 +46,24 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,33 +73,52 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-@SuppressLint("MissingPermission") // Operations check runtime permissions and handle revocation.
+private const val AUTO_CONNECT_FAVORITES = "auto_connect_favorites"
+
 class BleIntegrationActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val integration = BleIntegration(this)
+        setContent { MaterialTheme { integration.Screen() } }
+    }
+}
+
+@SuppressLint("MissingPermission") // Operations check runtime permissions and handle revocation.
+internal class BleIntegration(private val activity: ComponentActivity) {
     private data class Peripheral(val device: BluetoothDevice, val address: String, val entry: BleScanEntry)
     private data class Service(val uuid: String, val characteristics: List<String>)
+    private data class Selection(val address: String, val savedName: String? = null)
 
     private val handler = Handler(Looper.getMainLooper())
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
-    private val adapter get() = getSystemService(BluetoothManager::class.java)?.adapter
-    private val askPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        startScan()
+    private val adapter get() = activity.getSystemService(BluetoothManager::class.java)?.adapter
+    private var screenVisible = false
+    private val askPermission = activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (screenVisible) startScan()
     }
     private val peripherals = mutableStateListOf<Peripheral>()
     private val peripheralIndices = mutableMapOf<String, Int>()
+    private val favoritePreferences = activity.getSharedPreferences("ble_favorites", Context.MODE_PRIVATE)
+    private var favorites by mutableStateOf<Map<String, String>>(emptyMap())
+    private var autoConnectFavorites by mutableStateOf(favoritePreferences.getBoolean(AUTO_CONNECT_FAVORITES, false))
     private var services by mutableStateOf<List<Service>>(emptyList())
     private var scanStatus by mutableStateOf("请开启手机蓝牙，并让待联调模块广播。")
-    private var connectionStatus by mutableStateOf<String?>(null)
+    var connectionStatus by mutableStateOf<String?>(null)
+        private set
     private var scanning by mutableStateOf(false)
-    private var selectedAddress by mutableStateOf<String?>(null)
+    private var selection by mutableStateOf<Selection?>(null)
     private var showingDetails by mutableStateOf(false)
-    private var connectingOrConnected by mutableStateOf(false)
+    var connectingOrConnected by mutableStateOf(false)
+        private set
     private val interfaceResults = mutableStateListOf<String>()
     private var checkingInterfaces by mutableStateOf(false)
     private var scanner: BluetoothLeScanner? = null
     private var scanCallback: ScanCallback? = null
     private var gatt: BluetoothGatt? = null
     private var serialChannel by mutableStateOf<BlunoSerialChannel?>(null)
-    private var d3Watch by mutableStateOf<D3Watch?>(null)
+    var d3Watch by mutableStateOf<D3Watch?>(null)
+        private set
+    private val d3Diagnostics = if (BuildConfig.D3_FAULT_INJECTION) D3CalibrationDiagnostics() else null
     private val unconfirmedTime = mutableSetOf<String>()
     @Volatile private var phoneClockRevision = 0
     private var scanStartNanos = 0L
@@ -116,102 +143,189 @@ class BleIntegrationActivity : ComponentActivity() {
 
     private fun d3Clock() = D3Timestamp(SystemClock.elapsedRealtime(), System.currentTimeMillis(), phoneClockRevision)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    init {
+        favorites = favoritePreferences.all.mapNotNull { (address, value) ->
+            val name = value as? String
+            if (name != null && BluetoothAdapter.checkBluetoothAddress(address)) address to name else null
+        }.toMap()
         ContextCompat.registerReceiver(
-            this, systemStateReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED).apply {
+            activity, systemStateReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED).apply {
                 addAction(Intent.ACTION_TIME_CHANGED)
             },
             ContextCompat.RECEIVER_EXPORTED,
         )
-        setContent {
-            MaterialTheme {
-                val listState = rememberLazyListState()
-                val selected = selectedAddress?.let { peripheralIndices[it] }?.let { peripherals[it] }
-                BackHandler(enabled = showingDetails) { returnToResults() }
-                Scaffold { padding ->
-                    if (showingDetails && selected != null) {
-                        Column(
-                            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            OutlinedButton(onClick = ::returnToResults) { Text("返回扫描列表") }
-                            Text("BLE 设备详情", style = MaterialTheme.typography.headlineSmall)
-                            PeripheralSummary(selected)
-                            val advertised = selected.entry.advertisedServices
-                            Text(if (advertised.isEmpty()) "广播服务 UUID：未携带"
-                                else "广播服务 UUID\n${advertised.joinToString("\n")}")
-                            connectionStatus?.let { Text(it) }
-                            if (connectingOrConnected) {
-                                OutlinedButton(onClick = { closeConnection("已断开连接。") }) { Text("断开连接") }
-                            } else {
-                                Button(onClick = { connect(selected) }) { Text("连接并发现 GATT 服务") }
-                            }
-                            d3Watch?.let { D3WatchPanel(it) }
-                            serialChannel?.let { channel ->
-                                key(channel) { BleSerialPanel(channel, d3Watch) }
-                            }
-                            if (services.isNotEmpty()) Text("连接后发现的 GATT 服务", style = MaterialTheme.typography.titleMedium)
-                            services.forEach { service ->
-                                Text("服务 ${service.uuid}", style = MaterialTheme.typography.titleSmall)
-                                service.characteristics.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
-                            }
-                        }
+        activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onResume(owner: LifecycleOwner) = refreshBluetoothState()
+
+            override fun onStop(owner: LifecycleOwner) = leaveScreen()
+
+            override fun onDestroy(owner: LifecycleOwner) {
+                activity.unregisterReceiver(systemStateReceiver)
+                stopScan()
+                closeConnection(null)
+            }
+        })
+    }
+
+    @Composable
+    fun Screen(onHome: (() -> Unit)? = null) {
+        DisposableEffect(Unit) {
+            screenVisible = true
+            onDispose {
+                screenVisible = false
+                leaveScreen()
+            }
+        }
+        val listState = rememberLazyListState()
+        val current = selection
+        BackHandler(enabled = showingDetails) { returnToResults() }
+        Scaffold { padding ->
+            if (showingDetails && current != null) {
+                val selected = peripheral(current.address)
+                Column(
+                    Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    if (onHome != null) {
+                        OutlinedButton(onClick = onHome) { Text("返回首页") }
+                    }
+                    OutlinedButton(onClick = ::returnToResults) { Text("返回扫描列表") }
+                    Text("BLE 设备详情", style = MaterialTheme.typography.headlineSmall)
+                    PeripheralSummary(current.address, selected?.entry, current.savedName)
+                    val isFavorite = current.address in favorites
+                    OutlinedButton(onClick = { toggleFavorite(current, selected?.entry) }) {
+                        Text(if (isFavorite) "取消收藏" else "收藏设备")
+                    }
+                    selected?.entry?.advertisedServices?.let { advertised ->
+                        Text(if (advertised.isEmpty()) "广播服务 UUID：未携带"
+                            else "广播服务 UUID\n${advertised.joinToString("\n")}")
+                    }
+                    connectionStatus?.let { Text(it) }
+                    if (connectingOrConnected) {
+                        OutlinedButton(onClick = ::disconnect) { Text("断开连接") }
                     } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp),
-                            state = listState,
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            item {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("真实蓝牙联调", style = MaterialTheme.typography.headlineSmall)
-                                    Text(scanStatus)
-                                    Text("本轮发现 ${peripherals.size} 台")
-                                    if (scanning) {
-                                        OutlinedButton(onClick = {
-                                            stopScan()
-                                            scanStatus = completedScan()
-                                        }) { Text("停止扫描") }
-                                    } else {
-                                        Button(onClick = ::requestScan) {
-                                            Text(if (scanStartNanos == 0L) "扫描附近 BLE 设备" else "重新扫描")
-                                        }
-                                        OutlinedButton(onClick = {
-                                            startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                                        }) { Text("打开蓝牙设置") }
-                                        OutlinedButton(enabled = !checkingInterfaces, onClick = ::runOfflineCheck) {
-                                            Text("运行离线接口验收")
-                                        }
-                                        interfaceResults.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
-                                    }
-                                }
+                        Button(onClick = { connect(current.address, selected?.device) }) {
+                            Text("连接并发现 GATT 服务")
+                        }
+                    }
+                    d3Watch?.let { D3WatchPanel(it) }
+                    serialChannel?.let { channel ->
+                        key(channel) { BleSerialPanel(channel, d3Watch) }
+                    }
+                    if (services.isNotEmpty()) Text("连接后发现的 GATT 服务", style = MaterialTheme.typography.titleMedium)
+                    services.forEach { service ->
+                        Text("服务 ${service.uuid}", style = MaterialTheme.typography.titleSmall)
+                        service.characteristics.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp),
+                    state = listState,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (onHome != null) {
+                                OutlinedButton(onClick = onHome) { Text("返回首页") }
                             }
-                            items(peripherals, key = { it.address }) { item ->
-                                Card(onClick = {
-                                    selectedAddress = item.address
-                                    connectionStatus = null
-                                    showingDetails = true
-                                }, modifier = Modifier.fillMaxWidth()) {
-                                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        PeripheralSummary(item)
-                                        if (item.address == selectedAddress) Text("已选设备")
-                                    }
+                            Text("真实蓝牙联调", style = MaterialTheme.typography.headlineSmall)
+                            Text(scanStatus)
+                            Text("本轮发现 ${peripherals.size} 台")
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text("发现后自动连接")
+                                    Text("扫描时连接先发现的可连接收藏设备", style = MaterialTheme.typography.bodySmall)
                                 }
+                                Switch(
+                                    checked = autoConnectFavorites,
+                                    onCheckedChange = { enabled ->
+                                        autoConnectFavorites = enabled
+                                        favoritePreferences.edit().putBoolean(AUTO_CONNECT_FAVORITES, enabled).apply()
+                                    },
+                                    modifier = Modifier.semantics { contentDescription = "发现后自动连接" },
+                                )
+                            }
+                            if (scanning) {
+                                OutlinedButton(onClick = {
+                                    stopScan()
+                                    scanStatus = completedScan()
+                                }) { Text("停止扫描") }
+                            } else {
+                                Button(onClick = ::requestScan) {
+                                    Text(if (scanStartNanos == 0L) "扫描附近 BLE 设备" else "重新扫描")
+                                }
+                                OutlinedButton(onClick = {
+                                    activity.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                                }) { Text("打开蓝牙设置") }
+                                OutlinedButton(enabled = !checkingInterfaces, onClick = ::runOfflineCheck) {
+                                    Text("运行离线接口验收")
+                                }
+                                interfaceResults.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                             }
                         }
+                    }
+                    item {
+                        Text("收藏设备 (${favorites.size})", style = MaterialTheme.typography.titleMedium)
+                    }
+                    items(favorites.keys.sorted(), key = { it }) { address ->
+                        DeviceRow(Selection(address, favorites[address]), peripheral(address)?.entry)
+                    }
+                    item { Text("其他本轮发现的设备", style = MaterialTheme.typography.titleMedium) }
+                    items(peripherals.filter { it.address !in favorites }, key = { it.address }) { item ->
+                        DeviceRow(Selection(item.address), item.entry)
                     }
                 }
             }
         }
     }
 
+    private fun peripheral(address: String) = peripherals.getOrNull(peripheralIndices[address] ?: -1)
+
+    private fun preferredName(entry: BleScanEntry?, savedName: String?) =
+        entry?.advertisedName ?: entry?.cachedName ?: savedName?.takeIf(String::isNotBlank)
+
+    private fun toggleFavorite(current: Selection, entry: BleScanEntry?) {
+        val address = current.address
+        val editor = favoritePreferences.edit()
+        favorites = if (address in favorites) {
+            editor.remove(address)
+            favorites - address
+        } else {
+            val name = preferredName(entry, current.savedName).orEmpty()
+            editor.putString(address, name)
+            favorites + (address to name)
+        }
+        editor.apply()
+    }
+
     @Composable
-    private fun PeripheralSummary(item: Peripheral) {
-        val entry = item.entry
+    private fun DeviceRow(device: Selection, entry: BleScanEntry?) {
+        Card(onClick = {
+            selection = device
+            connectionStatus = null
+            showingDetails = true
+        }, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                PeripheralSummary(device.address, entry, device.savedName)
+                if (device.address == selection?.address) Text("已选设备")
+            }
+        }
+    }
+
+    @Composable
+    private fun PeripheralSummary(address: String, entry: BleScanEntry?, savedName: String?) {
+        Text(preferredName(entry, savedName) ?: "未命名设备", style = MaterialTheme.typography.titleMedium)
+        Text(address)
+        if (entry == null) {
+            Text("本轮尚未发现", style = MaterialTheme.typography.bodySmall)
+            return
+        }
         val lastSeenMillis = scanStartMillis + (entry.timestampNanos - scanStartNanos) / 1_000_000L
-        Text(entry.name, style = MaterialTheme.typography.titleMedium)
-        Text(item.address)
         Text("RSSI ${entry.rssi?.let { "$it dBm" } ?: "未知"} · 最后发现 ${timeFormat.format(Date(lastSeenMillis))}",
             style = MaterialTheme.typography.bodySmall)
     }
@@ -226,7 +340,7 @@ class BleIntegrationActivity : ComponentActivity() {
     private fun runOfflineCheck() {
         checkingInterfaces = true
         interfaceResults.clear()
-        lifecycleScope.launch {
+        activity.lifecycleScope.launch {
             try {
                 checkOfflineInterfaces { interfaceResults.add(it) }
                 interfaceResults.add("离线接口验收完成")
@@ -240,7 +354,8 @@ class BleIntegrationActivity : ComponentActivity() {
         }
     }
 
-    private fun hasPermission(permission: String) = checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+    private fun hasPermission(permission: String) =
+        activity.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
     private fun hasNearbyPermissions() = Build.VERSION.SDK_INT < 31 ||
         (hasPermission(Manifest.permission.BLUETOOTH_SCAN) && hasPermission(Manifest.permission.BLUETOOTH_CONNECT))
@@ -276,6 +391,12 @@ class BleIntegrationActivity : ComponentActivity() {
         }
     }
 
+    fun rescan() {
+        if (!screenVisible || scanning || gatt != null) return
+        showingDetails = false
+        requestScan()
+    }
+
     private fun requestScan() {
         if (scanning || gatt != null) return
         val missing = mutableListOf<String>()
@@ -299,7 +420,7 @@ class BleIntegrationActivity : ComponentActivity() {
             !available.isEnabled -> "扫描失败：$bluetoothOff"
             !hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ->
                 "扫描失败：完整扫描需要前台精确位置权限。请在系统权限中授权。"
-            !LocationManagerCompat.isLocationEnabled(getSystemService(LocationManager::class.java)) ->
+            !LocationManagerCompat.isLocationEnabled(activity.getSystemService(LocationManager::class.java)) ->
                 "扫描失败：系统定位已关闭，请开启后重试。"
             else -> null
         }
@@ -314,7 +435,7 @@ class BleIntegrationActivity : ComponentActivity() {
         if (scanning || gatt != null || showingDetails) return
         peripherals.clear()
         peripheralIndices.clear()
-        selectedAddress = null
+        selection = null
         scanUnavailableReason()?.let {
             scanStatus = it
             return
@@ -334,7 +455,10 @@ class BleIntegrationActivity : ComponentActivity() {
 
                 override fun onBatchScanResults(results: MutableList<ScanResult>) {
                     handler.post {
-                        if (scanCallback === this) results.forEach(::recordAdvertisement)
+                        for (result in results) {
+                            if (scanCallback !== this) break
+                            recordAdvertisement(result)
+                        }
                     }
                 }
 
@@ -404,6 +528,14 @@ class BleIntegrationActivity : ComponentActivity() {
             val latestDevice = if (timestamp >= previous.entry.timestampNanos) device else previous.device
             peripherals[index] = Peripheral(latestDevice, address, previous.entry.update(observation))
         }
+        if (screenVisible && scanning && !showingDetails && autoConnectFavorites &&
+            observation.timestampNanos == peripheral(address)?.entry?.timestampNanos &&
+            observation.eligibleForAutoConnect(address in favorites)
+        ) {
+            selection = Selection(address, favorites[address])
+            showingDetails = true
+            connect(address, device, automatic = true)
+        }
     }
 
     private fun scanFailureMessage(code: Int): String {
@@ -436,7 +568,7 @@ class BleIntegrationActivity : ComponentActivity() {
         scanner = null
     }
 
-    private fun connect(item: Peripheral) {
+    private fun connect(address: String, scannedDevice: BluetoothDevice?, automatic: Boolean = false) {
         if (gatt != null) return
         serialChannel = null
         d3Watch = null
@@ -449,14 +581,15 @@ class BleIntegrationActivity : ComponentActivity() {
             return
         }
         try {
-            val connection = item.device.connectGatt(this, false, callback, BluetoothDevice.TRANSPORT_LE)
+            val device = scannedDevice ?: adapter?.getRemoteDevice(address)
+            val connection = device?.connectGatt(activity, false, callback, BluetoothDevice.TRANSPORT_LE)
             if (connection == null) {
                 connectionStatus = "无法发起连接，请重试。"
                 return
             }
             gatt = connection
             connectingOrConnected = true
-            connectionStatus = "正在连接…"
+            connectionStatus = if (automatic) "正在自动连接收藏设备…" else "正在连接…"
             handler.postDelayed(connectionDeadline, 15_000L)
         } catch (_: SecurityException) {
             connectionStatus = "蓝牙权限已变化，请重新授权。"
@@ -505,17 +638,30 @@ class BleIntegrationActivity : ComponentActivity() {
                 val channel = BlunoSerialChannel(connection, handler) { failure ->
                     if (gatt === connection) closeConnection(connectionUnavailableReason() ?: failure)
                 }
-                val address = checkNotNull(selectedAddress)
+                val address = checkNotNull(selection).address
                 val client = D3Client(
                     write = { bytes -> suspendCancellableCoroutine { result ->
                         channel.send(bytes) { if (result.isActive) result.resume(it) }
                     } },
                     clock = ::d3Clock,
+                    diagnostic = d3Diagnostics?.let { it::record },
+                    testDisconnect = d3Diagnostics?.let {
+                        { reason ->
+                            if (gatt === connection) {
+                                try {
+                                    connection.disconnect()
+                                } catch (_: SecurityException) {
+                                    // Permission may have been revoked after the write.
+                                }
+                                closeConnection(reason)
+                            }
+                        }
+                    },
                 )
-                val watch = D3Watch(lifecycleScope, client, { channel.ready && !channel.busy },
+                val watch = D3Watch(activity.lifecycleScope, client, { channel.ready && !channel.busy },
                     address in unconfirmedTime, { pending ->
                         if (pending) unconfirmedTime.add(address) else unconfirmedTime.remove(address)
-                    })
+                    }, diagnostics = d3Diagnostics)
                 d3Watch = watch
                 channel.onReady = watch::transportReady
                 channel.onReceived = client::receive
@@ -597,24 +743,12 @@ class BleIntegrationActivity : ComponentActivity() {
         connectionStatus = message
     }
 
-    override fun onResume() {
-        super.onResume()
-        refreshBluetoothState()
-    }
+    fun disconnect() = closeConnection("已断开连接。")
 
-    override fun onStop() {
-        super.onStop()
+    private fun leaveScreen() {
         if (scanning) {
             stopScan()
             scanStatus = completedScan()
         }
-        // Home、锁屏和暂时打开系统设置时，联调页仍可恢复同一个 GATT 会话。
-    }
-
-    override fun onDestroy() {
-        unregisterReceiver(systemStateReceiver)
-        stopScan()
-        closeConnection(null)
-        super.onDestroy()
     }
 }

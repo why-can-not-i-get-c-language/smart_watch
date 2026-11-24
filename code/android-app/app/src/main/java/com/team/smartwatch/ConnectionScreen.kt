@@ -1,7 +1,5 @@
 package com.team.smartwatch
 
-import android.content.Intent
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +13,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -23,9 +20,9 @@ internal fun ConnectionScreen(
     connection: Connection,
     onChange: (Connection) -> Unit,
     onBack: () -> Unit,
+    onBle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val (message, action, next) = when (connection) {
         Connection.DISCONNECTED -> Triple("选择演示手表后开始连接。", "开始模拟连接", Connection.CONNECTING)
         Connection.CONNECTING -> Triple("正在建立连接，可以取消或模拟链路建立。", "模拟链路建立", Connection.SYNCING)
@@ -41,9 +38,7 @@ internal fun ConnectionScreen(
     ) {
         OutlinedButton(onClick = onBack) { Text("返回首页") }
         Text("设备连接", style = MaterialTheme.typography.headlineMedium)
-        OutlinedButton(onClick = {
-            context.startActivity(Intent(context, BleIntegrationActivity::class.java))
-        }) { Text("真实 BLE 收发") }
+        OutlinedButton(onClick = onBle) { Text("真实 BLE 收发") }
         Text("演示手表 · 模拟流程", color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (BuildConfig.NEARBY_PERMISSION_PREVIEW) NearbyPermissionPreview()
         Card(Modifier.fillMaxWidth()) {

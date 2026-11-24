@@ -10,6 +10,8 @@ internal data class BleScanEntry(
 ) {
     val name: String get() = advertisedName ?: cachedName ?: "未命名设备"
 
+    fun eligibleForAutoConnect(isFavorite: Boolean): Boolean = isFavorite && connectable != false
+
     fun update(observation: BleScanEntry): BleScanEntry {
         val latest = if (observation.timestampNanos >= timestampNanos) observation else this
         val older = if (latest === this) observation else this

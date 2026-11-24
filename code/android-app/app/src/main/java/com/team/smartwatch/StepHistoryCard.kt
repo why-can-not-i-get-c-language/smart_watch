@@ -23,7 +23,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -40,7 +39,7 @@ internal fun StepHistoryCard(today: Reading<DailySteps>) {
     )
     var selected by rememberSaveable { mutableIntStateOf(days.lastIndex) }
     val formatter = NumberFormat.getIntegerInstance(Locale.CHINA)
-    val peak = maxOf(6000, days.maxOf { it.count ?: 0 })
+    val peak = maxOf(SimulatedWatch.DEMO_STEP_GOAL, days.maxOf { it.count ?: 0 })
     val colors = MaterialTheme.colorScheme
     val selectedDay = days[selected]
     val selectedCount = selectedDay.count?.let { "${formatter.format(it)} 步" } ?: "无记录"
@@ -60,7 +59,7 @@ internal fun StepHistoryCard(today: Reading<DailySteps>) {
                         val active = index == selected
                         val count = day.count
                         val description = count?.let { "${formatter.format(it)} 步" } ?: "无记录"
-                        val color = if (active) colors.primary else Color(0xFFD7774B)
+                        val color = if (active) colors.primary else colors.outline
                         Column(
                             Modifier.weight(1f)
                                 .selectable(selected = active, role = Role.RadioButton) { selected = index }
