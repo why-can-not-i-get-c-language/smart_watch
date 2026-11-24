@@ -1,7 +1,11 @@
 package com.team.smartwatch
 
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.job
+import kotlinx.coroutines.joinAll
+
 // Fixed wire examples from the APP-03 D3 task specification. No GATT device is used here.
-internal suspend fun checkOfflineD3() {
+internal suspend fun checkOfflineD3(pendingCalibration: Boolean = false) = coroutineScope {
     val pairs = listOf(
         ("A5 5A 01 00 01 01 00 44 33 22 11 00 00 DD C6 CB A8" to
             "A5 5A 01 01 01 01 00 44 33 22 11 1E 00 00 00 01 02 03 04 05 06 07 08 09 0A 0B 01 00 00 00 1F 00 00 00 08 44 52 41 46 54 2D 30 31 F0 A5 DC 51"),
@@ -15,8 +19,10 @@ internal suspend fun checkOfflineD3() {
     var step = 0
     var elapsed = 0L
     val now = 1_795_219_200_000L
+    val expectedWrites = if (pendingCalibration) 2 else pairs.size
     lateinit var client: D3Client
     client = D3Client(write = { bytes ->
+        check(step < expectedWrites) { "当前连接不应再写入 D3 请求" }
         val (request, response) = pairs[step++]
         check(bytes.serialHex() == request) { "D3 请求样例不匹配" }
         val wire = checkNotNull(serialPayload(response, hex = true))
@@ -26,15 +32,23 @@ internal suspend fun checkOfflineD3() {
         }
         true
     }, clock = { D3Timestamp(elapsed, now + elapsed) }, nextSessionId = { 0x11223344L })
-    client.newSession()
-    val identity = d3Identity(client.request(D3Command.INFO).payload)
+    val watch = D3Watch(this, client, { true }, pendingCalibration, {})
+    watch.transportReady()
+    coroutineContext.job.children.toList().joinAll()
+    watch.transportReady()
+    check(!watch.busy) { "同一连接不能重复启动自动校时" }
+
+    val identity = checkNotNull(watch.identity)
     check(identity.uid == "000102030405060708090A0B" && identity.firmware == "DRAFT-01")
-    val first = d3Status(client.request(D3Command.STATUS).payload)
-    check(first.stepsScope == 0 && first.steps.value == 123L && first.voltage.value == 3863L)
-    check(first.oxygen.state == D3DataState.UNSUPPORTED && first.oxygen.value == null)
-    val set = client.request(D3Command.SET_TIME) { d3TimePayload(it.unixMs / 1000L) }
-    check(d3StoredTime(set.payload, now / 1000L) == now / 1000L + 1)
-    val readback = client.request(D3Command.STATUS)
-    check(d3TimeVerification(set, readback, d3Status(readback.payload)).outcome == D3TimeCheck.VERIFIED)
-    check(step == pairs.size)
+    val status = checkNotNull(watch.status)
+    check(status.stepsScope == 0 && status.steps.value == 123L && status.voltage.value == 3863L)
+    check(status.oxygen.state == D3DataState.UNSUPPORTED && status.oxygen.value == null)
+    if (pendingCalibration) {
+        check(watch.timeAcknowledged == null)
+        check(watch.timeResult.orEmpty().contains("待确认"))
+    } else {
+        check(watch.timeAcknowledged == now / 1000L + 1)
+        check(watch.timeResult.orEmpty().startsWith("自动校时 · 低延迟校时已验证"))
+    }
+    check(step == expectedWrites)
 }

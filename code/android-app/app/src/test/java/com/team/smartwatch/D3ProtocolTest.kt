@@ -149,6 +149,11 @@ class D3ProtocolTest {
     fun fullOfflineExchangeUsesSpecificationSamples() = runBlocking { checkOfflineD3() }
 
     @Test
+    fun reconnectWithPendingCalibrationReadsWithoutSettingTimeAgain() = runBlocking {
+        checkOfflineD3(pendingCalibration = true)
+    }
+
+    @Test
     fun liveSnapshotTracksVerifiedReadbacksAndClearsOnFailureOrDisconnect() = runBlocking {
         val wall = 1_795_219_200_000L
         var elapsed = 0L

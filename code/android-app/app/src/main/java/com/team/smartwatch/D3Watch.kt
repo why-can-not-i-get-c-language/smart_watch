@@ -22,6 +22,7 @@ internal class D3Watch(
 ) {
     private var job: Job? = null
     private var connected = true
+    private var initialized = false
     private var unconfirmed = unconfirmedBeforeConnect
     private var rawUsed = false
     var busy by mutableStateOf(false)
@@ -43,9 +44,20 @@ internal class D3Watch(
     val canSetTime: Boolean get() = canRefresh && !unconfirmed && status != null &&
         identity?.supports(D3Command.SET_TIME) == true
 
-    fun transportReady() = perform {
-        waitForQuietLink()
-        queryStatus()
+    fun transportReady() {
+        if (initialized || !canRefresh) return
+        initialized = true
+        perform {
+            // 若上次写入结果未知，本次先读回供用户确认。
+            val verifyPreviousCalibration = unconfirmed
+            waitForQuietLink()
+            queryStatus()
+            if (!verifyPreviousCalibration && connected && available() &&
+                identity?.supports(D3Command.SET_TIME) == true
+            ) {
+                calibrateTime(automatic = true)
+            }
+        }
     }
 
     fun refresh() = perform {
@@ -100,53 +112,56 @@ internal class D3Watch(
 
     fun calibrate() {
         if (!canSetTime) return
-        perform {
-            // If there is only one sequence left, start a new session for both calibration requests.
-            if (client.remainingSequences < 2) {
-                identity = null
-                ensureIdentity()
-                require(identity?.supports(D3Command.SET_TIME) == true &&
-                    identity?.supports(D3Command.STATUS) == true) { "手表不支持校时或读回" }
+        perform { calibrateTime(automatic = false) }
+    }
+
+    private suspend fun calibrateTime(automatic: Boolean) {
+        // If there is only one sequence left, start a new session for both calibration requests.
+        if (client.remainingSequences < 2) {
+            identity = null
+            ensureIdentity()
+            require(identity?.supports(D3Command.SET_TIME) == true &&
+                identity?.supports(D3Command.STATUS) == true) { "手表不支持校时或读回" }
+        }
+        timeAcknowledged = null
+        val prefix = if (automatic) "自动校时 · " else ""
+        timeResult = prefix + "正在发送手机当前时间"
+        var requested = 0L
+        try {
+            val fault = if (automatic) D3Fault.NONE else diagnostics?.consume() ?: D3Fault.NONE
+            val set = client.request(D3Command.SET_TIME, fault) { sent ->
+                requested = Math.floorDiv(sent.unixMs, 1000L)
+                d3TimePayload(requested).also { setUnconfirmed(true) }
             }
-            timeAcknowledged = null
-            timeResult = "正在发送手机当前时间"
-            var requested = 0L
-            try {
-                val fault = diagnostics?.consume() ?: D3Fault.NONE
-                val set = client.request(D3Command.SET_TIME, fault) { sent ->
-                    requested = Math.floorDiv(sent.unixMs, 1000L)
-                    d3TimePayload(requested).also { setUnconfirmed(true) }
-                }
-                timeAcknowledged = d3StoredTime(set.payload, requested)
-                timeResult = "设备已应答，正在读取当前时间"
-                val (read, fresh) = queryStatus()
-                val report = d3TimeVerification(set, read, fresh)
-                client.trace("校时时序 t0=${set.sent.elapsedMs} t1=${set.received.elapsedMs} " +
-                    "t2=${read.sent.elapsedMs} t3=${read.received.elapsedMs}")
-                timeResult = when (report.outcome) {
-                    D3TimeCheck.VERIFIED -> "低延迟校时已验证（偏差 ${report.offsetSeconds} 秒）"
-                    D3TimeCheck.REVIEW_DELAY -> "当前时间已核对。校时用时较长或手机时间有变化，待复核（偏差 ${report.offsetSeconds} 秒）"
-                    D3TimeCheck.DIFFERENT -> "读回偏差 ${report.offsetSeconds} 秒，超过 2 秒"
-                    D3TimeCheck.UNKNOWN -> "校时结果待确认，手表未返回有效时间"
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: RuntimeException) {
-                if (unconfirmed) {
-                    timeResult = "校时结果待确认。${error.message.orEmpty()}"
-                    if (connected && available() && error !is D3WriteFailed) {
-                        try {
-                            queryStatus()
-                        } catch (cancelled: CancellationException) {
-                            throw cancelled
-                        } catch (readError: RuntimeException) {
-                            if (readError is D3DeviceError && readError.code == 4) identity = null
-                            message = "当前时间未读到，请查询状态或重连"
-                        }
+            timeAcknowledged = d3StoredTime(set.payload, requested)
+            timeResult = prefix + "设备已应答，正在读取当前时间"
+            val (read, fresh) = queryStatus()
+            val report = d3TimeVerification(set, read, fresh)
+            client.trace("校时时序 t0=${set.sent.elapsedMs} t1=${set.received.elapsedMs} " +
+                "t2=${read.sent.elapsedMs} t3=${read.received.elapsedMs}")
+            timeResult = prefix + when (report.outcome) {
+                D3TimeCheck.VERIFIED -> "低延迟校时已验证（偏差 ${report.offsetSeconds} 秒）"
+                D3TimeCheck.REVIEW_DELAY -> "当前时间已核对。校时用时较长或手机时间有变化，待复核（偏差 ${report.offsetSeconds} 秒）"
+                D3TimeCheck.DIFFERENT -> "读回偏差 ${report.offsetSeconds} 秒，超过 2 秒"
+                D3TimeCheck.UNKNOWN -> "校时结果待确认，手表未返回有效时间"
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: RuntimeException) {
+            if (unconfirmed) {
+                timeResult = prefix + "校时结果待确认。${error.message.orEmpty()}"
+                if (connected && available() && error !is D3WriteFailed) {
+                    try {
+                        queryStatus()
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (readError: RuntimeException) {
+                        if (readError is D3DeviceError && readError.code == 4) identity = null
+                        message = "当前时间未读到，请查询状态或重连"
                     }
-                } else {
-                    timeResult = "校时未开始。${error.message.orEmpty()}"
                 }
+            } else {
+                timeResult = prefix + "校时未开始。${error.message.orEmpty()}"
             }
         }
     }
