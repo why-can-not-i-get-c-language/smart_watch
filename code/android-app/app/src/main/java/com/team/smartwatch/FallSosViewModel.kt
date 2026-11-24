@@ -197,9 +197,7 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
         get() = ready && stage == FallEventStage.REQUESTED && !awaitingResync &&
             smsStage == SmsStage.FAILED && eventAutoSmsEnabled && smsSnapshot != null
     internal val shareBody: String
-        get() = smsSnapshot?.body ?: if (BuildConfig.NEARBY_PERMISSION_PREVIEW) {
-            "$eventBody\n${eventLocation ?: "手机定位：未获取"}"
-        } else eventBody
+        get() = smsSnapshot?.body ?: "$eventBody\n${eventLocation ?: "手机定位：未获取"}"
     internal val automaticEscalationForEvent: Boolean get() = eventAutoSmsEnabled
     internal val canSimulateCallResult: Boolean
         get() = ready && stage == FallEventStage.REQUESTED && callStage == SosCallStage.DIALING
@@ -385,7 +383,7 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
     private fun startEscalation(id: Long, notify: Boolean) {
         if (smsConsidered) { persist(); return }
         smsConsidered = true
-        if (BuildConfig.NEARBY_PERMISSION_PREVIEW && hasSosLocationPermission(getApplication())) {
+        if (hasSosLocationPermission(getApplication())) {
             locating = true
             locationJob = scope.launch {
                 eventLocation = readSosLocation(getApplication())

@@ -90,10 +90,8 @@ internal fun FallSosScreen(
                 notificationSettings.launch(settings)
             }
         }) { Text(if (notificationEnabled) "系统通知设置" else "开启 SOS 通知") }
-        if (BuildConfig.NEARBY_PERMISSION_PREVIEW) {
-            SosLocationPermission()
-            if (model.locating) Text("正在获取本次求助的位置…")
-        }
+        SosLocationPermission()
+        if (model.locating) Text("正在获取本次求助的位置…")
         if (model.loading) Text("正在恢复求助记录…")
         else if (!model.ready && model.storageError == null) Text("正在保存求助记录…")
         model.storageError?.let { Text(it) }
@@ -135,7 +133,7 @@ internal fun FallSosScreen(
                         Text("剩余 ${model.callSeconds} 秒")
                         OutlinedButton(enabled = model.canSimulateCallResult,
                             onClick = { model.simulateCallResult(id, index, answered = true) }) { Text("模拟对方接听") }
-                        OutlinedButton(enabled = model.canSimulateCallResult,
+                        OutlinedButton(enabled = model.canSimulateCallResult && !model.locating,
                             onClick = { model.simulateCallResult(id, index, answered = false) }) { Text("跳到 30 秒未接（模拟）") }
                     }
                 }
@@ -171,7 +169,7 @@ internal fun FallSosScreen(
                 OutlinedButton(onClick = { model.confirmAndOpen("短信") }, enabled = model.canConfirm) {
                     Text("确认并模拟打开短信页")
                 }
-                if (BuildConfig.NEARBY_PERMISSION_PREVIEW && model.phoneAction == "短信") {
+                if (model.phoneAction == "短信" && !model.locating) {
                     Text(model.shareBody, style = MaterialTheme.typography.bodySmall)
                 }
             }
@@ -229,7 +227,7 @@ private fun SosLocationPermission() {
         allowed = hasSosLocationPermission(context)
     }
     Text(if (allowed) "SOS 手机定位权限：已允许" else "SOS 手机定位权限：未允许")
-    Text("模拟求助时获取一次位置。带定位的群发预览会留在本机求助记录。")
+    Text("模拟求助确认后，向手机定位服务请求一次位置。带定位的群发预览会留在本机求助记录。")
     OutlinedButton(enabled = !allowed, onClick = { request.launch(sosLocationPermissions()) }) {
         Text("允许 SOS 附带手机位置")
     }

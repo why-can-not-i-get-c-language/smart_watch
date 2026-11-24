@@ -30,7 +30,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun BleSerialPanel(channel: BlunoSerialChannel) {
+internal fun BleSerialPanel(channel: BlunoSerialChannel, watch: D3Watch?) {
     var hex by remember { mutableStateOf(true) }
     var input by remember { mutableStateOf("") }
     var inputError by remember { mutableStateOf<String?>(null) }
@@ -60,8 +60,8 @@ internal fun BleSerialPanel(channel: BlunoSerialChannel) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    OutlinedButton(onClick = {
-                        if (channel.initializeLegacy(password, baud)) {
+                    OutlinedButton(enabled = watch?.busy != true, onClick = {
+                        if (watch?.beforeRawOperation() != false && channel.initializeLegacy(password, baud)) {
                             password = ""
                             showLegacy = false
                         }
@@ -82,12 +82,12 @@ internal fun BleSerialPanel(channel: BlunoSerialChannel) {
                     minLines = 1, maxLines = 4, isError = inputError != null,
                     supportingText = { inputError?.let { Text(it) } },
                 )
-                Button(enabled = !channel.busy && input.isNotEmpty(), onClick = {
+                Button(enabled = !channel.busy && watch?.busy != true && input.isNotEmpty(), onClick = {
                     val bytes = serialPayload(input, hex)
                     if (bytes == null) {
                         inputError = if (hex) "输入成对的十六进制数字，最多 512 字节。"
                             else "输入 1 至 512 字节的 UTF-8 文本。"
-                    } else {
+                    } else if (watch?.beforeRawOperation() != false) {
                         channel.send(bytes)
                     }
                 }) { Text("发送一次") }

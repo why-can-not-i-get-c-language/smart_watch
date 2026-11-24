@@ -60,8 +60,10 @@ import androidx.lifecycle.lifecycleScope
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @SuppressLint("MissingPermission") // Operations check runtime permissions and handle revocation.
 class BleIntegrationActivity : ComponentActivity() {
@@ -89,6 +91,9 @@ class BleIntegrationActivity : ComponentActivity() {
     private var scanCallback: ScanCallback? = null
     private var gatt: BluetoothGatt? = null
     private var serialChannel by mutableStateOf<BlunoSerialChannel?>(null)
+    private var d3Watch by mutableStateOf<D3Watch?>(null)
+    private val unconfirmedTime = mutableSetOf<String>()
+    @Volatile private var phoneClockRevision = 0
     private var scanStartNanos = 0L
     private var scanStartMillis = 0L
     private val scanDeadline = Runnable {
@@ -100,16 +105,23 @@ class BleIntegrationActivity : ComponentActivity() {
     }
     private val bluetoothOff = "手机蓝牙已关闭。开启后请重新连接。"
     private val bluetoothPermissionMissing = "请重新授予附近设备权限后连接。"
-    private val bluetoothStateReceiver = object : BroadcastReceiver() {
+    private val systemStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) refreshBluetoothState()
+            when (intent.action) {
+                BluetoothAdapter.ACTION_STATE_CHANGED -> refreshBluetoothState()
+                Intent.ACTION_TIME_CHANGED -> phoneClockRevision++
+            }
         }
     }
+
+    private fun d3Clock() = D3Timestamp(SystemClock.elapsedRealtime(), System.currentTimeMillis(), phoneClockRevision)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ContextCompat.registerReceiver(
-            this, bluetoothStateReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED),
+            this, systemStateReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED).apply {
+                addAction(Intent.ACTION_TIME_CHANGED)
+            },
             ContextCompat.RECEIVER_EXPORTED,
         )
         setContent {
@@ -135,7 +147,10 @@ class BleIntegrationActivity : ComponentActivity() {
                             } else {
                                 Button(onClick = { connect(selected) }) { Text("连接并发现 GATT 服务") }
                             }
-                            serialChannel?.let { channel -> key(channel) { BleSerialPanel(channel) } }
+                            d3Watch?.let { D3WatchPanel(it) }
+                            serialChannel?.let { channel ->
+                                key(channel) { BleSerialPanel(channel, d3Watch) }
+                            }
                             if (services.isNotEmpty()) Text("连接后发现的 GATT 服务", style = MaterialTheme.typography.titleMedium)
                             services.forEach { service ->
                                 Text("服务 ${service.uuid}", style = MaterialTheme.typography.titleSmall)
@@ -204,6 +219,7 @@ class BleIntegrationActivity : ComponentActivity() {
     private fun returnToResults() {
         closeConnection(null)
         serialChannel = null
+        d3Watch = null
         showingDetails = false
     }
 
@@ -423,6 +439,7 @@ class BleIntegrationActivity : ComponentActivity() {
     private fun connect(item: Peripheral) {
         if (gatt != null) return
         serialChannel = null
+        d3Watch = null
         if (scanning) {
             stopScan()
             scanStatus = completedScan()
@@ -488,6 +505,20 @@ class BleIntegrationActivity : ComponentActivity() {
                 val channel = BlunoSerialChannel(connection, handler) { failure ->
                     if (gatt === connection) closeConnection(connectionUnavailableReason() ?: failure)
                 }
+                val address = checkNotNull(selectedAddress)
+                val client = D3Client(
+                    write = { bytes -> suspendCancellableCoroutine { result ->
+                        channel.send(bytes) { if (result.isActive) result.resume(it) }
+                    } },
+                    clock = ::d3Clock,
+                )
+                val watch = D3Watch(lifecycleScope, client, { channel.ready && !channel.busy },
+                    address in unconfirmedTime, { pending ->
+                        if (pending) unconfirmedTime.add(address) else unconfirmedTime.remove(address)
+                    })
+                d3Watch = watch
+                channel.onReady = watch::transportReady
+                channel.onReceived = client::receive
                 serialChannel = channel
                 channel.prepare()
             }
@@ -525,8 +556,9 @@ class BleIntegrationActivity : ComponentActivity() {
             connection: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray,
         ) {
             val snapshot = value.copyOf()
+            val arrival = d3Clock()
             handler.post {
-                if (gatt === connection) serialChannel?.received(characteristic, snapshot)
+                if (gatt === connection) serialChannel?.received(characteristic, snapshot, arrival)
             }
         }
 
@@ -553,6 +585,7 @@ class BleIntegrationActivity : ComponentActivity() {
         handler.removeCallbacks(connectionDeadline)
         val connection = gatt
         gatt = null
+        d3Watch?.close()
         serialChannel?.close()
         try {
             connection?.close()
@@ -579,7 +612,7 @@ class BleIntegrationActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        unregisterReceiver(bluetoothStateReceiver)
+        unregisterReceiver(systemStateReceiver)
         stopScan()
         closeConnection(null)
         super.onDestroy()

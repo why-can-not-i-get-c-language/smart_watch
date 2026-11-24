@@ -26,12 +26,17 @@ internal class BlunoSerialChannel(
     private val handler: Handler,
     private val onFailure: (String) -> Unit,
 ) {
+    var onReady: () -> Unit = {}
+    var onReceived: (ByteArray, D3Timestamp) -> Unit = { _, _ -> }
     private enum class Step(val label: String) {
         SUBSCRIBE("启用 CCCD"), READ_MODEL("读取模块型号"), AUTHENTICATE("写入模块认证命令"),
         UART("初始化串口波特率"), SEND("写入串口数据"),
     }
 
-    private data class Operation(val step: Step, val bytes: ByteArray = byteArrayOf(), var offset: Int = 0)
+    private data class Operation(
+        val step: Step, val bytes: ByteArray = byteArrayOf(), var offset: Int = 0,
+        val completion: (Boolean) -> Unit = {},
+    )
     private val profile = gatt.getService(bluetoothUuid("dfb0"))
     private val data = profile?.getCharacteristic(bluetoothUuid("dfb1"))
     private val command = profile?.getCharacteristic(bluetoothUuid("dfb2"))
@@ -81,6 +86,7 @@ internal class BlunoSerialChannel(
             // 已确认的 TEL0073 兼容路径。原厂客户端只在本地登记 DFB1 通知。
             ready = true
             status = "DFB1 本地监听已启用，可尝试收发。"
+            onReady()
         } else {
             val value = if (notify) BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                 else BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
@@ -105,9 +111,12 @@ internal class BlunoSerialChannel(
         return true
     }
 
-    fun send(bytes: ByteArray) {
-        if (!ready || busy || needsReconnect) return
-        queue.addLast(Operation(Step.SEND, bytes.copyOf()))
+    fun send(bytes: ByteArray, completion: (Boolean) -> Unit = {}) {
+        if (!ready || busy || needsReconnect || bytes.isEmpty()) {
+            completion(false)
+            return
+        }
+        queue.addLast(Operation(Step.SEND, bytes.copyOf(), completion = completion))
         record("TX 提交", bytes)
         runNext()
     }
@@ -165,6 +174,7 @@ internal class BlunoSerialChannel(
         completeStep()
         ready = true
         status = "DFB1 通知订阅已完成，可尝试收发。"
+        onReady()
     }
 
     fun characteristicRead(characteristic: BluetoothGattCharacteristic, value: ByteArray, result: Int) {
@@ -204,6 +214,7 @@ internal class BlunoSerialChannel(
                 if (enableLocalListener()) {
                     ready = true
                     status = "原厂初始化写入已完成，DFB1 本地监听已启用。"
+                    onReady()
                 }
             }
             Step.SEND -> {
@@ -211,25 +222,29 @@ internal class BlunoSerialChannel(
                 record(if (target?.writeTypeForSerial() == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE)
                     "TX 无应答写入完成" else "TX GATT 写入完成", sent)
                 status = "GATT 写入完成（${sent.size} 字节），回包见 RX。"
+                operation.completion(true)
             }
             else -> Unit
         }
     }
 
-    fun received(characteristic: BluetoothGattCharacteristic, value: ByteArray) {
+    fun received(characteristic: BluetoothGattCharacteristic, value: ByteArray, receivedAt: D3Timestamp) {
         if (!listenerEnabled || needsReconnect || !sameCharacteristic(characteristic, data) || value.isEmpty()) return
         receivedBytes += value.size
         record("RX", value)
+        onReceived(value, receivedAt)
     }
 
     fun clearRecords() = entries.clear()
 
     fun close() {
+        val stopped = pending
         completeStep()
         queue.clear()
         ready = false
         listenerEnabled = false
         if (!needsReconnect) status = "本次串口会话已关闭。"
+        stopped?.completion?.invoke(false)
     }
 
     private fun enableLocalListener(): Boolean {
