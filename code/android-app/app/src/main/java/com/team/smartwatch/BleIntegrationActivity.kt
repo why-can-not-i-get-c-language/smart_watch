@@ -74,6 +74,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 private const val AUTO_CONNECT_FAVORITES = "auto_connect_favorites"
+private const val LAST_CONNECTED_FAVORITE = "last_connected_favorite"
+
+internal fun preferredFavoriteAddress(favorites: Set<String>, lastConnected: String?): String? =
+    lastConnected?.takeIf { it in favorites } ?: favorites.singleOrNull()
 
 class BleIntegrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -301,6 +305,13 @@ internal class BleIntegration(private val activity: ComponentActivity) {
             favorites + (address to name)
         }
         editor.apply()
+        if (gatt != null && services.isNotEmpty()) rememberConnectedFavorite(address)
+    }
+
+    private fun rememberConnectedFavorite(address: String) {
+        if (address in favorites && favoritePreferences.getString(LAST_CONNECTED_FAVORITE, null) != address) {
+            favoritePreferences.edit().putString(LAST_CONNECTED_FAVORITE, address).apply()
+        }
     }
 
     @Composable
@@ -384,11 +395,28 @@ internal class BleIntegration(private val activity: ComponentActivity) {
             }
             if (gatt != null || (showingDetails && problem == bluetoothOff)) closeConnection(problem)
         } else {
-            if (scanStatus == "扫描失败：$bluetoothOff") {
+            if (scanStatus == "扫描失败：$bluetoothOff" || scanStatus == bluetoothOff) {
                 scanStatus = "手机蓝牙已开启，可开始扫描或从本轮列表重新连接。"
             }
             if (connectionStatus == bluetoothOff) connectionStatus = "手机蓝牙已开启，请重新连接设备。"
         }
+    }
+
+    fun connectFavoriteOnEntry() {
+        if (!screenVisible || scanning || gatt != null) return
+        showingDetails = false
+        val address = preferredFavoriteAddress(favorites.keys, favoritePreferences.getString(LAST_CONNECTED_FAVORITE, null))
+        if (address == null) {
+            if (favorites.size > 1) scanStatus = "有多个收藏设备，请先选择一台连接。"
+            return
+        }
+        connectionUnavailableReason()?.let {
+            scanStatus = it
+            return
+        }
+        selection = Selection(address, favorites[address])
+        showingDetails = true
+        connect(address, peripheral(address)?.device, automatic = true)
     }
 
     fun rescan() {
@@ -639,6 +667,7 @@ internal class BleIntegration(private val activity: ComponentActivity) {
                     if (gatt === connection) closeConnection(connectionUnavailableReason() ?: failure)
                 }
                 val address = checkNotNull(selection).address
+                rememberConnectedFavorite(address)
                 val client = D3Client(
                     write = { bytes -> suspendCancellableCoroutine { result ->
                         channel.send(bytes) { if (result.isActive) result.resume(it) }

@@ -41,6 +41,8 @@ private val HealthColors = lightColorScheme(
     outline = Color(0xFF767D88),
 )
 
+private enum class BleEntryAction { BROWSE, CONNECT_FAVORITE, SCAN }
+
 class MainActivity : ComponentActivity() {
     private var sosNotificationOpen by mutableIntStateOf(0)
     private val timeSync by lazy { ViewModelProvider(this)[TimeSyncViewModel::class.java] }
@@ -67,7 +69,7 @@ class MainActivity : ComponentActivity() {
                 var index by rememberSaveable { mutableIntStateOf(0) }
                 var connectionRevision by rememberSaveable { mutableIntStateOf(0) }
                 var showBle by rememberSaveable { mutableStateOf(false) }
-                var rescanOnOpen by remember { mutableStateOf(false) }
+                var bleEntryAction by remember { mutableStateOf(BleEntryAction.BROWSE) }
                 var showConnection by rememberSaveable { mutableStateOf(false) }
                 var showTimeSync by rememberSaveable { mutableStateOf(false) }
                 var showReminder by rememberSaveable { mutableStateOf(false) }
@@ -80,7 +82,7 @@ class MainActivity : ComponentActivity() {
                 val original = scenario.source.read()
                 val returnHome = {
                     showBle = false
-                    rescanOnOpen = false
+                    bleEntryAction = BleEntryAction.BROWSE
                     showConnection = false
                     showTimeSync = false
                     showReminder = false
@@ -88,7 +90,10 @@ class MainActivity : ComponentActivity() {
                     showFallSos = false
                     trend = null
                 }
-                val openBle = { showBle = true }
+                val openBle: (BleEntryAction) -> Unit = { action ->
+                    bleEntryAction = action
+                    showBle = true
+                }
                 LaunchedEffect(sosNotificationOpen) {
                     if (sosNotificationOpen > 0) {
                         returnHome()
@@ -131,10 +136,13 @@ class MainActivity : ComponentActivity() {
                 }
                 if (showBle) {
                     ble.Screen(onHome = returnHome)
-                    LaunchedEffect(rescanOnOpen) {
-                        if (rescanOnOpen) {
-                            rescanOnOpen = false
-                            ble.rescan()
+                    LaunchedEffect(Unit) {
+                        val action = bleEntryAction
+                        bleEntryAction = BleEntryAction.BROWSE
+                        when (action) {
+                            BleEntryAction.BROWSE -> Unit
+                            BleEntryAction.CONNECT_FAVORITE -> ble.connectFavoriteOnEntry()
+                            BleEntryAction.SCAN -> ble.rescan()
                         }
                     }
                     return@MaterialTheme
@@ -152,7 +160,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onBack = { showConnection = false },
-                            onBle = openBle,
+                            onBle = { openBle(BleEntryAction.CONNECT_FAVORITE) },
                             modifier = Modifier.padding(padding),
                         )
                     } else if (showFallSos) {
@@ -201,18 +209,16 @@ class MainActivity : ComponentActivity() {
                                         connectionRevision++
                                     }
                                 },
-                                onConnection = { showConnection = true },
-                                onBleFavorites = openBle,
+                                onConnection = { openBle(BleEntryAction.CONNECT_FAVORITE) },
+                                onBleFavorites = { openBle(BleEntryAction.BROWSE) },
+                                onSimulatedConnection = { showConnection = true },
                                 liveWatchStatus = {
                                     LiveWatchStatusCard(
                                         watch = ble.d3Watch,
                                         linking = ble.connectingOrConnected,
                                         connectionMessage = ble.connectionStatus,
                                         onDisconnect = ble::disconnect,
-                                        onRescan = {
-                                            rescanOnOpen = true
-                                            openBle()
-                                        },
+                                        onRescan = { openBle(BleEntryAction.SCAN) },
                                         lifecycle = this@MainActivity.lifecycle,
                                     )
                                 },

@@ -52,6 +52,18 @@ class BleScanEntryTest {
         assertTrue(unnamed.copy(connectable = null).eligibleForAutoConnect(isFavorite = true))
     }
 
+    @Test
+    fun directConnectChoosesLastConnectedFavoriteOrTheOnlySavedAddress() {
+        val first = "02:00:00:00:00:01"
+        val second = "02:00:00:00:00:02"
+        val removed = "02:00:00:00:00:03"
+        assertNull(preferredFavoriteAddress(emptySet(), first))
+        assertEquals(first, preferredFavoriteAddress(setOf(first), removed))
+        assertEquals(second, preferredFavoriteAddress(setOf(first, second), second))
+        assertNull(preferredFavoriteAddress(setOf(first, second), removed))
+        assertNull(preferredFavoriteAddress(setOf(first, second), null))
+    }
+
     private fun observe(
         timestamp: Long,
         advertisedName: String? = null,

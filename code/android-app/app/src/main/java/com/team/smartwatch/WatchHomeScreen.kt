@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -73,6 +74,7 @@ internal fun WatchHomeScreen(
     onScenario: (Int) -> Unit,
     onConnection: () -> Unit,
     onBleFavorites: () -> Unit,
+    onSimulatedConnection: () -> Unit,
     liveWatchStatus: @Composable () -> Unit,
     onTimeSync: () -> Unit,
     onReminder: () -> Unit,
@@ -96,7 +98,14 @@ internal fun WatchHomeScreen(
                     OutlinedButton(onClick = onBleFavorites) { Text("蓝牙收藏") }
                 }
                 liveWatchStatus()
-                Text(state.source, color = colors.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(state.source, color = colors.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+                    TextButton(onClick = onSimulatedConnection) { Text("模拟连接") }
+                }
                 ConnectionSummary(state)
                 StepOverview(state.steps)
                 Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
