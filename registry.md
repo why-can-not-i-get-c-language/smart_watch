@@ -30,7 +30,7 @@
 | A08 | plan/procurement.md | 采购状态解释与使用边界；不复制BOM明细 | 有效 |
 | A09 | plan/bom.xlsx | 器件型号、数量、价格口径、采购状态与来源的权威明细 | 有效 |
 | A10 | plan/progress/development_plan.xlsx | Fxx-Pyy步骤、依赖、验收与进度的权威记录；含旧任务验收迁移，F组完成比例按硬件验收和Git保存闭环计算 | 有效 |
-| A11 | plan/design/wiring.md | 共享总线、供电与引脚的统一设计分配 | 有效 |
+| A11 | plan/design/wiring.md | 共享总线、供电与引脚的统一设计分配，以及封装复建参数与机械确认依据 | 有效 |
 | A12 | plan/design/functions/F01.md | 时间日期功能的接线范围及该功能实物验收信息 | 有效 |
 | A13 | plan/design/functions/F02.md | 定时振动提醒的接线范围及该功能实物验收信息 | 有效 |
 | A14 | plan/design/functions/F03.md | 计步功能的接线范围及该功能实物验收信息 | 有效 |

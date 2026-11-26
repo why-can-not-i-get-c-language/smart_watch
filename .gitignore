@@ -21,27 +21,6 @@
 /plan/design/*
 !/plan/design/wiring.md
 !/plan/design/functions/
-!/plan/design/eda/
-!/plan/design/eda_rebuild/
-/plan/design/eda_rebuild/*
-!/plan/design/eda_rebuild/smart_watch_rebuild.eprj3
-!/plan/design/eda_rebuild/sch/
-!/plan/design/eda_rebuild/pcb/
-!/plan/design/eda_rebuild/exports/
-/plan/design/eda_rebuild/exports/*
-!/plan/design/eda_rebuild/exports/*.png
-!/plan/design/eda_rebuild/exports/*.pdf
-!/plan/design/eda_rebuild/exports/smart_watch_rebuild.net
-/plan/design/eda/*
-!/plan/design/eda/smart_watch.eprj3
-!/plan/design/eda/sch/
-!/plan/design/eda/pcb/
-!/plan/design/eda/panel/
-!/plan/design/eda/exports/
-/plan/design/eda/exports/*
-!/plan/design/eda/exports/*.png
-!/plan/design/eda/exports/*.pdf
-!/plan/design/eda/exports/smart_watch.net
 /plan/design/functions/*
 !/plan/design/functions/F*.md
 
