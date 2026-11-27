@@ -27,7 +27,7 @@ internal fun hasSosLocationPermission(context: Context): Boolean =
 // At most one short request per SOS. Avoid using a stale cached position.
 @SuppressLint("MissingPermission")
 @Suppress("DEPRECATION")
-internal suspend fun readSosLocation(context: Context): String? {
+internal suspend fun readRecentPhoneLocation(context: Context): Location? {
     if (!hasSosLocationPermission(context)) return null
     val manager = context.getSystemService(LocationManager::class.java) ?: return null
     val precise = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
@@ -57,6 +57,11 @@ internal suspend fun readSosLocation(context: Context): String? {
     val ageMillis = SystemClock.elapsedRealtime() - location.elapsedRealtimeNanos / 1_000_000L
     if (ageMillis !in 0..15_000 || location.latitude !in -90.0..90.0 ||
         location.longitude !in -180.0..180.0 || !hasSosLocationPermission(context)) return null
+    return location
+}
+
+internal suspend fun readSosLocation(context: Context): String? {
+    val location = readRecentPhoneLocation(context) ?: return null
     val point = String.format(Locale.US, "%.5f,%.5f", location.longitude, location.latitude)
     val accuracy = if (location.hasAccuracy()) "（误差约 ${location.accuracy.roundToInt()} 米）" else ""
     return "求助时手机定位$accuracy：https://uri.amap.com/marker?position=$point&coordinate=wgs84"

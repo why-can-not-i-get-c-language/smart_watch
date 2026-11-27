@@ -31,4 +31,13 @@ class PhoneFeaturesTest {
         assertEquals("2026-11-27", forecastDate(midnightBeijing - 1))
         assertEquals("2026-11-28", forecastDate(midnightBeijing))
     }
+
+    @Test
+    fun weatherUsesCityPrecisionAndLocatedTimeZone() {
+        assertEquals(30.3, cityWeatherCoordinate(30.2741), 0.00001)
+        assertEquals(-118.2, cityWeatherCoordinate(-118.2437), 0.00001)
+        val utcMorning = 1795748400000L
+        assertEquals("2026-11-26", forecastDate(utcMorning, "America/Los_Angeles"))
+        assertEquals("2026-11-27", forecastDate(utcMorning, "Asia/Shanghai"))
+    }
 }
