@@ -202,9 +202,13 @@ class PhoneWeatherViewModel(application: Application) : AndroidViewModel(applica
         message = "正在定位城市…"
         viewModelScope.launch {
             try {
-                val point = readRecentPhoneLocation(context)
+                val point = readWeatherPhoneLocation(context)
                 if (point == null) {
-                    message = "暂时无法获取当前位置，请检查系统定位"
+                    message = when {
+                        !hasSosLocationPermission(context) -> "请允许手机定位，以识别所在城市"
+                        !isPhoneLocationEnabled(context) -> "系统定位已关闭，请开启后刷新"
+                        else -> "定位已开启，暂未获取到位置，请稍后重试"
+                    }
                     return@launch
                 }
                 val latitude = cityWeatherCoordinate(point.latitude)
