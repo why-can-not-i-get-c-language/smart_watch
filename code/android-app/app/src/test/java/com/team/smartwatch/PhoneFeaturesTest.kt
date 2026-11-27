@@ -63,4 +63,18 @@ class PhoneFeaturesTest {
         assertEquals(0L, weatherObservationTime("2026-11-31T07:15", "Asia/Shanghai"))
         assertEquals(0L, weatherObservationTime("2026-11-27T07:15x", "Asia/Shanghai"))
     }
+
+    @Test
+    fun weatherLocationShowsCityAndDistrictWhenAvailable() {
+        assertEquals(WeatherArea("杭州市", "西湖区"), resolveWeatherArea("杭州市", "西湖区", null, "浙江省"))
+        assertEquals(WeatherArea("北京市", "朝阳区"), resolveWeatherArea("朝阳区", null, "市辖区", "北京市"))
+        assertEquals(WeatherArea("杭州市", "淳安县"), resolveWeatherArea(null, "淳安县", "杭州市", "浙江省"))
+    }
+
+    @Test
+    fun weatherLocationOmitsStreetNamesAndUnavailableDistricts() {
+        assertEquals(WeatherArea("杭州市", null), resolveWeatherArea(" 杭州市 ", "翠苑街道", "市辖区", "浙江省"))
+        assertEquals(WeatherArea("香港特别行政区", null), resolveWeatherArea(null, null, null, "香港特别行政区"))
+        assertNull(resolveWeatherArea(null, null, "市辖区", "浙江省"))
+    }
 }

@@ -53,6 +53,7 @@ private const val FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 private const val SOURCE_URL = "https://open-meteo.com/"
 private const val CACHE_VERSION = 2
 private const val CITY_KEY = "located_city"
+private const val DISTRICT_KEY = "located_district"
 private const val FORECAST_KEY = "latest_forecast"
 private const val CURRENT_WEATHER_MAX_AGE_MS = 60 * 60 * 1_000L
 
@@ -75,6 +76,32 @@ internal data class PhoneForecast(
     val receivedAt: Long,
     val current: CurrentWeather?,
 )
+
+internal data class WeatherArea(val city: String, val district: String?) {
+    val label: String get() = listOfNotNull(city, district).joinToString(" · ")
+}
+
+internal fun resolveWeatherArea(
+    locality: String?,
+    subLocality: String?,
+    subAdminArea: String?,
+    adminArea: String?,
+): WeatherArea? {
+    fun String?.areaName(): String? = this?.trim()?.takeIf { it.isNotEmpty() && it != "市辖区" }
+    fun String.isDistrict(): Boolean =
+        !endsWith("自治区") && !endsWith("特别行政区") &&
+            (endsWith('区') || endsWith('县') || endsWith('旗') ||
+                endsWith(" District", true) || endsWith(" County", true) || endsWith(" Borough", true))
+
+    val city = sequenceOf(locality, subAdminArea, adminArea)
+        .mapNotNull { it.areaName() }
+        .firstOrNull { !it.isDistrict() && !it.endsWith('省') && !it.endsWith("自治区") }
+        ?: return null
+    val district = sequenceOf(subLocality, subAdminArea, locality)
+        .mapNotNull { it.areaName() }
+        .firstOrNull { it != city && it.isDistrict() }
+    return WeatherArea(city, district)
+}
 
 internal fun forecastDate(millis: Long, zone: String = "Asia/Shanghai"): String =
     SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).apply {
@@ -150,7 +177,7 @@ private fun fetchForecast(latitude: Double, longitude: Double): String {
 }
 
 @Suppress("DEPRECATION")
-private suspend fun cityName(context: Context, latitude: Double, longitude: Double): String? {
+private suspend fun locateWeatherArea(context: Context, latitude: Double, longitude: Double): WeatherArea? {
     if (!Geocoder.isPresent()) return null
     val geocoder = Geocoder(context, Locale.SIMPLIFIED_CHINESE)
     val matches = if (Build.VERSION.SDK_INT >= 33) {
@@ -170,10 +197,11 @@ private suspend fun cityName(context: Context, latitude: Double, longitude: Doub
     } else {
         withContext(Dispatchers.IO) { geocoder.getFromLocation(latitude, longitude, 3) }
     }
-    return matches.orEmpty().firstNotNullOfOrNull { address ->
-        sequenceOf(address.locality, address.subAdminArea, address.adminArea)
-            .firstOrNull { !it.isNullOrBlank() }
+    val areas = matches.orEmpty().mapNotNull { address ->
+        resolveWeatherArea(address.locality, address.subLocality, address.subAdminArea, address.adminArea)
     }
+    val first = areas.firstOrNull() ?: return null
+    return areas.firstOrNull { it.city == first.city && it.district != null } ?: first
 }
 
 class PhoneWeatherViewModel(application: Application) : AndroidViewModel(application) {
@@ -182,7 +210,9 @@ class PhoneWeatherViewModel(application: Application) : AndroidViewModel(applica
             edit().clear().putInt("cache_version", CACHE_VERSION).apply()
         }
     }
-    internal var city by mutableStateOf(preferences.getString(CITY_KEY, null))
+    internal var area by mutableStateOf(preferences.getString(CITY_KEY, null)?.let { city ->
+        WeatherArea(city, preferences.getString(DISTRICT_KEY, null))
+    })
         private set
     internal var forecast by mutableStateOf(loadCache())
         private set
@@ -213,15 +243,21 @@ class PhoneWeatherViewModel(application: Application) : AndroidViewModel(applica
                 }
                 val latitude = cityWeatherCoordinate(point.latitude)
                 val longitude = cityWeatherCoordinate(point.longitude)
-                val located = cityName(context, latitude, longitude)
+                val located = locateWeatherArea(context, point.latitude, point.longitude)
                 if (located == null) {
                     message = "暂时无法识别所在城市，请稍后重试"
                     return@launch
                 }
-                if (located != city) {
-                    city = located
-                    forecast = null
-                    preferences.edit().putString(CITY_KEY, located).remove(FORECAST_KEY).apply()
+                if (located != area) {
+                    val cityChanged = located.city != area?.city
+                    area = located
+                    val edit = preferences.edit().putString(CITY_KEY, located.city)
+                        .putString(DISTRICT_KEY, located.district)
+                    if (cityChanged) {
+                        forecast = null
+                        edit.remove(FORECAST_KEY)
+                    }
+                    edit.apply()
                 }
                 message = "正在查询预报…"
                 val json = withContext(Dispatchers.IO) { fetchForecast(latitude, longitude) }
@@ -283,7 +319,7 @@ internal fun PhoneWeatherScreen(model: PhoneWeatherViewModel, now: Long, onBack:
     ) {
         OutlinedButton(onClick = onBack) { Text("返回首页") }
         Text("手机天气", style = MaterialTheme.typography.headlineSmall)
-        Text(model.city?.let { "最近定位城市 · $it" } ?: "通过手机定位识别所在城市")
+        Text(model.area?.let { "大概位置 · ${it.label}" } ?: "通过手机定位识别所在城市")
         Button(enabled = !model.loading, onClick = {
             if (hasSosLocationPermission(context)) model.refresh()
             else permission.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
