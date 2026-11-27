@@ -54,6 +54,17 @@ private const val SOURCE_URL = "https://open-meteo.com/"
 private const val CACHE_VERSION = 2
 private const val CITY_KEY = "located_city"
 private const val FORECAST_KEY = "latest_forecast"
+private const val CURRENT_WEATHER_MAX_AGE_MS = 60 * 60 * 1_000L
+
+internal data class CurrentWeather(
+    val weatherCode: Int,
+    val temperature: Double,
+    val humidityPercent: Int,
+    val observedAt: Long,
+) {
+    fun isFresh(now: Long): Boolean =
+        now >= observedAt && now - observedAt < CURRENT_WEATHER_MAX_AGE_MS
+}
 
 internal data class PhoneForecast(
     val date: String,
@@ -62,6 +73,7 @@ internal data class PhoneForecast(
     val high: Double,
     val weatherCode: Int,
     val receivedAt: Long,
+    val current: CurrentWeather?,
 )
 
 internal fun forecastDate(millis: Long, zone: String = "Asia/Shanghai"): String =
@@ -70,6 +82,24 @@ internal fun forecastDate(millis: Long, zone: String = "Asia/Shanghai"): String 
     }.format(Date(millis))
 
 internal fun cityWeatherCoordinate(value: Double): Double = (value * 10).roundToInt() / 10.0
+
+internal fun currentWeather(
+    code: Int,
+    temperature: Double,
+    humidity: Double,
+    observedAt: Long,
+): CurrentWeather? {
+    if (code < 0 || !temperature.isFinite() || humidity !in 0.0..100.0 || observedAt <= 0) return null
+    return CurrentWeather(code, temperature, humidity.roundToInt(), observedAt)
+}
+
+internal fun weatherObservationTime(localTime: String, zone: String): Long {
+    if (!localTime.matches(Regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}"))) return 0L
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.ROOT).apply {
+        isLenient = false
+        timeZone = TimeZone.getTimeZone(zone)
+    }.parse(localTime, java.text.ParsePosition(0))?.time ?: 0L
+}
 
 private fun readForecast(response: JSONObject, receivedAt: Long): PhoneForecast {
     val zone = response.getString("timezone")
@@ -80,12 +110,21 @@ private fun readForecast(response: JSONObject, receivedAt: Long): PhoneForecast 
     val high = daily.getJSONArray("temperature_2m_max").getDouble(0)
     val code = daily.getJSONArray("weather_code").getInt(0)
     require(date == forecastDate(receivedAt, zone) && low.isFinite() && high.isFinite() && low <= high)
-    return PhoneForecast(date, zone, low, high, code, receivedAt)
+    val current = response.optJSONObject("current")?.let {
+        currentWeather(
+            it.optInt("weather_code", -1),
+            it.optDouble("temperature_2m"),
+            it.optDouble("relative_humidity_2m"),
+            weatherObservationTime(it.optString("time"), zone),
+        )
+    }
+    return PhoneForecast(date, zone, low, high, code, receivedAt, current)
 }
 
 private fun fetchForecast(latitude: Double, longitude: Double): String {
     val url = URL(
         "$FORECAST_URL?latitude=$latitude&longitude=$longitude" +
+            "&current=temperature_2m,relative_humidity_2m,weather_code" +
             "&daily=weather_code,temperature_2m_min,temperature_2m_max&timezone=auto&forecast_days=1",
     )
     val connection = url.openConnection() as HttpsURLConnection
@@ -182,12 +221,17 @@ class PhoneWeatherViewModel(application: Application) : AndroidViewModel(applica
                 }
                 message = "正在查询预报…"
                 val json = withContext(Dispatchers.IO) { fetchForecast(latitude, longitude) }
-                val current = readForecast(JSONObject(json), System.currentTimeMillis())
-                forecast = current
+                val freshForecast = readForecast(JSONObject(json), System.currentTimeMillis())
+                forecast = freshForecast
                 val cache = JSONObject()
-                    .put("date", current.date).put("zone", current.zone)
-                    .put("low", current.low).put("high", current.high)
-                    .put("code", current.weatherCode).put("received", current.receivedAt)
+                    .put("date", freshForecast.date).put("zone", freshForecast.zone)
+                    .put("low", freshForecast.low).put("high", freshForecast.high)
+                    .put("code", freshForecast.weatherCode).put("received", freshForecast.receivedAt)
+                freshForecast.current?.let {
+                    cache.put("current", JSONObject().put("code", it.weatherCode)
+                        .put("temperature", it.temperature).put("humidity", it.humidityPercent)
+                        .put("observed", it.observedAt))
+                }
                 preferences.edit().putString(FORECAST_KEY, cache.toString()).apply()
                 message = null
             } catch (_: IOException) {
@@ -208,8 +252,12 @@ class PhoneWeatherViewModel(application: Application) : AndroidViewModel(applica
         val data = preferences.getString(FORECAST_KEY, null) ?: return null
         return runCatching {
             val cache = JSONObject(data)
+            val current = cache.optJSONObject("current")?.let {
+                currentWeather(it.optInt("code", -1), it.optDouble("temperature"),
+                    it.optDouble("humidity"), it.optLong("observed"))
+            }
             PhoneForecast(cache.getString("date"), cache.getString("zone"), cache.getDouble("low"),
-                cache.getDouble("high"), cache.getInt("code"), cache.getLong("received"))
+                cache.getDouble("high"), cache.getInt("code"), cache.getLong("received"), current)
         }.getOrNull()
     }
 }
@@ -238,8 +286,14 @@ internal fun PhoneWeatherScreen(model: PhoneWeatherViewModel, now: Long, onBack:
         }) { Text("定位并刷新") }
         model.message?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         if (today != null) {
-            Text(weatherLabel(today.weatherCode), style = MaterialTheme.typography.titleLarge)
-            Text("最低 ${today.low} °C · 最高 ${today.high} °C")
+            val current = today.current
+            if (current != null && current.isFresh(now)) {
+                Text(weatherLabel(current.weatherCode), style = MaterialTheme.typography.titleLarge)
+                Text("当前温度 ${current.temperature} °C · 湿度 ${current.humidityPercent}%")
+            } else {
+                Text(if (current == null) "当前天气暂不可用" else "当前天气已过期，请刷新")
+            }
+            Text("今日预报 · ${weatherLabel(today.weatherCode)} · 最低 ${today.low} °C · 最高 ${today.high} °C")
             Text("${today.date} · 最近获取 ${beijingTime(today.receivedAt)}（北京时间）",
                 style = MaterialTheme.typography.bodySmall)
         } else if (forecast != null) {
@@ -258,7 +312,8 @@ internal fun PhoneWeatherScreen(model: PhoneWeatherViewModel, now: Long, onBack:
 
 private fun weatherLabel(code: Int): String = when (code) {
     0 -> "晴"
-    1, 2 -> "局部多云"
+    1 -> "大致晴朗"
+    2 -> "多云"
     3 -> "阴"
     45, 48 -> "雾"
     51, 53, 55, 56, 57 -> "毛毛雨"

@@ -3,6 +3,7 @@ package com.team.smartwatch
 import java.io.StringWriter
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,5 +40,27 @@ class PhoneFeaturesTest {
         val utcMorning = 1795748400000L
         assertEquals("2026-11-26", forecastDate(utcMorning, "America/Los_Angeles"))
         assertEquals("2026-11-27", forecastDate(utcMorning, "Asia/Shanghai"))
+    }
+
+    @Test
+    fun currentWeatherAcceptsNegativeTemperatureAndZeroHumidity() {
+        val observedAt = weatherObservationTime("2026-11-27T00:00", "Asia/Shanghai")
+        assertEquals(1795708800000L, observedAt)
+        val current = checkNotNull(currentWeather(2, -3.2, 0.0, observedAt))
+        assertEquals(-3.2, current.temperature, 0.0)
+        assertEquals(0, current.humidityPercent)
+        assertTrue(current.isFresh(observedAt + 3_599_999L))
+        assertFalse(current.isFresh(observedAt + 3_600_000L))
+        assertFalse(current.isFresh(observedAt - 1L))
+    }
+
+    @Test
+    fun invalidCurrentWeatherCannotBeDisplayedAsAReading() {
+        assertNull(currentWeather(2, 20.0, 101.0, 1L))
+        assertNull(currentWeather(2, 20.0, Double.NaN, 1L))
+        assertNull(currentWeather(2, Double.NaN, 68.0, 1L))
+        assertNull(currentWeather(-1, 20.0, 68.0, 1L))
+        assertEquals(0L, weatherObservationTime("2026-11-31T07:15", "Asia/Shanghai"))
+        assertEquals(0L, weatherObservationTime("2026-11-27T07:15x", "Asia/Shanghai"))
     }
 }
