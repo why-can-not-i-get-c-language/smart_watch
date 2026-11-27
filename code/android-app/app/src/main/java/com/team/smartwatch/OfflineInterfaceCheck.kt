@@ -24,11 +24,14 @@ internal suspend fun checkOfflineInterfaces(report: (String) -> Unit) {
         device.mismatchTime = true
         expectError(WatchError.READBACK_MISMATCH) { repository.synchronizeTime({ utc }, 0) }
         device.mismatchTime = false
-        val settings = repository.getSettings().copy(alarmHour = 9, lowActivityMinutes = 60)
-        check(repository.saveSettings(settings) == settings)
+        val settings = repository.getSettings()
+        val alarmSaved = repository.saveAlarm(false, 9, 15)
+        check(alarmSaved == settings.copy(alarmEnabled = false, alarmHour = 9, alarmMinute = 15))
+        val lowActivitySaved = repository.saveLowActivity(true, 60)
+        check(lowActivitySaved == alarmSaved.copy(lowActivityEnabled = true, lowActivityMinutes = 60))
         device.mismatchSettings = true
-        expectError(WatchError.READBACK_MISMATCH) { repository.saveSettings(settings) }
-        report("校时与提醒设置通过 · 拦截回读不一致")
+        expectError(WatchError.READBACK_MISMATCH) { repository.saveAlarm(true, 7, 0) }
+        report("提醒设置离线通过 · 分别保存闹钟和低运动 · 拦截回读不一致")
 
         val history = HistoryQuery(HistoryKind.STEPS, limit = 1)
         val first = repository.history(history)
@@ -45,10 +48,14 @@ internal suspend fun checkOfflineInterfaces(report: (String) -> Unit) {
         }
         report("历史分页与 CSV 通过 · 区分零值、无效值和游标失效")
 
-        val weather = WatchWeather("测试城市", "2027-01-15", "Asia/Shanghai", utc + 60, "晴", 8, 16)
-        check(repository.sendWeather(weather, utc) == weather)
-        expectError(WatchError.INVALID_DATA) { repository.sendWeather(weather, utc + 60) }
-        report("天气回执通过 · 拦截过期预报")
+        val observed = 1_795_754_700L
+        val weather = checkNotNull(CurrentWeather(2, -3.2, 68, observed * 1_000L)
+            .toWatchWeather(observed * 1_000L))
+        val example = byteArrayOf(0x02, 0xe0.toByte(), 0xff.toByte(), 0x44, 0xdc.toByte(), 0x18, 0x09, 0x6b)
+        check(weather.encodeDraftWeather().contentEquals(example))
+        check(repository.sendWeather(weather, observed) == weather)
+        expectError(WatchError.INVALID_DATA) { repository.sendWeather(weather, weather.validUntilUtcSeconds) }
+        report("F20 天气报文草案离线通过 · 多云、负温度与湿度 · 拦截过期")
 
         val events = repository.safetyEvents.toList()
         check(events.map { it.stage } ==

@@ -65,16 +65,6 @@ internal data class WatchRecord(
 )
 internal data class HistoryPage(val records: List<WatchRecord>, val nextCursor: String?)
 
-internal data class WatchWeather(
-    val city: String,
-    val localDate: String,
-    val timeZoneId: String,
-    val validUntilUtcSeconds: Long,
-    val condition: String,
-    val lowCelsius: Int,
-    val highCelsius: Int,
-)
-
 internal enum class SafetyOrigin { MANUAL, FALL }
 internal enum class SafetyStage { PENDING, REQUESTED, CANCELLED }
 internal data class SafetyEvent(

@@ -61,7 +61,7 @@ internal class OfflineWatchSession(private val historyRecords: List<WatchRecord>
         val page = records.drop(start).take(query.limit)
         return HistoryPage(page, page.lastOrNull()?.id?.takeIf { start + page.size < records.size })
     }
-    override suspend fun syncWeather(weather: WatchWeather) = weather
+    override suspend fun syncWeather(weather: WatchWeather) = decodeDraftWeather(weather.encodeDraftWeather())
     override suspend fun acknowledgeEvent(eventId: String) {
         if (eventId != event.eventId) throw WatchRequestException(WatchError.REJECTED, "未知求助事件")
         acknowledgedEventId = eventId

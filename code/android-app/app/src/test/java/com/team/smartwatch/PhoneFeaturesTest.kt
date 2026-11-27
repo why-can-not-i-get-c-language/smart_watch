@@ -3,9 +3,11 @@ package com.team.smartwatch
 import java.io.StringWriter
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class PhoneFeaturesTest {
@@ -76,5 +78,76 @@ class PhoneFeaturesTest {
         assertEquals(WeatherArea("杭州市", null), resolveWeatherArea(" 杭州市 ", "翠苑街道", "市辖区", "浙江省"))
         assertEquals(WeatherArea("香港特别行政区", null), resolveWeatherArea(null, null, null, "香港特别行政区"))
         assertNull(resolveWeatherArea(null, null, "市辖区", "浙江省"))
+    }
+
+    @Test
+    fun weatherDraftMatchesDocumentedBytesAndExpires() {
+        val observedAt = 1_795_754_700_000L
+        val reading = CurrentWeather(2, -3.2, 68, observedAt)
+        val weather = checkNotNull(reading.toWatchWeather(observedAt))
+        val fixture = byteArrayOf(0x02, 0xe0.toByte(), 0xff.toByte(), 0x44, 0xdc.toByte(), 0x18, 0x09, 0x6b)
+        assertEquals(WatchWeather(WatchWeatherIcon.CLOUDY, -32, 68, 1_795_758_300L), weather)
+        assertArrayEquals(fixture, weather.encodeDraftWeather())
+        assertEquals(weather, decodeDraftWeather(fixture))
+        assertNull(reading.toWatchWeather(observedAt + CURRENT_WEATHER_MAX_AGE_MS))
+        val beyond2038 = weather.copy(validUntilUtcSeconds = D3_MAX_UTC)
+        assertEquals(beyond2038, decodeDraftWeather(beyond2038.encodeDraftWeather()))
+    }
+
+    @Test
+    fun weatherDraftRejectsBadLengthAndFields() {
+        val valid = WatchWeather(WatchWeatherIcon.CLEAR, 200, 100, 1_795_758_300L).encodeDraftWeather()
+        assertThrows(IllegalArgumentException::class.java) { decodeDraftWeather(valid.copyOf(7)) }
+        assertThrows(IllegalArgumentException::class.java) {
+            decodeDraftWeather(valid.copyOf().apply { this[0] = 8 })
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            decodeDraftWeather(valid.copyOf().apply { this[3] = 101 })
+        }
+    }
+
+    @Test
+    fun weatherRepositoryRejectsMismatchedReceipt() = runBlocking {
+        val otherWatch = object : WatchSession by OfflineWatchSession() {
+            override suspend fun syncWeather(weather: WatchWeather) = weather.copy(humidityPercent = 1)
+        }
+        val weather = WatchWeather(WatchWeatherIcon.CLOUDY, -32, 68, 1_795_758_300L)
+        val result = runCatching { WatchRepository(otherWatch).sendWeather(weather, 1_795_754_700L) }
+        assertEquals(WatchError.READBACK_MISMATCH, (result.exceptionOrNull() as? WatchRequestException)?.reason)
+    }
+
+    @Test
+    fun reminderChangesPreserveTheOtherSettingAndRequireReadback() = runBlocking {
+        val device = OfflineWatchSession()
+        val repository = WatchRepository(device)
+        val before = repository.getSettings()
+        val alarm = repository.saveAlarm(false, 6, 45)
+        assertEquals(before.copy(alarmEnabled = false, alarmHour = 6, alarmMinute = 45), alarm)
+        val lowActivity = repository.saveLowActivity(false, 90)
+        assertEquals(alarm.copy(lowActivityEnabled = false, lowActivityMinutes = 90), lowActivity)
+        assertEquals(lowActivity, repository.getSettings())
+        device.mismatchSettings = true
+        val result = runCatching { repository.saveLowActivity(true, 30) }
+        assertEquals(WatchError.READBACK_MISMATCH, (result.exceptionOrNull() as? WatchRequestException)?.reason)
+        val invalid = runCatching { repository.saveAlarm(true, 25, 0) }
+        assertEquals(WatchError.INVALID_DATA, (invalid.exceptionOrNull() as? WatchRequestException)?.reason)
+    }
+
+    @Test
+    fun historyRejectsWrongKindsOversizePagesAndRepeatedCursors() = runBlocking {
+        val record = WatchRecord("step-1", HistoryKind.STEPS, Reading.Missing, Reading.Valid(0, ""))
+        val request = HistoryQuery(HistoryKind.STEPS, limit = 1, cursor = "prior")
+        val malformed = listOf(
+            HistoryPage(listOf(record.copy(kind = HistoryKind.HEART_RATE)), null),
+            HistoryPage(listOf(record, record.copy(id = "step-2")), null),
+            HistoryPage(listOf(record), request.cursor),
+        )
+        for (page in malformed) {
+            val watch = object : WatchSession by OfflineWatchSession() {
+                override suspend fun getHistory(query: HistoryQuery) = page
+            }
+            val result = runCatching { WatchRepository(watch).history(request) }
+            assertEquals(WatchError.INVALID_DATA, (result.exceptionOrNull() as? WatchRequestException)?.reason)
+        }
     }
 }

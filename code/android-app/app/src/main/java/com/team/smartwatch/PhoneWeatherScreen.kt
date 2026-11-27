@@ -55,7 +55,6 @@ private const val CACHE_VERSION = 2
 private const val CITY_KEY = "located_city"
 private const val DISTRICT_KEY = "located_district"
 private const val FORECAST_KEY = "latest_forecast"
-private const val CURRENT_WEATHER_MAX_AGE_MS = 60 * 60 * 1_000L
 
 internal data class CurrentWeather(
     val weatherCode: Int,

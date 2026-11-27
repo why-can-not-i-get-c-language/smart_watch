@@ -37,14 +37,27 @@ internal class WatchRepository(private val session: WatchSession, private val ti
     }
 
     suspend fun getSettings() = request { getSettings() }
-    suspend fun saveSettings(settings: DeviceSettings) = request {
+
+    suspend fun saveSettings(settings: DeviceSettings) = request { writeAndVerifySettings(settings) }
+
+    suspend fun saveAlarm(enabled: Boolean, hour: Int, minute: Int) = request {
+        val existing = getSettings()
+        writeAndVerifySettings(existing.copy(alarmEnabled = enabled, alarmHour = hour, alarmMinute = minute))
+    }
+
+    suspend fun saveLowActivity(enabled: Boolean, minutes: Int) = request {
+        val existing = getSettings()
+        writeAndVerifySettings(existing.copy(lowActivityEnabled = enabled, lowActivityMinutes = minutes))
+    }
+
+    private suspend fun WatchSession.writeAndVerifySettings(settings: DeviceSettings): DeviceSettings {
         if (settings.alarmHour !in 0..23 || settings.alarmMinute !in 0..59 || settings.lowActivityMinutes <= 0) {
             throw WatchRequestException(WatchError.INVALID_DATA, "提醒参数无效")
         }
         if (setSettings(settings) != settings || getSettings() != settings) {
             throw WatchRequestException(WatchError.READBACK_MISMATCH, "提醒设置回读不一致")
         }
-        settings
+        return settings
     }
 
     suspend fun history(query: HistoryQuery) = request {
@@ -52,12 +65,17 @@ internal class WatchRepository(private val session: WatchSession, private val ti
                 query.fromUtcSeconds >= query.untilUtcSeconds)) {
             throw WatchRequestException(WatchError.INVALID_DATA, "历史查询范围无效")
         }
-        getHistory(query)
+        val page = getHistory(query)
+        if (page.records.size > query.limit || page.records.any { it.id.isBlank() || it.kind != query.kind } ||
+            (page.nextCursor != null && (page.nextCursor.isBlank() || page.nextCursor == query.cursor))) {
+            throw WatchRequestException(WatchError.INVALID_DATA, "手表返回的历史分页无效")
+        }
+        page
     }
 
     suspend fun sendWeather(weather: WatchWeather, nowUtcSeconds: Long) = request {
-        if (weather.validUntilUtcSeconds <= nowUtcSeconds || weather.lowCelsius > weather.highCelsius) {
-            throw WatchRequestException(WatchError.INVALID_DATA, "预报已过期或温度范围无效")
+        if (weather.validUntilUtcSeconds <= nowUtcSeconds || !weather.hasValidFields()) {
+            throw WatchRequestException(WatchError.INVALID_DATA, "天气已过期或字段无效")
         }
         val confirmed = syncWeather(weather)
         if (confirmed != weather) throw WatchRequestException(WatchError.READBACK_MISMATCH, "天气回执不一致")
