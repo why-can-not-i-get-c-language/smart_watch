@@ -42,6 +42,7 @@ private val HealthColors = lightColorScheme(
 )
 
 private enum class BleEntryAction { BROWSE, CONNECT_FAVORITE, SCAN }
+private enum class PhonePage { HISTORY, WEATHER }
 
 class MainActivity : ComponentActivity() {
     private var sosNotificationOpen by mutableIntStateOf(0)
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
     private val reminder by lazy { ViewModelProvider(this)[ReminderViewModel::class.java] }
     private val lowActivity by lazy { ViewModelProvider(this)[LowActivityViewModel::class.java] }
     private val fallSos by lazy { ViewModelProvider(this)[FallSosViewModel::class.java] }
+    private val forecast by lazy { ViewModelProvider(this)[PhoneWeatherViewModel::class.java] }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -75,6 +77,7 @@ class MainActivity : ComponentActivity() {
                 var showReminder by rememberSaveable { mutableStateOf(false) }
                 var showLowActivity by rememberSaveable { mutableStateOf(false) }
                 var showFallSos by rememberSaveable { mutableStateOf(false) }
+                var phonePage by rememberSaveable { mutableStateOf<PhonePage?>(null) }
                 var clockTick by remember { mutableStateOf(ClockSample.now()) }
                 var trend by rememberSaveable { mutableStateOf<HealthTrendMetric?>(null) }
                 val homeState = rememberSaveableStateHolder()
@@ -88,6 +91,7 @@ class MainActivity : ComponentActivity() {
                     showReminder = false
                     showLowActivity = false
                     showFallSos = false
+                    phonePage = null
                     trend = null
                 }
                 val openBle: (BleEntryAction) -> Unit = { action ->
@@ -117,7 +121,7 @@ class MainActivity : ComponentActivity() {
                     watchTime = timeSync.watchReading(clockTick.elapsedMillis, connectionRevision) ?: original.watchTime,
                 )
                 val isHome = !showBle && trend == null && !showConnection && !showTimeSync && !showReminder &&
-                    !showLowActivity && !showFallSos
+                    !showLowActivity && !showFallSos && phonePage == null
                 SideEffect {
                     val bars = WindowCompat.getInsetsController(window, window.decorView)
                     bars.isAppearanceLightStatusBars = !isHome
@@ -131,6 +135,7 @@ class MainActivity : ComponentActivity() {
                         showReminder -> showReminder = false
                         showLowActivity -> showLowActivity = false
                         showFallSos -> showFallSos = false
+                        phonePage != null -> phonePage = null
                         else -> trend = null
                     }
                 }
@@ -197,6 +202,10 @@ class MainActivity : ComponentActivity() {
                             onConnection = { showConnection = true },
                             modifier = Modifier.padding(padding),
                         )
+                    } else if (phonePage == PhonePage.HISTORY) {
+                        WatchHistoryScreen(current.steps, returnHome, Modifier.padding(padding))
+                    } else if (phonePage == PhonePage.WEATHER) {
+                        PhoneWeatherScreen(forecast, clockTick.utcMillis, returnHome, Modifier.padding(padding))
                     } else if (metric == null) {
                         homeState.SaveableStateProvider("home") {
                             WatchHomeScreen(
@@ -229,6 +238,8 @@ class MainActivity : ComponentActivity() {
                                 onFallSos = { showFallSos = true },
                                 connectionRevision = connectionRevision,
                                 onTrend = { trend = it },
+                                onHistory = { phonePage = PhonePage.HISTORY },
+                                onWeather = { phonePage = PhonePage.WEATHER },
                                 modifier = Modifier.padding(padding),
                             )
                         }

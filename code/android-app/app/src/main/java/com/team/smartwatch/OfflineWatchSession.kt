@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
 // 仅联调构建中的内存设备，使用逻辑对象而非假定的 BLE 报文。
-internal class OfflineWatchSession : WatchSession {
+internal class OfflineWatchSession(private val historyRecords: List<WatchRecord>? = null) : WatchSession {
     private val utc = 1_800_000_000L
     private val info = DeviceInfo("offline-watch", "simulated", "offline-1", "offline",
         WatchCapability.entries.toSet())
@@ -43,12 +43,15 @@ internal class OfflineWatchSession : WatchSession {
         return settings
     }
     override suspend fun getHistory(query: HistoryQuery): HistoryPage {
-        val records = listOf(
+        val available = historyRecords ?: listOf(
             WatchRecord("first", query.kind, valid(utc - 60), valid(0)),
             WatchRecord("second,\"demo", query.kind, valid(utc), Reading.Invalid("缺测")),
-        ).filter { record ->
-            val time = (record.utcSeconds as Reading.Valid).value
-            time >= (query.fromUtcSeconds ?: Long.MIN_VALUE) && time < (query.untilUtcSeconds ?: Long.MAX_VALUE)
+        )
+        val records = available.filter { record ->
+            val time = (record.utcSeconds as? Reading.Valid)?.value
+            record.kind == query.kind &&
+                (query.fromUtcSeconds == null || time != null && time >= query.fromUtcSeconds) &&
+                (query.untilUtcSeconds == null || time != null && time < query.untilUtcSeconds)
         }
         val start = when (query.cursor) {
             null -> 0

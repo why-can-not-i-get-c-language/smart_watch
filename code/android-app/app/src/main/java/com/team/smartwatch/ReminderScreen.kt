@@ -58,7 +58,7 @@ internal fun ReminderScreen(
     ) {
         OutlinedButton(onClick = onBack) { Text("返回首页") }
         Text("手表闹钟", style = MaterialTheme.typography.headlineMedium)
-        Text("每日一次 · 北京时间 · 模拟设置", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("每日一次 · 北京时间 · 手机自动保留草稿", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(enabled = !model.phase.busy, onClick = { choosingTime = true }) {

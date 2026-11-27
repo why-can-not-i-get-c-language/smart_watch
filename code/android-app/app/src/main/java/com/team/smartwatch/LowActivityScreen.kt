@@ -38,7 +38,7 @@ internal fun LowActivityScreen(
     ) {
         OutlinedButton(onClick = onBack) { Text("返回首页") }
         Text("低运动提醒", style = MaterialTheme.typography.headlineMedium)
-        Text("连续活动较少达到设定时长后提醒。")
+        Text("连续活动较少达到设定时长后提醒。手机会自动保留草稿。")
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

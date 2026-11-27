@@ -83,6 +83,8 @@ internal fun WatchHomeScreen(
     onFallSos: () -> Unit,
     connectionRevision: Int,
     onTrend: (HealthTrendMetric) -> Unit,
+    onHistory: () -> Unit,
+    onWeather: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     MaterialTheme(colorScheme = WatchOverviewColors) {
@@ -96,6 +98,8 @@ internal fun WatchHomeScreen(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = onConnection) { Text("设备连接") }
                     OutlinedButton(onClick = onBleFavorites) { Text("蓝牙收藏") }
+                    OutlinedButton(onClick = onWeather) { Text("手机天气") }
+                    OutlinedButton(onClick = onHistory) { Text("历史与导出") }
                 }
                 liveWatchStatus()
                 Row(

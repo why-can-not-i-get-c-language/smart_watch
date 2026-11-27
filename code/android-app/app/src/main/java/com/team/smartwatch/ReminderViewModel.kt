@@ -1,9 +1,11 @@
 package com.team.smartwatch
 
+import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,14 +25,16 @@ internal enum class ReminderReply(val label: String) {
 internal data class ReminderConfig(val time: String, val enabled: Boolean)
 
 // 单个每日提醒的模拟设置。正式重复规则和协议参数待双方确认。
-class ReminderViewModel : ViewModel() {
+class ReminderViewModel(application: Application) : AndroidViewModel(application) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val drafts = application.getSharedPreferences("reminder_drafts", Context.MODE_PRIVATE)
+    private val timeFormat = Regex("(?:[01][0-9]|2[0-3]):[0-5][0-9]")
     private var job: Job? = null
     private var connection = Connection.DISCONNECTED
     private var revision = -1
-    internal var time by mutableStateOf("08:30")
+    internal var time by mutableStateOf(drafts.getString("alarm_time", null)?.takeIf(timeFormat::matches) ?: "08:30")
         private set
-    internal var enabled by mutableStateOf(true)
+    internal var enabled by mutableStateOf(drafts.getBoolean("alarm_enabled", true))
         private set
     internal var phase by mutableStateOf(ReminderPhase.IDLE)
         private set
@@ -67,8 +71,11 @@ class ReminderViewModel : ViewModel() {
     }
 
     private fun draftChanged() {
+        drafts.edit().putBoolean("alarm_enabled", enabled).apply {
+            if (timeFormat.matches(time)) putString("alarm_time", time)
+        }.apply()
         phase = ReminderPhase.IDLE
-        message = "草稿尚未发送"
+        message = "草稿已保存在手机上"
         error = null
     }
 
@@ -78,7 +85,7 @@ class ReminderViewModel : ViewModel() {
 
     internal fun save() {
         if (connection != Connection.SYNCED || phase.busy) return
-        if (!Regex("(?:[01][0-9]|2[0-3]):[0-5][0-9]").matches(time)) {
+        if (!timeFormat.matches(time)) {
             error = "请输入 00:00–23:59，格式如 08:30"
             return
         }
