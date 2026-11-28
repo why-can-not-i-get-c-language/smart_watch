@@ -1,6 +1,7 @@
 #ifndef WATCH_PHONE_SYNC_H
 #define WATCH_PHONE_SYNC_H
 #include "watch_types.h"
+#include "board_config.h"
 /* 台架单手机D3协议；不声明BLE连接状态或身份认证。
  * UID取STM32真实UID，版本为当前编译字符串，初始化时复制。 */
 watch_status_t phone_sync_init(const char *firmware, const uint32_t uid[3]);
@@ -14,4 +15,9 @@ watch_status_t phone_sync_get_state(phone_sync_state_t *state);
 /* 每5ms调用：至多读16字节、发送16字节；SetTime读回分至下一轮。
  * 所有收发均由本模块独占，不混入裸文本或原始回显。 */
 watch_status_t phone_sync_process(void);
+#if WATCH_F06_STATUS_SILENCE_TEST
+/* 专用台架构建：切换D3状态响应静默，最多120秒并在重启后关闭。 */
+void phone_sync_toggle_status_silence_test(void);
+bool phone_sync_status_silence_test_enabled(void);
+#endif
 #endif

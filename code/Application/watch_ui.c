@@ -14,6 +14,7 @@
 #include "board_config.h"
 #include "board_port.h"
 #include "ble_link.h"
+#include "phone_sync.h"
 #include "w25q64.h"
 #include "settings.h"
 #include "record_store.h"
@@ -490,7 +491,12 @@ static void draw_ble_detail(void)
         character(38U + 18U * i, 48U, hex[state.last_rx[i] >> 4U]);
         character(44U + 18U * i, 48U, hex[state.last_rx[i] & 15U]);
     }
+#if WATCH_F06_STATUS_SILENCE_TEST
+    text(2U, 56U, phone_sync_status_silence_test_enabled() ?
+         "MENU MUTE ON K BACK" : "MENU MUTE OFF K BACK");
+#else
     text(2U, 56U, "D3 FRAMES KEY BACK");
+#endif
 }
 
 static void draw_battery_detail(void)
@@ -1151,6 +1157,15 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
                     battery_show_summary = !battery_show_summary;
                     last_refresh_ms = now_ms - 1000U;
                 }
+                return;
+            } else if (tool_selection == TOOL_BLE) {
+#if WATCH_F06_STATUS_SILENCE_TEST
+                if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_MENU_LONG) == 0U &&
+                    (event & (BUTTON_SOS_LONG | BUTTON_BOARD_LONG)) == 0U) {
+                    phone_sync_toggle_status_silence_test();
+                    last_refresh_ms = now_ms - 1000U;
+                }
+#endif
                 return;
             }
             /* TOOL_BLE, TOOL_PPG, TOOL_BAT, TOOL_HAPTIC 不额外处理事件，只显示状态。 */

@@ -33,6 +33,10 @@ static uint8_t firmware_length, phase;
 static uint32_t completed_ms, uart_errors, target_utc, last_tx_ms, written_ms;
 static bool initialized, cache_present, tx_started;
 static phone_sync_state_t state;
+#if WATCH_F06_STATUS_SILENCE_TEST
+static bool status_silence_test, request_silenced;
+static uint32_t status_silence_deadline;
+#endif
 
 static void increment(uint32_t *value)
 {
@@ -134,6 +138,10 @@ static void receive_frame(const ble_protocol_frame_t *frame, void *context)
             temporary_error(frame, REQUEST_EXPIRED);
         } else if (!same_request(frame, &request)) {
             temporary_error(frame, SEQ_CONFLICT);
+#if WATCH_F06_STATUS_SILENCE_TEST
+        } else if (request_silenced) {
+            return;
+#endif
         } else if (cache_present && (uint32_t)(board_millis() - completed_ms) <= 30000U) {
             enqueue(cached, cached_length); increment(&state.replays);
         } else {
@@ -147,6 +155,14 @@ static void receive_frame(const ble_protocol_frame_t *frame, void *context)
     state.session = frame->session;
     state.highest_sequence = frame->sequence;
     cache_present = false;
+#if WATCH_F06_STATUS_SILENCE_TEST
+    request_silenced = status_silence_test && frame->command == CMD_STATUS && frame->length == 0U;
+    if (request_silenced) {
+        increment(&state.accepted);
+        return;
+    }
+    request_silenced = false;
+#endif
     phase = EXECUTE;
     increment(&state.accepted);
 }
@@ -254,6 +270,9 @@ static void execute(uint32_t now)
 watch_status_t phone_sync_init(const char *firmware, const uint32_t uid[3])
 {
     initialized = false;
+#if WATCH_F06_STATUS_SILENCE_TEST
+    status_silence_test = false; request_silenced = false; status_silence_deadline = 0U;
+#endif
     if (firmware == NULL || uid == NULL) { return WATCH_INVALID_ARGUMENT; }
     size_t length = 0U;
     while (length < 32U && firmware[length] != '\0') {
@@ -285,6 +304,11 @@ watch_status_t phone_sync_process(void)
 {
     if (!initialized) { return WATCH_NOT_READY; }
     uint32_t now = board_millis();
+#if WATCH_F06_STATUS_SILENCE_TEST
+    if (status_silence_test && (int32_t)(now - status_silence_deadline) >= 0) {
+        status_silence_test = false;
+    }
+#endif
     /* 周期失效后不再恢复，避免32位时基绕回时复活很久以前的应答。 */
     if (cache_present && (uint32_t)(now - completed_ms) > 30000U) { cache_present = false; }
     uint8_t bytes[16]; size_t received = 0U;
@@ -311,3 +335,16 @@ watch_status_t phone_sync_process(void)
     }
     return result;
 }
+
+#if WATCH_F06_STATUS_SILENCE_TEST
+void phone_sync_toggle_status_silence_test(void)
+{
+    status_silence_test = !status_silence_test;
+    status_silence_deadline = status_silence_test ? board_millis() + 120000U : 0U;
+}
+
+bool phone_sync_status_silence_test_enabled(void)
+{
+    return status_silence_test;
+}
+#endif

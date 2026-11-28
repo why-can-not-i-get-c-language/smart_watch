@@ -25,6 +25,10 @@
 #ifndef WATCH_BLE_NAME_SETUP
 #define WATCH_BLE_NAME_SETUP 0
 #endif
+/* 专用F06状态过期测试构建启用；默认固件不包含运行时静默控制。 */
+#ifndef WATCH_F06_STATUS_SILENCE_TEST
+#define WATCH_F06_STATUS_SILENCE_TEST 0
+#endif
 #define WATCH_BLE_DEVICE_NAME "SmartWatch"
 
 /* 引脚定义（字符串用于兼容，实际初始化用HAL宏） */
