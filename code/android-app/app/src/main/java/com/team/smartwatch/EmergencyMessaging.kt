@@ -12,6 +12,16 @@ internal data class SosContact(val name: String = "", val phone: String = "") {
     val maskedPhone: String get() = phone.takeLast(4).padStart(phone.length, '*')
 }
 
+internal val builtInDemoContacts = listOf(
+    SosContact("演示联系人甲", "00000000001"),
+    SosContact("演示联系人乙", "00000000002"),
+    SosContact("演示联系人丙", "00000000003"),
+)
+
+internal fun List<SosContact>.withoutDemoContacts() = filterNot { contact ->
+    builtInDemoContacts.any { it.phone == contact.phone.trim().removePrefix("+") }
+}
+
 internal fun List<SosContact>.encodeContacts(): JSONArray = JSONArray().apply {
     for (contact in this@encodeContacts) {
         put(JSONObject().put("name", contact.name).put("phone", contact.phone))

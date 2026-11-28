@@ -3,12 +3,6 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" tools:replace="android:required" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove" />
     <application>
-        <activity android:name=".MainActivity" tools:node="remove" />
-        <activity android:name=".BleIntegrationActivity" android:exported="true" tools:replace="android:exported">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".BleIntegrationActivity" android:exported="true" tools:replace="android:exported" />
     </application>
 </manifest>

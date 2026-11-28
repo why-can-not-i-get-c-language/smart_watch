@@ -9,7 +9,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-internal data class D3Snapshot(val status: D3Status, val receivedAtMs: Long)
+private const val LIVE_SNAPSHOT_MAX_AGE_MS = 45_000L
+
+internal data class D3Snapshot(
+    val status: D3Status,
+    val receivedAtMs: Long,
+    val receivedElapsedMs: Long,
+) {
+    fun isFresh(nowElapsedMs: Long): Boolean =
+        nowElapsedMs - receivedElapsedMs in 0L..LIVE_SNAPSHOT_MAX_AGE_MS
+}
 
 /** D3 state is scoped to the ready serial channel. Screens only display verified replies. */
 internal class D3Watch(
@@ -96,7 +105,7 @@ internal class D3Watch(
         if (!keepSnapshot) snapshot = null
         val reply = client.request(D3Command.STATUS)
         val fresh = d3Status(reply.payload)
-        snapshot = D3Snapshot(fresh, reply.received.unixMs)
+        snapshot = D3Snapshot(fresh, reply.received.unixMs, reply.received.elapsedMs)
         message = "已读取手表状态"
         if (unconfirmed) {
             setUnconfirmed(false)

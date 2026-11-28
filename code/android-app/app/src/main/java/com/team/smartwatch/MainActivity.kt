@@ -42,7 +42,7 @@ private val HealthColors = lightColorScheme(
 )
 
 private enum class BleEntryAction { BROWSE, CONNECT_FAVORITE, SCAN }
-private enum class PhonePage { HISTORY, WEATHER }
+private enum class PhonePage { HISTORY, WEATHER, CONTACTS }
 
 class MainActivity : ComponentActivity() {
     private var sosNotificationOpen by mutableIntStateOf(0)
@@ -67,6 +67,9 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             MaterialTheme(colorScheme = HealthColors) {
+                val demoAvailable = BuildConfig.D3_FAULT_INJECTION
+                var showDemo by rememberSaveable { mutableStateOf(false) }
+                val demoMode = demoAvailable && showDemo
                 val scenarios = SimulatedWatch.scenarios
                 var index by rememberSaveable { mutableIntStateOf(0) }
                 var connectionRevision by rememberSaveable { mutableIntStateOf(0) }
@@ -101,14 +104,22 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(sosNotificationOpen) {
                     if (sosNotificationOpen > 0) {
                         returnHome()
-                        showFallSos = true
+                        if (demoAvailable) {
+                            showDemo = true
+                            showFallSos = true
+                        } else {
+                            phonePage = PhonePage.CONTACTS
+                        }
                     }
                 }
-                LaunchedEffect(original.connection, connectionRevision) {
-                    timeSync.connectionChanged(original.connection, connectionRevision)
-                    reminder.connectionChanged(original.connection, connectionRevision)
-                    lowActivity.connectionChanged(original.connection, connectionRevision)
-                    fallSos.connectionChanged(original.connection, connectionRevision)
+                LaunchedEffect(demoMode, original.connection, connectionRevision) {
+                    val connection = if (demoMode) original.connection else Connection.DISCONNECTED
+                    if (demoAvailable) {
+                        timeSync.connectionChanged(connection, connectionRevision)
+                        reminder.connectionChanged(connection, connectionRevision)
+                        lowActivity.connectionChanged(connection, connectionRevision)
+                        fallSos.connectionChanged(connection, connectionRevision)
+                    }
                 }
                 LaunchedEffect(Unit) {
                     while (true) {
@@ -120,16 +131,23 @@ class MainActivity : ComponentActivity() {
                 val current = original.copy(
                     watchTime = timeSync.watchReading(clockTick.elapsedMillis, connectionRevision) ?: original.watchTime,
                 )
-                val isHome = !showBle && trend == null && !showConnection && !showTimeSync && !showReminder &&
-                    !showLowActivity && !showFallSos && phonePage == null
+                val demoSubpage = demoMode && (trend != null || showConnection || showTimeSync ||
+                    showReminder || showLowActivity || showFallSos || phonePage == PhonePage.HISTORY)
+                val isHome = !showBle && !demoSubpage &&
+                    phonePage != PhonePage.WEATHER && phonePage != PhonePage.CONTACTS
                 SideEffect {
                     val bars = WindowCompat.getInsetsController(window, window.decorView)
                     bars.isAppearanceLightStatusBars = !isHome
                     bars.isAppearanceLightNavigationBars = !isHome
                 }
-                BackHandler(enabled = !isHome) {
+                BackHandler(enabled = !isHome || demoMode) {
                     when {
                         showBle -> showBle = false
+                        isHome && demoMode -> {
+                            returnHome()
+                            showDemo = false
+                        }
+                        phonePage == PhonePage.WEATHER || phonePage == PhonePage.CONTACTS -> phonePage = null
                         showConnection -> showConnection = false
                         showTimeSync -> showTimeSync = false
                         showReminder -> showReminder = false
@@ -154,7 +172,34 @@ class MainActivity : ComponentActivity() {
                 }
                 Scaffold(containerColor = if (isHome) WatchOverviewColors.background else HealthColors.background) { padding ->
                     val metric = trend
-                    if (showConnection) {
+                    if (phonePage == PhonePage.CONTACTS) {
+                        EmergencyContactScreen(
+                            fallSos, returnHome, Modifier.padding(padding), demonstration = false,
+                        )
+                    } else if (phonePage == PhonePage.WEATHER) {
+                        PhoneWeatherScreen(forecast, clockTick.utcMillis, returnHome, Modifier.padding(padding))
+                    } else if (!demoMode) {
+                        homeState.SaveableStateProvider("liveHome") {
+                            LiveHomeScreen(
+                                onConnection = { openBle(BleEntryAction.CONNECT_FAVORITE) },
+                                onFavorites = { openBle(BleEntryAction.BROWSE) },
+                                onWeather = { phonePage = PhonePage.WEATHER },
+                                onEmergencyContacts = if (demoAvailable) null else ({ phonePage = PhonePage.CONTACTS }),
+                                onDemo = if (demoAvailable) ({ showDemo = true }) else null,
+                                modifier = Modifier.padding(padding),
+                            ) {
+                                LiveWatchStatusCard(
+                                    watch = ble.d3Watch,
+                                    linking = ble.connectingOrConnected,
+                                    connectionMessage = ble.connectionStatus,
+                                    nowElapsedMillis = clockTick.elapsedMillis,
+                                    onDisconnect = ble::disconnect,
+                                    onRescan = { openBle(BleEntryAction.SCAN) },
+                                    lifecycle = this@MainActivity.lifecycle,
+                                )
+                            }
+                        }
+                    } else if (showConnection) {
                         ConnectionScreen(
                             connection = scenario.source.read().connection,
                             onChange = { connection ->
@@ -204,8 +249,6 @@ class MainActivity : ComponentActivity() {
                         )
                     } else if (phonePage == PhonePage.HISTORY) {
                         WatchHistoryScreen(current.steps, returnHome, Modifier.padding(padding))
-                    } else if (phonePage == PhonePage.WEATHER) {
-                        PhoneWeatherScreen(forecast, clockTick.utcMillis, returnHome, Modifier.padding(padding))
                     } else if (metric == null) {
                         homeState.SaveableStateProvider("home") {
                             WatchHomeScreen(
@@ -218,19 +261,7 @@ class MainActivity : ComponentActivity() {
                                         connectionRevision++
                                     }
                                 },
-                                onConnection = { openBle(BleEntryAction.CONNECT_FAVORITE) },
-                                onBleFavorites = { openBle(BleEntryAction.BROWSE) },
                                 onSimulatedConnection = { showConnection = true },
-                                liveWatchStatus = {
-                                    LiveWatchStatusCard(
-                                        watch = ble.d3Watch,
-                                        linking = ble.connectingOrConnected,
-                                        connectionMessage = ble.connectionStatus,
-                                        onDisconnect = ble::disconnect,
-                                        onRescan = { openBle(BleEntryAction.SCAN) },
-                                        lifecycle = this@MainActivity.lifecycle,
-                                    )
-                                },
                                 onTimeSync = { showTimeSync = true },
                                 onReminder = { showReminder = true },
                                 onLowActivity = { showLowActivity = true },
@@ -239,7 +270,7 @@ class MainActivity : ComponentActivity() {
                                 connectionRevision = connectionRevision,
                                 onTrend = { trend = it },
                                 onHistory = { phonePage = PhonePage.HISTORY },
-                                onWeather = { phonePage = PhonePage.WEATHER },
+                                onExitDemo = { returnHome(); showDemo = false },
                                 modifier = Modifier.padding(padding),
                             )
                         }

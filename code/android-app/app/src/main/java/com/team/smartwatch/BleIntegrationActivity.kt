@@ -200,7 +200,7 @@ internal class BleIntegration(private val activity: ComponentActivity) {
                     OutlinedButton(onClick = { toggleFavorite(current, selected?.entry) }) {
                         Text(if (isFavorite) "取消收藏" else "收藏设备")
                     }
-                    selected?.entry?.advertisedServices?.let { advertised ->
+                    selected?.entry?.advertisedServices?.takeIf { BuildConfig.D3_FAULT_INJECTION }?.let { advertised ->
                         Text(if (advertised.isEmpty()) "广播服务 UUID：未携带"
                             else "广播服务 UUID\n${advertised.joinToString("\n")}")
                     }
@@ -209,17 +209,21 @@ internal class BleIntegration(private val activity: ComponentActivity) {
                         OutlinedButton(onClick = ::disconnect) { Text("断开连接") }
                     } else {
                         Button(onClick = { connect(current.address, selected?.device) }) {
-                            Text("连接并发现 GATT 服务")
+                            Text(if (BuildConfig.D3_FAULT_INJECTION) "连接并发现 GATT 服务" else "连接手表")
                         }
                     }
                     d3Watch?.let { D3WatchPanel(it) }
-                    serialChannel?.let { channel ->
-                        key(channel) { BleSerialPanel(channel, d3Watch) }
-                    }
-                    if (services.isNotEmpty()) Text("连接后发现的 GATT 服务", style = MaterialTheme.typography.titleMedium)
-                    services.forEach { service ->
-                        Text("服务 ${service.uuid}", style = MaterialTheme.typography.titleSmall)
-                        service.characteristics.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                    if (BuildConfig.D3_FAULT_INJECTION) {
+                        serialChannel?.let { channel ->
+                            key(channel) { BleSerialPanel(channel, d3Watch) }
+                        }
+                        if (services.isNotEmpty()) {
+                            Text("连接后发现的 GATT 服务", style = MaterialTheme.typography.titleMedium)
+                        }
+                        services.forEach { service ->
+                            Text("服务 ${service.uuid}", style = MaterialTheme.typography.titleSmall)
+                            service.characteristics.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                        }
                     }
                 }
             } else {
@@ -233,7 +237,10 @@ internal class BleIntegration(private val activity: ComponentActivity) {
                             if (onHome != null) {
                                 OutlinedButton(onClick = onHome) { Text("返回首页") }
                             }
-                            Text("真实蓝牙联调", style = MaterialTheme.typography.headlineSmall)
+                            Text(
+                                if (BuildConfig.D3_FAULT_INJECTION) "真实蓝牙联调" else "设备连接",
+                                style = MaterialTheme.typography.headlineSmall,
+                            )
                             Text(scanStatus)
                             Text("本轮发现 ${peripherals.size} 台")
                             Row(
@@ -266,10 +273,12 @@ internal class BleIntegration(private val activity: ComponentActivity) {
                                 OutlinedButton(onClick = {
                                     activity.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
                                 }) { Text("打开蓝牙设置") }
-                                OutlinedButton(enabled = !checkingInterfaces, onClick = ::runOfflineCheck) {
-                                    Text("运行离线接口验收")
+                                if (BuildConfig.D3_FAULT_INJECTION) {
+                                    OutlinedButton(enabled = !checkingInterfaces, onClick = ::runOfflineCheck) {
+                                        Text("运行离线接口验收")
+                                    }
+                                    interfaceResults.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                                 }
-                                interfaceResults.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                             }
                         }
                     }

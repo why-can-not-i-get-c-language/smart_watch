@@ -204,9 +204,13 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
 
     private fun loadContacts(): List<SosContact> {
         val stored = preferences.getString("ordered-contacts", null)
-        if (stored != null) return runCatching { JSONArray(stored).decodeContacts() }.getOrDefault(emptyList())
-        val legacy = SosContact(preferences.getString("name", "").orEmpty(), preferences.getString("phone", "").orEmpty())
-        return listOf(legacy).filter { contactError(it.name, it.phone) == null }
+        val contacts = if (stored != null) {
+            runCatching { JSONArray(stored).decodeContacts() }.getOrDefault(emptyList())
+        } else {
+            val legacy = SosContact(preferences.getString("name", "").orEmpty(), preferences.getString("phone", "").orEmpty())
+            listOf(legacy).filter { contactError(it.name, it.phone) == null }
+        }
+        return if (BuildConfig.D3_FAULT_INJECTION) contacts else contacts.withoutDemoContacts()
     }
 
     internal fun editContact(index: Int, value: SosContact) {
@@ -227,9 +231,9 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    internal fun saveContact() {
+    internal fun saveContact(demonstration: Boolean) {
         val updated = draftContacts.map { SosContact(it.name.trim(), it.phone.trim()) }
-        if (draftEnabled && updated.isEmpty()) {
+        if (demonstration && draftEnabled && updated.isEmpty()) {
             settingsMessage = "请先添加至少一位紧急联系人"
             return
         }
@@ -245,18 +249,14 @@ class FallSosViewModel(application: Application) : AndroidViewModel(application)
             return
         }
         contacts = updated
-        autoEscalationEnabled = draftEnabled
+        autoEscalationEnabled = demonstration && draftEnabled
         preferences.edit().putString("ordered-contacts", updated.encodeContacts().toString())
             .putBoolean("auto-escalation-simulation", autoEscalationEnabled).apply()
-        settingsMessage = "设置已保存，仅应用于新的求助事件"
+        settingsMessage = if (demonstration) "设置已保存，仅应用于新的求助事件" else "联系人已保存在本机"
     }
 
     internal fun fillDemoContact() {
-        draftContacts = listOf(
-            SosContact("演示联系人甲", "00000000001"),
-            SosContact("演示联系人乙", "00000000002"),
-            SosContact("演示联系人丙", "00000000003"),
-        )
+        draftContacts = builtInDemoContacts
         settingsMessage = "已填入 3 位虚构联系人，请保存"
     }
 

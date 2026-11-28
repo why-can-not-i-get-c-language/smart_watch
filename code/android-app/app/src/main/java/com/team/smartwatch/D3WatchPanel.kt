@@ -42,8 +42,8 @@ internal fun D3WatchPanel(watch: D3Watch) {
                 Text("$stepsLabel ${renderReading(status.steps) { "$it 步" }}")
                 Text("电池电压 ${renderReading(status.voltage) { "$it mV" }}")
                 Text("估算电量 ${renderReading(status.percentage) { "$it%" }}")
-                Text("心率 ${renderReading(status.heart) { String.format(Locale.ROOT, "%.1f bpm", it / 10.0) }}")
-                Text("估算血氧 ${renderReading(status.oxygen) { String.format(Locale.ROOT, "%.2f%%", it / 100.0) }}")
+                Text("心率 ${renderReading(status.heart, ::formatD3HeartRate)}")
+                Text("估算血氧 ${renderReading(status.oxygen, ::formatD3Oxygen)}")
             }
             OutlinedButton(enabled = watch.canRefresh, onClick = watch::refresh) { Text("读取手表状态") }
             Button(enabled = watch.canSetTime, onClick = watch::calibrate) { Text("用手机当前时间校时") }
@@ -83,6 +83,10 @@ internal fun renderReading(reading: D3Reading, format: (Long) -> String): String
     val age = reading.ageMs?.let { " · 采样距快照 $it ms" }.orEmpty()
     return format(value) + age
 }
+
+internal fun formatD3HeartRate(value: Long) = String.format(Locale.ROOT, "%.1f bpm", value / 10.0)
+
+internal fun formatD3Oxygen(value: Long) = String.format(Locale.ROOT, "%.2f%%", value / 100.0)
 
 internal fun d3StepsLabel(scope: Int) =
     if (scope == 0) "开机或清零后累计步数" else "今日步数（北京时间）"

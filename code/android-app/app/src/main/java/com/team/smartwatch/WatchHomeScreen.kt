@@ -72,10 +72,7 @@ internal fun WatchHomeScreen(
     scenarios: List<HomeScenario>,
     selectedScenario: Int,
     onScenario: (Int) -> Unit,
-    onConnection: () -> Unit,
-    onBleFavorites: () -> Unit,
     onSimulatedConnection: () -> Unit,
-    liveWatchStatus: @Composable () -> Unit,
     onTimeSync: () -> Unit,
     onReminder: () -> Unit,
     onLowActivity: () -> Unit,
@@ -84,7 +81,7 @@ internal fun WatchHomeScreen(
     connectionRevision: Int,
     onTrend: (HealthTrendMetric) -> Unit,
     onHistory: () -> Unit,
-    onWeather: () -> Unit,
+    onExitDemo: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     MaterialTheme(colorScheme = WatchOverviewColors) {
@@ -94,14 +91,11 @@ internal fun WatchHomeScreen(
                 Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("智能手表", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text("功能演示", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                OutlinedButton(onClick = onExitDemo) { Text("退出演示") }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(onClick = onConnection) { Text("设备连接") }
-                    OutlinedButton(onClick = onBleFavorites) { Text("蓝牙收藏") }
-                    OutlinedButton(onClick = onWeather) { Text("手机天气") }
                     OutlinedButton(onClick = onHistory) { Text("历史与导出") }
                 }
-                liveWatchStatus()
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,

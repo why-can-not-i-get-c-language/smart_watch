@@ -12,6 +12,27 @@ import org.junit.Test
 
 class PhoneFeaturesTest {
     @Test
+    fun liveContactsKeepUserEntriesAndSkipPreviousDemoNumbers() {
+        val first = SosContact("联系人一", "+12025550100")
+        val second = SosContact("联系人二", "+12025550101")
+        val old = listOf(builtInDemoContacts[1].copy(name = "测试"), first, builtInDemoContacts[0], second)
+        assertEquals(listOf(first, second), old.withoutDemoContacts())
+    }
+
+    @Test
+    fun realD3SnapshotExpiresAndExportsStatusWithoutInventingValues() {
+        val missing = D3Reading(D3DataState.UNSUPPORTED, null, null)
+        val zeroSteps = D3Reading(D3DataState.VALID, 0, 250)
+        val data = D3Status(80, missing, zeroSteps, 0, missing, missing, missing, missing)
+        val snapshot = D3Snapshot(data, 1_795_795_200_000L, 12_000L)
+        assertTrue(snapshot.isFresh(57_000L))
+        assertFalse(snapshot.isFresh(57_001L))
+        val csv = liveSnapshotCsv(snapshot)
+        assertTrue(csv.contains(",session_steps,0,steps,valid,250"))
+        assertTrue(csv.contains(",oxygen_estimate,,0.01 percent,unsupported,"))
+    }
+
+    @Test
     fun demoHistoryPagesExportZeroAndMissingReadingsSeparately() = runBlocking {
         val source = demoHistory(Reading.Valid(DailySteps(4260, SimulatedWatch.DEMO_DATE), "09:30"))
         val repository = WatchRepository(OfflineWatchSession(source))
