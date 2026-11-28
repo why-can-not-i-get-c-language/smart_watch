@@ -3,6 +3,21 @@
 #include "watch_types.h"
 #include <stdbool.h>
 #define SETTINGS_MAX_PAYLOAD 128U
+#define SETTINGS_REMINDER_MIN_SECONDS 30U
+#define SETTINGS_REMINDER_MAX_SECONDS 300U
+#define SETTINGS_REMINDER_STEP_SECONDS 30U
+/* 共享载荷v2：版本2、原诊断计数、提醒延时秒、保留0，各为小端32位。
+ * 兼容v1的8字节计数载荷，读取时提醒延时默认30秒；仅显式保存时升级。
+ * 不支持的版本/长度/保留值返回错误，属性保存不得覆盖未知载荷。 */
+typedef struct {
+    uint32_t diagnostic_counter;
+    uint32_t reminder_delay_seconds;
+} settings_config_t;
+/* 空白介质返回默认值及OK；是否已保存须查看settings_state.valid/empty。
+ * 读取失败时输出全零。属性保存仍为异步，并保留另一属性的最新已提交值。 */
+watch_status_t settings_config_load(settings_config_t *config);
+watch_status_t settings_config_save_counter(uint32_t counter);
+watch_status_t settings_config_save_reminder(uint32_t delay_seconds);
 /* F07-P02双槽参数持久化状态 */
 typedef struct {
     bool ready;

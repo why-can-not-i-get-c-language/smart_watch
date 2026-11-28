@@ -1,7 +1,11 @@
 #ifndef WATCH_REMINDER_H
 #define WATCH_REMINDER_H
 #include "watch_types.h"
-/* F02-P02一次性UTC提醒，只在本次开机有效；参数持久化留F02-P03。 */
+/* 一次性UTC提醒。延时配置保存到Flash，到时目标仅RAM且重启不自动设定。 */
+typedef enum {
+    REMINDER_STORE_LOADING=0, REMINDER_STORE_DEFAULT, REMINDER_STORE_LEGACY,
+    REMINDER_STORE_LOADED, REMINDER_STORE_SAVING, REMINDER_STORE_SAVED, REMINDER_STORE_ERROR
+} reminder_store_phase_t;
 typedef enum {
     REMINDER_OFF=0, REMINDER_ARMED, REMINDER_STARTING, REMINDER_RINGING,
     REMINDER_STOPPING, REMINDER_DONE, REMINDER_CANCELLED, REMINDER_MISSED, REMINDER_ERROR
@@ -11,6 +15,10 @@ typedef struct {
     watch_status_t status;
     uint32_t target_utc, trigger_count;
     bool owns_haptic;
+    reminder_store_phase_t store_phase;
+    watch_status_t store_status;
+    uint32_t saved_delay_seconds, settings_generation;
+    bool store_ready, delay_persisted;
 } reminder_state_t;
 /* 仅启动时调用，不发送马达命令。 */
 void reminder_init(void);
@@ -24,4 +32,8 @@ watch_status_t reminder_update(uint32_t utc_seconds);
 /* ARMED直接取消；持有马达时发一次停止并等待ACK，失败不宣称已停止。 */
 watch_status_t reminder_cancel(void);
 watch_status_t reminder_get_state(reminder_state_t *state);
+/* 保存参数不改变已设置的target；返回OK只表示排队，最终查store_phase。
+ * 显式读回会重新扫描参数槽，与其他Flash操作互斥，不更改RTC或设定提醒。 */
+watch_status_t reminder_save_delay(uint32_t delay_seconds);
+watch_status_t reminder_reload_settings(void);
 #endif

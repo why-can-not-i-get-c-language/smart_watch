@@ -2,6 +2,7 @@
 #include "board_port.h"
 #include "time_service.h"
 #include "tm6605.h"
+#include "settings.h"
 #include <string.h>
 
 enum { REMINDER_RING_MS=10000U, REMINDER_START_TIMEOUT_MS=1000U };
@@ -9,6 +10,10 @@ static reminder_state_t current;
 static uint32_t request_ms;
 static reminder_phase_t after_stop;
 static watch_status_t after_stop_status;
+static bool store_seen, store_save_pending;
+static bool store_last_valid, store_last_empty;
+static watch_status_t store_last_load_status;
+static uint32_t store_candidate, store_save_generation;
 
 static bool utc_valid(uint32_t utc)
 {
@@ -22,6 +27,82 @@ void reminder_init(void)
     request_ms = 0U;
     after_stop = REMINDER_CANCELLED;
     after_stop_status = WATCH_OK;
+    current.store_status = WATCH_NOT_READY;
+    store_seen = store_save_pending = false;
+    store_last_valid = store_last_empty = false;
+    store_last_load_status = WATCH_NOT_READY;
+    store_candidate = store_save_generation = 0U;
+}
+
+/* 在每轮提醒推进时先同步存储，离开页面或熄屏也继续完成保存反馈。 */
+static void sync_settings(void)
+{
+    settings_state_t st;
+    watch_status_t status = settings_get_state(&st);
+    if (status != WATCH_OK) {
+        current.store_status = status;
+        current.store_phase = REMINDER_STORE_ERROR;
+        current.store_ready = false;
+        return;
+    }
+    if (!st.ready || st.busy) return;
+    if (!store_save_pending && store_seen && st.generation == current.settings_generation &&
+        st.valid == store_last_valid && st.empty == store_last_empty &&
+        st.last_load_status == store_last_load_status) return;
+    settings_config_t config;
+    status = settings_config_load(&config);
+    bool saving = store_save_pending;
+    store_save_pending = false;
+    current.settings_generation = st.generation;
+    store_seen = true;
+    store_last_valid = st.valid;
+    store_last_empty = st.empty;
+    store_last_load_status = st.last_load_status;
+    current.store_ready = status == WATCH_OK;
+    current.delay_persisted = status == WATCH_OK && st.valid && st.length == 16U;
+    current.saved_delay_seconds = status == WATCH_OK ? config.reminder_delay_seconds : 0U;
+    current.store_status = status;
+    if (saving) {
+        bool committed = status == WATCH_OK && st.valid &&
+            st.last_save_status == WATCH_OK && st.generation == store_save_generation + 1U &&
+            config.reminder_delay_seconds == store_candidate;
+        current.store_phase = committed ? REMINDER_STORE_SAVED : REMINDER_STORE_ERROR;
+        if (!committed) current.store_status = st.last_save_status == WATCH_OK ?
+            (status == WATCH_OK ? WATCH_IO_ERROR : status) : st.last_save_status;
+    } else {
+        current.store_phase = status != WATCH_OK ? REMINDER_STORE_ERROR : st.empty ?
+            REMINDER_STORE_DEFAULT : st.length == 8U ? REMINDER_STORE_LEGACY : REMINDER_STORE_LOADED;
+    }
+}
+
+watch_status_t reminder_save_delay(uint32_t delay_seconds)
+{
+    if (store_save_pending) return WATCH_NOT_READY;
+    settings_state_t st;
+    watch_status_t status = settings_get_state(&st);
+    if (status != WATCH_OK) return status;
+    status = settings_config_save_reminder(delay_seconds);
+    if (status == WATCH_OK) {
+        store_candidate = delay_seconds;
+        store_save_generation = st.generation;
+        store_save_pending = true;
+        current.store_phase = REMINDER_STORE_SAVING;
+        current.store_status = WATCH_NOT_READY;
+    }
+    return status;
+}
+
+watch_status_t reminder_reload_settings(void)
+{
+    if (store_save_pending) return WATCH_NOT_READY;
+    watch_status_t status = settings_init();
+    if (status == WATCH_OK) {
+        store_seen = false;
+        current.store_phase = REMINDER_STORE_LOADING;
+        current.store_status = WATCH_NOT_READY;
+        current.store_ready = false;
+    }
+    return status;
 }
 
 static watch_status_t stop_owned(reminder_phase_t final_phase, watch_status_t final_status)
@@ -57,6 +138,7 @@ watch_status_t reminder_set(uint32_t utc_seconds)
 
 watch_status_t reminder_update(uint32_t utc_seconds)
 {
+    sync_settings();
     tm6605_state_t motor;
     uint32_t now_ms = board_millis();
     if (current.phase == REMINDER_STOPPING) {

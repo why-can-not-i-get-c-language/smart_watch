@@ -80,6 +80,8 @@ static uint8_t keys_blocked;
 /* 电池工具页：在汇总/ADC详情间切换。 */
 static bool battery_show_summary = true;
 static watch_status_t reminder_action_status = WATCH_OK;
+static uint32_t reminder_draft_seconds = SETTINGS_REMINDER_MIN_SECONDS;
+static bool reminder_draft_loaded;
 
 /* 编辑状态机 */
 static rtc_calendar_t edit_draft;
@@ -112,17 +114,15 @@ static void history_sync(const record_store_state_t *st)
     }
 }
 
-static uint32_t settings_ui_read32(const uint8_t *p)
-{
-    return (uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);
-}
 static watch_status_t settings_ui_load(uint32_t *counter)
 {
-    uint8_t bytes[8];
-    watch_status_t s=settings_load(bytes,sizeof(bytes));
+    settings_config_t config;
+    watch_status_t s=settings_config_load(&config);
     if (s!=WATCH_OK) return s;
-    if (settings_ui_read32(bytes)!=1U) return WATCH_INVALID_DATA;
-    *counter=settings_ui_read32(bytes+4U);return WATCH_OK;
+    settings_state_t st;
+    (void)settings_get_state(&st);
+    if (st.empty) return WATCH_NOT_READY;
+    *counter=config.diagnostic_counter;return WATCH_OK;
 }
 static void settings_ui_sync(const settings_state_t *st)
 {
@@ -645,6 +645,10 @@ static void draw_reminder_detail(void)
 {
     reminder_state_t st;
     (void)reminder_get_state(&st);
+    if (!reminder_draft_loaded && st.store_ready) {
+        reminder_draft_seconds = st.saved_delay_seconds;
+        reminder_draft_loaded = true;
+    }
     static const char *labels[] = {"OFF", "ARMED", "STARTING", "RINGING",
         "STOPPING", "DONE", "CANCELLED", "MISSED", "ERROR"};
     text(2U, 0U, "REMINDER K HOLD BACK");
@@ -657,18 +661,23 @@ static void draw_reminder_detail(void)
         fixed_number(44U, 16U, local.minute, 2U); text(56U, 16U, ":");
         fixed_number(62U, 16U, local.second, 2U);
     } else { text(26U, 16U, "--"); }
-    text(2U, 24U, "MENU ARM +30 SEC");
-    text(2U, 32U, "KEY ACK SOS CANCEL");
-    text(2U, 40U, "RAM ONLY NO SAVE");
+    text(2U, 24U, "SET"); number(26U, 24U, reminder_draft_seconds);
+    text(50U, 24U, "SAVED");
+    if (st.delay_persisted) number(86U, 24U, st.saved_delay_seconds);
+    else text(86U, 24U, "--");
+    static const char *store_labels[] = {"LOADING", "DEFAULT", "LEGACY", "LOADED", "SAVING", "SAVED", "ERROR"};
+    text(2U, 32U, "STORE"); text(38U, 32U,
+        store_labels[st.store_phase <= REMINDER_STORE_ERROR ? st.store_phase : REMINDER_STORE_ERROR]);
+    text(2U, 40U, "KEY +30 MENU ARM");
+    text(2U, 48U, "MH SAVE SOS CANCEL");
     uint32_t utc = 0U;
     watch_status_t clock = time_service_get(&utc);
     const char *hint = clock != WATCH_OK ? "SET TIME ON HOME" :
-        reminder_action_status == WATCH_INVALID_ARGUMENT ? "BAD TIME TRY AGAIN" :
+        st.store_phase == REMINDER_STORE_ERROR ? "KEEP DATA SOS READ" :
         reminder_action_status != WATCH_OK ? "BUSY OR ERROR RETRY" :
         st.phase == REMINDER_ERROR ? "CHECK TIME OR MOTOR" :
-        st.phase == REMINDER_MISSED ? "MISSED ARM AGAIN" : "ONE SHOT 10 SEC";
-    text(2U, 48U, hint);
-    text(2U, 56U, "K HOLD BACK");
+        st.phase == REMINDER_MISSED ? "MISSED ARM AGAIN" : "SOS HOLD READ K BACK";
+    text(2U, 56U, hint);
 }
 
 static void draw_tools_menu(void)
@@ -956,17 +965,31 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
             } else { return; }
             action_status=history_action_status;last_refresh_ms=now_ms-1000U;return;
         } else if (function_selection == FUNC_REMINDER) {
-            if ((event & BUTTON_SOS_SHORT) != 0U) {
+            reminder_state_t reminder;
+            (void)reminder_get_state(&reminder);
+            if (!reminder_draft_loaded && reminder.store_ready) {
+                reminder_draft_seconds = reminder.saved_delay_seconds;
+                reminder_draft_loaded = true;
+            }
+            if ((event & BUTTON_SOS_LONG) != 0U) {
+                reminder_action_status = reminder_reload_settings();
+                if (reminder_action_status == WATCH_OK) reminder_draft_loaded = false;
+            } else if ((event & BUTTON_SOS_SHORT) != 0U) {
                 reminder_action_status = reminder_cancel();
+            } else if ((event & BUTTON_MENU_LONG) != 0U) {
+                reminder_action_status = reminder_save_delay(reminder_draft_seconds);
             } else if ((event & BUTTON_BOARD_SHORT) != 0U) {
-                reminder_action_status = reminder_cancel();
+                reminder_draft_seconds = reminder_draft_seconds >= SETTINGS_REMINDER_MAX_SECONDS ?
+                    SETTINGS_REMINDER_MIN_SECONDS : reminder_draft_seconds + SETTINGS_REMINDER_STEP_SECONDS;
+                reminder_draft_loaded = true;
+                reminder_action_status = WATCH_OK;
             } else if ((event & BUTTON_MENU_SHORT) != 0U &&
                        (event & (BUTTON_MENU_LONG | BUTTON_SOS_LONG)) == 0U) {
                 uint32_t utc = 0U;
-                reminder_action_status = time_service_get(&utc);
+                reminder_action_status = !reminder_draft_loaded ? WATCH_NOT_READY : time_service_get(&utc);
                 if (reminder_action_status == WATCH_OK) {
-                    reminder_action_status = utc > UINT32_MAX - 30U ? WATCH_INVALID_ARGUMENT :
-                        reminder_set(utc + 30U);
+                    reminder_action_status = utc > UINT32_MAX - reminder_draft_seconds ? WATCH_INVALID_ARGUMENT :
+                        reminder_set(utc + reminder_draft_seconds);
                 }
             }
             action_status = reminder_action_status;
@@ -992,15 +1015,8 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
                         settings_load_requested=true;settings_save_requested=false;
                     }
                 } else if ((event & BUTTON_MENU_LONG)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
-                    uint32_t current=0U;
-                    watch_status_t s=settings_ui_load(&current);
-                    if (s!=WATCH_OK && !st.empty) settings_client_status=s;
-                    else {
-                        uint8_t bytes[8]={1U,0U,0U,0U,0U,0U,0U,0U};
-                        for (unsigned i=0U;i<4U;++i) bytes[4U+i]=(uint8_t)(settings_draft>>(8U*i));
-                        settings_client_status=settings_save(bytes,sizeof(bytes));
-                        settings_save_requested=settings_client_status==WATCH_OK;
-                    }
+                    settings_client_status=settings_config_save_counter(settings_draft);
+                    settings_save_requested=settings_client_status==WATCH_OK;
                 } else if ((event & BUTTON_MENU_SHORT)!=0U && (event & BUTTON_BOARD_LONG)==0U) {
                     ++settings_draft;settings_save_requested=false;
                 } else { return; }

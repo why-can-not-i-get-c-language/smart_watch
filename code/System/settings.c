@@ -209,3 +209,63 @@ watch_status_t settings_get_state(settings_state_t *result)
     if (result==NULL) return WATCH_INVALID_ARGUMENT;
     *result=state;return WATCH_OK;
 }
+
+static bool reminder_delay_valid(uint32_t seconds)
+{
+    return seconds >= SETTINGS_REMINDER_MIN_SECONDS && seconds <= SETTINGS_REMINDER_MAX_SECONDS &&
+        seconds % SETTINGS_REMINDER_STEP_SECONDS == 0U;
+}
+
+watch_status_t settings_config_load(settings_config_t *config)
+{
+    if (config == NULL) return WATCH_INVALID_ARGUMENT;
+    memset(config, 0, sizeof(*config));
+    if (!state.ready) return WATCH_NOT_READY;
+    if (state.empty && !state.valid) {
+        config->reminder_delay_seconds = SETTINGS_REMINDER_MIN_SECONDS;
+        return WATCH_OK;
+    }
+    uint8_t bytes[16];
+    if (state.length != 8U && state.length != sizeof(bytes)) return WATCH_INVALID_DATA;
+    watch_status_t status = settings_load(bytes, state.length);
+    if (status != WATCH_OK) return status;
+    uint32_t version = read32(bytes);
+    uint32_t delay = SETTINGS_REMINDER_MIN_SECONDS;
+    if (state.length == 8U) {
+        if (version != 1U) return WATCH_INVALID_DATA;
+    } else {
+        delay = read32(bytes + 8U);
+        if (version != 2U || read32(bytes + 12U) != 0U || !reminder_delay_valid(delay))
+            return WATCH_INVALID_DATA;
+    }
+    config->diagnostic_counter = read32(bytes + 4U);
+    config->reminder_delay_seconds = delay;
+    return WATCH_OK;
+}
+
+static watch_status_t save_config_property(uint32_t value, bool reminder)
+{
+    if (reminder && !reminder_delay_valid(value)) return WATCH_INVALID_ARGUMENT;
+    if (state.busy || !state.ready) return WATCH_NOT_READY;
+    settings_config_t config;
+    watch_status_t status = settings_config_load(&config);
+    if (status != WATCH_OK) return status;
+    if (reminder) config.reminder_delay_seconds = value;
+    else config.diagnostic_counter = value;
+    uint8_t bytes[16];
+    write32(bytes, 2U);
+    write32(bytes + 4U, config.diagnostic_counter);
+    write32(bytes + 8U, config.reminder_delay_seconds);
+    write32(bytes + 12U, 0U);
+    return settings_save(bytes, sizeof(bytes));
+}
+
+watch_status_t settings_config_save_counter(uint32_t counter)
+{
+    return save_config_property(counter, false);
+}
+
+watch_status_t settings_config_save_reminder(uint32_t delay_seconds)
+{
+    return save_config_property(delay_seconds, true);
+}

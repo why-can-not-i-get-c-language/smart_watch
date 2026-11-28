@@ -1,6 +1,6 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：F02-P02-20261128-01
+ * 版本：F02-P03-20261128-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
@@ -47,7 +47,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F02-P02-20261128-01";
+static const char firmware_version[] = "F02-P03-20261128-01";
 #endif
 
 /**
