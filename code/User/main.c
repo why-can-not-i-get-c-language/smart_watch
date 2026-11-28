@@ -1,6 +1,6 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：F02-P03-20261128-01
+ * 版本：F03-P03-20261128-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
@@ -35,6 +35,7 @@
 #include "mpu6050.h"
 #include "max30102.h"
 #include "pedometer.h"
+#include "daily_steps.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
 #include "battery_service.h"
@@ -47,7 +48,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F02-P03-20261128-01";
+static const char firmware_version[] = "F03-P03-20261128-01";
 #endif
 
 /**
@@ -201,6 +202,13 @@ static void record_store_process_task(void *ctx)
 {
     (void)ctx;
     (void)record_store_process(board_millis());
+}
+
+/* 历史推进后再恢复/提交日汇总；在其他客户端按键请求前观察事务结果。 */
+static void daily_steps_process_task(void *ctx)
+{
+    (void)ctx;
+    (void)daily_steps_process(board_millis());
 }
 
 /* 业务协议独占UART；每5ms至多收发16字节，不推断GATT连接。 */
@@ -575,12 +583,14 @@ int main(void)
     low_battery_notified = false;
     (void)settings_init();
     (void)record_store_init();
+    daily_steps_init();
 
     /* 建立任务数组，所有last_ms初始化到startup_baseline */
     scheduler_task_t tasks[] = {
         {.period_ms = 5, .last_ms = startup_baseline, .callback = flash_process_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = settings_process_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = record_store_process_task, .context = NULL},
+        {.period_ms = 5, .last_ms = startup_baseline, .callback = daily_steps_process_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = battery_adc_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = ppg_update_task, .context = NULL},
         {.period_ms = 5, .last_ms = startup_baseline, .callback = haptic_update_task, .context = NULL},

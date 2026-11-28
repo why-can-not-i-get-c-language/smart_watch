@@ -1,11 +1,12 @@
 #include "pedometer.h"
 #include "board_config.h"
 #include "board_port.h"
+#include "daily_steps.h"
 #include <math.h>
 #include <limits.h>
 #include <string.h>
 
-/* 本步只保存RAM累计；日界线和历史存储留后续任务。 */
+/* SESSION是本次开机/手动清零后的RAM计数；日汇总单独接受确认增量。 */
 static pedometer_status_t current;
 typedef enum { WAVE_NONE, WAVE_VALLEY, WAVE_RISING, WAVE_PEAK } wave_phase_t;
 static struct {
@@ -28,6 +29,7 @@ static void restart(pedometer_state_t state)
 
 static void add_steps(uint32_t increment)
 {
+    daily_steps_add(increment);
     current.step_count = UINT32_MAX - current.step_count < increment ?
                          UINT32_MAX : current.step_count + increment;
 }

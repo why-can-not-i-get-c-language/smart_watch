@@ -6,6 +6,7 @@
 #include "mpu6050.h"
 #include "max30102.h"
 #include "pedometer.h"
+#include "daily_steps.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
 #include "battery_service.h"
@@ -61,6 +62,7 @@ static tool_item_t tool_selection = TOOL_BAT;
 static unsigned tool_scroll_offset = 0U;
 static uint32_t motion_key_count;
 static bool steps_cleared;
+static bool steps_show_daily;
 static uint32_t steps_cleared_ms;
 static bool ever_initialized;
 static bool attempted_init;
@@ -325,6 +327,29 @@ static void draw_mpu_detail(void)
 
 static void draw_steps_detail(uint32_t now_ms)
 {
+    if (steps_show_daily) {
+        daily_steps_state_t day;
+        (void)daily_steps_get_state(&day);
+        text(2U, 0U, "DAILY PARTIAL");
+        rtc_calendar_t local;
+        if (day.day_start_utc != 0U && time_utc_to_local(day.day_start_utc, &local) == WATCH_OK) {
+            text(2U, 8U, "BJT");
+            fixed_number(26U, 8U, local.year, 4U); text(50U, 8U, "-");
+            fixed_number(56U, 8U, local.month, 2U); text(68U, 8U, "-");
+            fixed_number(74U, 8U, local.day, 2U);
+        } else text(2U, 8U, "DATE --");
+        text(2U, 16U, "STEPS");
+        if (day.time_valid) number(44U, 16U, day.steps);
+        else text(44U, 16U, "--");
+        text(2U, 24U, "SAVED"); number(44U, 24U, day.last_saved_steps);
+        text(2U, 32U, day.recovering ? "RECOVERING" : day.clock_back ? "CLOCK BACK WAIT" :
+             !day.time_valid ? "NO DATE FOR STEPS" : "OBSERVED PART ONLY");
+        text(2U, 40U, day.history_status == WATCH_OK ? "HIST OK" :
+             day.history_status == WATCH_NOT_READY ? "HIST PENDING" : "HIST ERROR KEEP DATA");
+        text(2U, 48U, "MH SAVE MENU SESSION");
+        text(2U, 56U, "KEY HOLD BACK");
+        return;
+    }
     pedometer_status_t counter;
     mpu6050_state_t motion;
     (void)pedometer_get_state(&counter);
@@ -352,7 +377,7 @@ static void draw_steps_detail(uint32_t now_ms)
         text(56U, 32U, "."); number(62U, 32U, (motion.actual_rate_millihz % 1000U) / 100U);
     } else { text(44U, 32U, "--"); }
     text(2U, 40U, motion.sample.valid ? "MPU ONLINE" : "CHECK SENSOR");
-    text(2U, 48U, "MENU HOLD CLEAR");
+    text(2U, 48U, "MH CLEAR MENU DAILY");
     text(2U, 56U, "KEY HOLD BACK");
 }
 
@@ -996,11 +1021,15 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
             last_refresh_ms = now_ms - 1000U;
             return;
         } else if (function_selection == FUNC_STEPS) {
-            if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U &&
+            if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_MENU_LONG) == 0U &&
+                (event & (BUTTON_SOS_LONG | BUTTON_BOARD_LONG)) == 0U) {
+                steps_show_daily = !steps_show_daily;
+                last_refresh_ms = now_ms - 1000U;
+            } else if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U &&
                 (event & BUTTON_BOARD_LONG) == 0U) {
-                action_status = pedometer_reset();
-                steps_cleared = action_status == WATCH_OK;
-                steps_cleared_ms = now_ms;
+                action_status = steps_show_daily ? daily_steps_checkpoint() : pedometer_reset();
+                steps_cleared = !steps_show_daily && action_status == WATCH_OK;
+                if (steps_cleared) steps_cleared_ms = now_ms;
                 last_refresh_ms = now_ms - 1000U;
             }
             return;

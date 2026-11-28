@@ -945,6 +945,16 @@
               <FilePath>Application\pedometer.h</FilePath>
             </File>
             <File>
+              <FileName>daily_steps.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Application\daily_steps.c</FilePath>
+            </File>
+            <File>
+              <FileName>daily_steps.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>Application\daily_steps.h</FilePath>
+            </File>
+            <File>
               <FileName>F03.md</FileName>
               <FileType>5</FileType>
               <FilePath>..\plan\design\functions\F03.md</FilePath>

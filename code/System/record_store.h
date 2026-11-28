@@ -6,8 +6,11 @@
 /* F07-P03环形历史存储：1791个4KiB扇区，每扇区32字节头+127条记录。
  * 开机异步加载，显式持久化提交，断电恢复合法记录；未知残留只读保留。 */
 
-/* 仅本地手动事件类型，不定义手机业务帧或每日步数格式。 */
+/* 类型2：UTC+8当天00:00所对应UTC（支持起点当天夹到UTC_MIN），
+ * value为该日已观察步数的绝对快照。同日多条取最后ID，不能相加。
+ * 含断电/未提交间隙，表示部分汇总，不补造关机日或缺失步数。 */
 #define RECORD_STORE_TYPE_MANUAL_EVENT 1U
+#define RECORD_STORE_TYPE_DAILY_STEPS 2U
 
 typedef enum {
     RECORD_STORE_IDLE = 0,

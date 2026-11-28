@@ -21,6 +21,8 @@ watch_status_t watch_ui_get_action_status(void);
  * TOOLS菜单：KEY/SOS短按上下滚动，MENU短按进入，KEY长按返回功能菜单。
  * 各功能详情页保留原有MENU/SOS操作，KEY长按返回拥有菜单。
  * BATTERY默认显示估算汇总，MENU短按切换原ADC详情，再按返回汇总。
+ * STEPS页MENU短按切换SESSION/DAILY PARTIAL；会话页MENU长按清零会话，
+ * 日汇总页MENU长按请求保存部分汇总。清会话不清当日汇总。
  * 有效低电时主页底行或其他正常页标题行提示LOW BAT CHARGE；编辑和自检不覆盖。
  * 历史页MENU短按追加真实手动事件，SOS短按重新读取最新记录。
  * Flash页MENU长按启动测试区查空和自检；失败且本次开机归属明确时SOS长按清理。

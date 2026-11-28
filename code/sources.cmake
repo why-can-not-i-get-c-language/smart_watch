@@ -51,6 +51,7 @@ set(WATCH_CORE_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/System/record_store.c"
     "${CMAKE_CURRENT_LIST_DIR}/System/ble_protocol.c"
     "${CMAKE_CURRENT_LIST_DIR}/Application/pedometer.c"
+    "${CMAKE_CURRENT_LIST_DIR}/Application/daily_steps.c"
     "${CMAKE_CURRENT_LIST_DIR}/Application/wrist_wake.c"
     "${CMAKE_CURRENT_LIST_DIR}/Application/activity.c"
     "${CMAKE_CURRENT_LIST_DIR}/Application/reminder.c"
