@@ -3,6 +3,7 @@ package com.team.smartwatch
 import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
@@ -30,6 +31,23 @@ class ReminderViewModel(application: Application) : AndroidViewModel(application
     private val drafts = application.getSharedPreferences("reminder_drafts", Context.MODE_PRIVATE)
     private val timeFormat = Regex("(?:[01][0-9]|2[0-3]):[0-5][0-9]")
     private var job: Job? = null
+    private val delayDevice = OfflineWatchSession()
+    private val delayRepository = WatchRepository(delayDevice)
+    private var savingDelay: Job? = null
+    private var countdown: Job? = null
+    internal var delaySeconds by mutableIntStateOf(
+        drafts.getInt("reminder_delay_seconds", 30).takeIf { it in reminderDelayOptions } ?: 30,
+    )
+        private set
+    internal var confirmedDelay by mutableStateOf<Int?>(null)
+        private set
+    internal var delaySaving by mutableStateOf(false)
+        private set
+    internal var countdownActive by mutableStateOf(false)
+        private set
+    internal var delayMessage by mutableStateOf("等待模拟手表回读")
+        private set
+
     private var connection = Connection.DISCONNECTED
     private var revision = -1
     internal var time by mutableStateOf(drafts.getString("alarm_time", null)?.takeIf(timeFormat::matches) ?: "08:30")
@@ -51,11 +69,75 @@ class ReminderViewModel(application: Application) : AndroidViewModel(application
         if (connection == next && revision == nextRevision) return
         val interrupted = phase.busy
         job?.cancel()
+        savingDelay?.cancel()
+        countdown?.cancel()
+        countdownActive = false
+        confirmedDelay = null
+        delayMessage = if (delaySaving) "连接已变化，本次设置未确认" else "等待模拟手表回读"
+        delaySaving = false
         connection = next
         revision = nextRevision
         confirmed = null
         phase = ReminderPhase.IDLE
         message = if (interrupted) "连接已变化，本次设置未确认" else "等待设置"
+    }
+
+    internal fun adjustDelay(delta: Int) {
+        if (delaySaving || countdownActive) return
+        val target = delaySeconds + delta
+        if (target !in reminderDelayOptions) return
+        delaySeconds = target
+        drafts.edit().putInt("reminder_delay_seconds", target).apply()
+        delayMessage = "延时草稿已保存在手机"
+    }
+
+    internal fun saveDelay() {
+        if (connection != Connection.SYNCED || delaySaving || countdownActive) return
+        val requested = delaySeconds
+        val requestedReply = reply
+        delaySaving = true
+        delayMessage = "正在等待模拟手表提交并回读…"
+        savingDelay = scope.launch {
+            try {
+                delay(700)
+                delayDevice.mismatchSettings = requestedReply == ReminderReply.MISMATCH
+                when (requestedReply) {
+                    ReminderReply.REJECTED -> delayMessage = "模拟设备拒绝，保留上次确认值"
+                    ReminderReply.TIMEOUT -> {
+                        delay(900)
+                        delayMessage = "模拟应答超时，保留上次确认值"
+                    }
+                    else -> {
+                        confirmedDelay = delayRepository.saveReminderDelay(requested)
+                        delayMessage = "模拟延时保存成功 · 已回读"
+                    }
+                }
+            } catch (_: WatchRequestException) {
+                delayMessage = "模拟回读不一致，保留上次确认值"
+            } finally {
+                delayDevice.mismatchSettings = false
+                delaySaving = false
+            }
+        }
+    }
+
+    internal fun startCountdown() {
+        val saved = confirmedDelay?.takeIf { it == delaySeconds } ?: return
+        if (connection != Connection.SYNCED || delaySaving || countdownActive) return
+        countdownActive = true
+        delayMessage = "模拟单次提醒已启动 · ${saved} 秒后触发"
+        countdown = scope.launch {
+            delay(saved * 1_000L)
+            countdownActive = false
+            delayMessage = "模拟单次提醒已到时"
+        }
+    }
+
+    internal fun cancelCountdown() {
+        if (!countdownActive) return
+        countdown?.cancel()
+        countdownActive = false
+        delayMessage = "模拟单次提醒已取消"
     }
 
     internal fun editTime(value: String) {
@@ -80,7 +162,7 @@ class ReminderViewModel(application: Application) : AndroidViewModel(application
     }
 
     internal fun nextReply() {
-        if (!phase.busy) reply = ReminderReply.entries[(reply.ordinal + 1) % ReminderReply.entries.size]
+        if (!phase.busy && !delaySaving) reply = ReminderReply.entries[(reply.ordinal + 1) % ReminderReply.entries.size]
     }
 
     internal fun save() {

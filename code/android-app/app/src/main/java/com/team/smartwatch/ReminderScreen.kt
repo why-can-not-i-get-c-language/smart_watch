@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -57,8 +58,48 @@ internal fun ReminderScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         OutlinedButton(onClick = onBack) { Text("返回首页") }
-        Text("手表闹钟", style = MaterialTheme.typography.headlineMedium)
-        Text("每日一次 · 北京时间 · 手机自动保留草稿", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("手表提醒", style = MaterialTheme.typography.headlineMedium)
+        Text("模拟设置 · 草稿保存在手机", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("一次性延时提醒", style = MaterialTheme.typography.titleMedium)
+                Text("延时：${model.delaySeconds} 秒 · 30–300 秒")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val editable = !model.delaySaving && !model.countdownActive
+                    OutlinedButton(
+                        enabled = editable && model.delaySeconds > reminderDelayOptions.first,
+                        onClick = { model.adjustDelay(-30) },
+                    ) { Text("减少 30 秒") }
+                    OutlinedButton(
+                        enabled = editable && model.delaySeconds < reminderDelayOptions.last,
+                        onClick = { model.adjustDelay(30) },
+                    ) { Text("增加 30 秒") }
+                }
+                Text(model.delayMessage)
+                Text(model.confirmedDelay?.let { "模拟手表回读：$it 秒" } ?: "模拟手表回读：尚未确认")
+                Button(
+                    enabled = connection == Connection.SYNCED && !model.delaySaving && !model.countdownActive,
+                    onClick = model::saveDelay,
+                ) { Text("保存延时设置") }
+                if (model.countdownActive) {
+                    OutlinedButton(onClick = model::cancelCountdown) { Text("取消单次提醒") }
+                } else {
+                    OutlinedButton(
+                        enabled = connection == Connection.SYNCED && !model.delaySaving &&
+                            model.confirmedDelay == model.delaySeconds,
+                        onClick = model::startCountdown,
+                    ) { Text("模拟开始一次提醒") }
+                }
+            }
+        }
+        Text("演示结果：${model.reply.label}")
+        OutlinedButton(
+            enabled = !model.phase.busy && !model.delaySaving,
+            onClick = model::nextReply,
+        ) { Text("切换演示结果") }
+        HorizontalDivider()
+        Text("每日闹钟（模拟）", style = MaterialTheme.typography.titleMedium)
+        Text("每日一次 · 北京时间", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(enabled = !model.phase.busy, onClick = { choosingTime = true }) {
@@ -86,8 +127,6 @@ internal fun ReminderScreen(
             else "模拟手表闹钟：每日 ${confirmed.time} · ${if (confirmed.enabled) "开启" else "关闭"}",
             style = MaterialTheme.typography.titleMedium,
         )
-        Text("演示结果：${model.reply.label}")
-        OutlinedButton(enabled = !model.phase.busy, onClick = model::nextReply) { Text("切换演示结果") }
         Text("当前只模拟保存和回读。实机闹钟由手表振动提醒，待固件和蓝牙联调。",
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

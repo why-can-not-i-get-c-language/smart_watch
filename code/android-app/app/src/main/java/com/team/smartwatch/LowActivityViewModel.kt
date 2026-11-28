@@ -12,7 +12,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-internal val lowActivityDemoDurations = listOf(30, 60, 90)
 internal const val LOW_ACTIVITY_DEMO_STEP_MINUTES = 15
 
 internal data class LowActivityConfig(val minutes: Int = 60, val enabled: Boolean = true)
@@ -20,13 +19,14 @@ internal data class LowActivityConfig(val minutes: Int = 60, val enabled: Boolea
 // 模拟手表的设置回读与活动窗口。真实运动判定及到时振动由手表负责。
 class LowActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val drafts = application.getSharedPreferences("reminder_drafts", Context.MODE_PRIVATE)
+    private val repository = WatchRepository(OfflineWatchSession())
     private var connection = Connection.DISCONNECTED
     private var revision = -1
     private var savingJob: Job? = null
 
     internal var draft by mutableStateOf(
         LowActivityConfig(
-            drafts.getInt("low_activity_minutes", 60).takeIf { it in lowActivityDemoDurations } ?: 60,
+            drafts.getInt("low_activity_minutes", 60).takeIf { it in lowActivityOptions } ?: 60,
             drafts.getBoolean("low_activity_enabled", true),
         ),
     )
@@ -58,7 +58,7 @@ class LowActivityViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     internal fun selectMinutes(minutes: Int) {
-        if (minutes in lowActivityDemoDurations && !saving && minutes != draft.minutes) {
+        if (minutes in lowActivityOptions && !saving && minutes != draft.minutes) {
             draft = draft.copy(minutes = minutes)
             saveDraft()
         }
@@ -85,10 +85,17 @@ class LowActivityViewModel(application: Application) : AndroidViewModel(applicat
         savingJob = viewModelScope.launch {
             delay(700)
             if (connection != Connection.SYNCED || revision != requestRevision) return@launch
-            if (confirmed != request) accumulatedMinutes = 0
-            confirmed = request
-            saving = false
-            message = "模拟保存成功 · 已回读"
+            try {
+                val readback = repository.saveLowActivity(request.enabled, request.minutes)
+                val saved = LowActivityConfig(readback.lowActivityMinutes, readback.lowActivityEnabled)
+                if (confirmed != saved) accumulatedMinutes = 0
+                confirmed = saved
+                message = "模拟保存成功 · 已回读"
+            } catch (_: WatchRequestException) {
+                message = "模拟保存未确认，保留上次确认值"
+            } finally {
+                saving = false
+            }
         }
     }
 

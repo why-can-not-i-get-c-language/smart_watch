@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
@@ -50,16 +49,16 @@ internal fun LowActivityScreen(
                         modifier = Modifier.semantics { contentDescription = "启用低运动提醒" },
                     )
                 }
-                Text("连续低运动时长（演示）")
+                Text("连续低运动时长：${model.draft.minutes} 分钟 · 5–120 分钟")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for (minutes in lowActivityDemoDurations) {
-                        FilterChip(
-                            selected = model.draft.minutes == minutes,
-                            onClick = { model.selectMinutes(minutes) },
-                            enabled = !model.saving,
-                            label = { Text("$minutes 分钟") },
-                        )
-                    }
+                    OutlinedButton(
+                        enabled = !model.saving && model.draft.minutes > lowActivityOptions.first,
+                        onClick = { model.selectMinutes(model.draft.minutes - 5) },
+                    ) { Text("减少 5 分钟") }
+                    OutlinedButton(
+                        enabled = !model.saving && model.draft.minutes < lowActivityOptions.last,
+                        onClick = { model.selectMinutes(model.draft.minutes + 5) },
+                    ) { Text("增加 5 分钟") }
                 }
                 Text("${connection.label} · ${model.message}")
                 Button(enabled = connection == Connection.SYNCED && !model.saving, onClick = model::save) {

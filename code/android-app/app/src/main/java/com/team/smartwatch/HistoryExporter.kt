@@ -6,10 +6,10 @@ internal fun exportHistoryCsv(records: Iterable<WatchRecord>, output: Writer) {
     output.write("id,kind,utc_seconds,value,unit,time_validity,value_validity\r\n")
     for (record in records) {
         val unit = when (record.kind) {
-            HistoryKind.STEPS -> "steps"
+            HistoryKind.STEPS, HistoryKind.DAILY_PARTIAL_STEPS -> "steps"
             HistoryKind.HEART_RATE -> "bpm"
             HistoryKind.OXYGEN_ESTIMATE -> "percent"
-            HistoryKind.SOS -> ""
+            HistoryKind.SOS, HistoryKind.MANUAL_EVENT -> ""
         }
         output.write(listOf(
             record.id, record.kind.name,

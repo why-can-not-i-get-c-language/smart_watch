@@ -4,6 +4,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 
+internal val reminderDelayOptions = 30..300 step 30
+internal val lowActivityOptions = 5..120 step 5
+
 internal class WatchRepository(private val session: WatchSession, private val timeoutMillis: Long = 5_000) {
     private val requests = Mutex()
     private var closed = false
@@ -45,13 +48,21 @@ internal class WatchRepository(private val session: WatchSession, private val ti
         writeAndVerifySettings(existing.copy(alarmEnabled = enabled, alarmHour = hour, alarmMinute = minute))
     }
 
+    suspend fun saveReminderDelay(seconds: Int) = request {
+        val existing = getSettings()
+        writeAndVerifySettings(existing.copy(reminderDelaySeconds = seconds)).reminderDelaySeconds
+    }
+
     suspend fun saveLowActivity(enabled: Boolean, minutes: Int) = request {
         val existing = getSettings()
         writeAndVerifySettings(existing.copy(lowActivityEnabled = enabled, lowActivityMinutes = minutes))
     }
 
     private suspend fun WatchSession.writeAndVerifySettings(settings: DeviceSettings): DeviceSettings {
-        if (settings.alarmHour !in 0..23 || settings.alarmMinute !in 0..59 || settings.lowActivityMinutes <= 0) {
+        if (settings.alarmHour !in 0..23 || settings.alarmMinute !in 0..59 ||
+            settings.lowActivityMinutes !in lowActivityOptions ||
+            settings.reminderDelaySeconds !in reminderDelayOptions
+        ) {
             throw WatchRequestException(WatchError.INVALID_DATA, "提醒参数无效")
         }
         if (setSettings(settings) != settings || getSettings() != settings) {
@@ -67,10 +78,20 @@ internal class WatchRepository(private val session: WatchSession, private val ti
         }
         val page = getHistory(query)
         if (page.records.size > query.limit || page.records.any { it.id.isBlank() || it.kind != query.kind } ||
+            (query.kind == HistoryKind.DAILY_PARTIAL_STEPS && page.records.any { !it.isDailyStepSnapshot() }) ||
             (page.nextCursor != null && (page.nextCursor.isBlank() || page.nextCursor == query.cursor))) {
             throw WatchRequestException(WatchError.INVALID_DATA, "手表返回的历史分页无效")
         }
         page
+    }
+
+    private fun WatchRecord.isDailyStepSnapshot(): Boolean {
+        val number = id.toLongOrNull() ?: return false
+        val timestamp = (utcSeconds as? Reading.Valid)?.value ?: return false
+        val stepCount = (value as? Reading.Valid)?.value
+        return number in 1..0xffffffffL && timestamp in 946684800L..4102444799L &&
+            (timestamp == 946684800L || (timestamp + 28_800L) % 86_400L == 0L) &&
+            (stepCount == null || stepCount >= 0)
     }
 
     suspend fun sendWeather(weather: WatchWeather, nowUtcSeconds: Long) = request {

@@ -58,8 +58,8 @@ android {
         applicationId = "com.team.smartwatch.prototype"
         minSdk = 24
         targetSdk = 37
-        versionCode = 28
-        versionName = "1.8.16"
+        versionCode = 29
+        versionName = "1.8.17"
         buildConfigField("boolean", "NEARBY_PERMISSION_PREVIEW", "false")
         buildConfigField("boolean", "D3_FAULT_INJECTION", "false")
     }

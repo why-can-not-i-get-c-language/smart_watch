@@ -39,10 +39,22 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private enum class HistoryCategory(val kind: HistoryKind, val label: String, val unit: String) {
-    STEPS(HistoryKind.STEPS, "步数", " 步"),
+    STEPS(HistoryKind.DAILY_PARTIAL_STEPS, "每日步数", " 步"),
+    EVENT(HistoryKind.MANUAL_EVENT, "手动事件", ""),
     HEART(HistoryKind.HEART_RATE, "心率", " bpm"),
     OXYGEN(HistoryKind.OXYGEN_ESTIMATE, "血氧估算", "%"),
 }
+
+private const val BEIJING_OFFSET_SECONDS = 28_800L
+private const val SECONDS_PER_DAY = 86_400L
+
+internal fun beijingDay(utcSeconds: Long): Long =
+    Math.floorDiv(utcSeconds + BEIJING_OFFSET_SECONDS, SECONDS_PER_DAY)
+
+internal fun latestDailyStepRecords(records: List<WatchRecord>): List<WatchRecord> =
+    records.sortedByDescending { it.id.toLong() }
+        .distinctBy { beijingDay((it.utcSeconds as Reading.Valid).value) }
+        .sortedByDescending { (it.utcSeconds as Reading.Valid).value }
 
 internal fun demoHistory(today: Reading<DailySteps>): List<WatchRecord> {
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT).apply {
@@ -56,9 +68,15 @@ internal fun demoHistory(today: Reading<DailySteps>): List<WatchRecord> {
         value?.let { Reading.Valid(it, "模拟记录") } ?: Reading.Missing,
     )
     val steps = SimulatedWatch.pastSteps.map { it.count } + (today as? Reading.Valid)?.value?.count
-    return steps.mapIndexed { index, count ->
-        record(HistoryKind.STEPS, index, last - TimeUnit.DAYS.toSeconds((steps.lastIndex - index).toLong()), count)
-    }.asReversed() + listOf(
+    val dayBoundary = beijingDay(last) * SECONDS_PER_DAY - BEIJING_OFFSET_SECONDS
+    val dailySteps = steps.mapIndexed { index, count ->
+        val day = dayBoundary - SECONDS_PER_DAY * (steps.lastIndex - index)
+        record(HistoryKind.DAILY_PARTIAL_STEPS, index, day, count).copy(id = (100 + index).toString())
+    }.asReversed()
+    val earlierSameDay = dailySteps.first().copy(id = "99", value = Reading.Valid(10, "模拟记录"))
+    // 历史接口分页的是原始记录，界面在已加载的各页中按北京日界取最新 ID。
+    val manual = record(HistoryKind.MANUAL_EVENT, 1, last, 1)
+    return dailySteps + earlierSameDay + manual + listOf(
         HistoryKind.HEART_RATE to HealthTrendMetric.HEART_RATE.samples,
         HistoryKind.OXYGEN_ESTIMATE to HealthTrendMetric.OXYGEN.samples,
     ).flatMap { (kind, readings) ->
@@ -122,23 +140,29 @@ internal fun WatchHistoryScreen(today: Reading<DailySteps>, onBack: () -> Unit, 
         }
     }
 
+    val displayed = if (category == HistoryCategory.STEPS) latestDailyStepRecords(records) else records
     Column(
         modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         OutlinedButton(onClick = onBack, enabled = !exporting) { Text("返回首页") }
         Text("历史与导出", style = MaterialTheme.typography.headlineSmall)
-        Text("模拟数据 · 与首页图表使用同一批演示记录", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("模拟数据 · 实际记录待手表分页接口", color = MaterialTheme.colorScheme.onSurfaceVariant)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             HistoryCategory.entries.forEach { item ->
                 FilterChip(selected = category == item, onClick = { category = item; exportStatus = null },
                     label = { Text(item.label) })
             }
         }
-        Text("已加载 ${records.size} 条记录")
-        records.forEach { record ->
-            val time = (record.utcSeconds as? Reading.Valid)?.value?.let(::formatD3Time) ?: "时间未知"
-            val value = (record.value as? Reading.Valid)?.let { "${it.value}${category.unit}" } ?: "无记录"
+        if (category == HistoryCategory.STEPS) Text("部分汇总 · 北京时间 · 缺失日期不补零")
+        Text("已显示 ${displayed.size} 条记录")
+        displayed.forEach { record ->
+            val time = (record.utcSeconds as? Reading.Valid)?.value?.let {
+                if (category == HistoryCategory.STEPS) formatD3Time(it).substringBefore(' ') else formatD3Time(it)
+            } ?: "时间未知"
+            val value = (record.value as? Reading.Valid)?.let {
+                if (category == HistoryCategory.EVENT) "事件 #${it.value}" else "${it.value}${category.unit}"
+            } ?: "缺失"
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(time, Modifier.weight(1f))
                 Text(value)
@@ -154,7 +178,7 @@ internal fun WatchHistoryScreen(today: Reading<DailySteps>, onBack: () -> Unit, 
         }
         OutlinedButton(enabled = records.isNotEmpty() && pendingCsv == null && !exporting, onClick = {
             exportStatus = null
-            pendingCsv = StringWriter().also { exportHistoryCsv(records, it) }.toString()
+            pendingCsv = StringWriter().also { exportHistoryCsv(displayed, it) }.toString()
             try {
                 export.launch("smartwatch-demo-${category.kind.name.lowercase(Locale.ROOT)}.csv")
             } catch (_: android.content.ActivityNotFoundException) {

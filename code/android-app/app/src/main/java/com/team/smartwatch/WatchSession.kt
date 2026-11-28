@@ -47,9 +47,10 @@ internal data class DeviceSettings(
     val alarmMinute: Int,
     val lowActivityEnabled: Boolean,
     val lowActivityMinutes: Int,
+    val reminderDelaySeconds: Int = 30,
 )
 
-internal enum class HistoryKind { STEPS, HEART_RATE, OXYGEN_ESTIMATE, SOS }
+internal enum class HistoryKind { STEPS, DAILY_PARTIAL_STEPS, MANUAL_EVENT, HEART_RATE, OXYGEN_ESTIMATE, SOS }
 internal data class HistoryQuery(
     val kind: HistoryKind,
     val limit: Int,

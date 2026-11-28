@@ -128,7 +128,7 @@ internal fun WatchHomeScreen(
                 if (lowActivityReminder) LowActivityAlert()
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = onTimeSync) { Text("时间校准") }
-                    OutlinedButton(onClick = onReminder) { Text("手表闹钟") }
+                    OutlinedButton(onClick = onReminder) { Text("手表提醒") }
                     OutlinedButton(onClick = onLowActivity) { Text("低运动提醒") }
                     OutlinedButton(onClick = onFallSos) { Text("跌倒 SOS") }
                 }

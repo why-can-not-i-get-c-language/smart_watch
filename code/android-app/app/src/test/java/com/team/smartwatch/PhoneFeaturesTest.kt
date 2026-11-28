@@ -15,13 +15,18 @@ class PhoneFeaturesTest {
     fun demoHistoryPagesExportZeroAndMissingReadingsSeparately() = runBlocking {
         val source = demoHistory(Reading.Valid(DailySteps(4260, SimulatedWatch.DEMO_DATE), "09:30"))
         val repository = WatchRepository(OfflineWatchSession(source))
-        val query = HistoryQuery(HistoryKind.STEPS, limit = 5)
+        val query = HistoryQuery(HistoryKind.DAILY_PARTIAL_STEPS, limit = 5)
         val first = repository.history(query)
         val second = repository.history(query.copy(cursor = checkNotNull(first.nextCursor)))
         val records = first.records + second.records
-        assertEquals(7, records.map { it.id }.distinct().size)
+        val daily = latestDailyStepRecords(records.reversed())
+        assertEquals(8, records.map { it.id }.distinct().size)
+        assertEquals(7, daily.size)
+        assertEquals(4260, (daily.first().value as Reading.Valid).value)
+        assertFalse(daily.any { it.id == "99" })
         assertNull(second.nextCursor)
-        val csv = StringWriter().also { exportHistoryCsv(records, it) }.toString()
+        val csv = StringWriter().also { exportHistoryCsv(daily, it) }.toString()
+        assertTrue(csv.contains("DAILY_PARTIAL_STEPS"))
         assertTrue(csv.contains("\"0\",\"steps\",\"valid\",\"valid\""))
         assertTrue(csv.contains("\"\",\"steps\",\"valid\",\"missing\""))
         assertEquals(13, source.count { it.kind == HistoryKind.HEART_RATE })
@@ -29,8 +34,29 @@ class PhoneFeaturesTest {
     }
 
     @Test
+    fun reminderSettingsUseFirmwareValuesAndKeepOtherFields() = runBlocking {
+        val device = OfflineWatchSession()
+        val repository = WatchRepository(device)
+        assertEquals(300, repository.saveReminderDelay(300))
+        val low = repository.saveLowActivity(false, 5)
+        assertEquals(300, low.reminderDelaySeconds)
+        assertFalse(low.lowActivityEnabled)
+        assertEquals(120, repository.saveLowActivity(true, 120).lowActivityMinutes)
+        assertEquals(WatchError.INVALID_DATA,
+            runCatching { repository.saveReminderDelay(31) }.exceptionOrNull().let { (it as WatchRequestException).reason })
+        assertEquals(WatchError.INVALID_DATA,
+            runCatching { repository.saveLowActivity(true, 4) }.exceptionOrNull().let { (it as WatchRequestException).reason })
+        assertEquals(300, repository.getSettings().reminderDelaySeconds)
+        assertEquals(120, repository.getSettings().lowActivityMinutes)
+        device.mismatchSettings = true
+        assertEquals(WatchError.READBACK_MISMATCH,
+            runCatching { repository.saveReminderDelay(30) }.exceptionOrNull().let { (it as WatchRequestException).reason })
+    }
+
+    @Test
     fun forecastDateChangesAtShanghaiMidnight() {
         val midnightBeijing = 1795795200000L
+        assertEquals(beijingDay(midnightBeijing / 1000) - 1, beijingDay(midnightBeijing / 1000 - 1))
         assertEquals("2026-11-27", forecastDate(midnightBeijing - 1))
         assertEquals("2026-11-28", forecastDate(midnightBeijing))
     }
