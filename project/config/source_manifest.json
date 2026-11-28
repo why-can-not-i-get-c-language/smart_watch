@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "mcu": "STM32F411CEU6",
+  "state": "2026-11-28 F05活动窗口、配置保存、通知/复位及定时优先联调软件和构建通过，实物集中后置。仅本地main，不推送。",
+  "android_directory": "code/Application/android",
+  "target_firmware": {
+    "status": "F05-P02-20261128-01，软件实现及目标构建通过，无本版实物结果。",
+    "boot_status": "Boot骨架排除App链接，待F19-P01落实独立Boot/App目标",
+    "keil_project": "code/smart_watch.uvprojx",
+    "target": "smart_watch",
+    "toolchain": "Keil uVision 5.43.1.0 / Arm Compiler 6.24",
+    "keil_executable": "E:\\keil_stm32\\UV4\\UV4.exe",
+    "fromelf_executable": "E:\\keil_stm32\\ARM\\ARMCLANG\\bin\\fromelf.exe",
+    "build_command": "& 'E:\\keil_stm32\\UV4\\UV4.exe' -r smart_watch.uvprojx -t smart_watch -o Build/keil_build.log",
+    "build_working_directory": "code",
+    "invocation_rules": [
+      "直接启动本机 E:\\keil_stm32\\UV4\\UV4.exe，不通过中转站API、远程接口或PATH中的同名程序调用。",
+      "普通构建在项目 code 目录执行；构建是否通过以实际日志末尾的 0 Error(s), 0 Warning(s) 和本次产物为准，不以进程启动或接口返回成功代替。",
+      "隔离构建先确认没有其他自动构建占用同一工程；复制同目录临时 .uvprojx，只按原始文本修改 OutputDirectory、ListingPath 和必要的 Define，输出到唯一临时目录，禁止覆盖正式 Build/Objects。",
+      "命令行构建完成后核对日志、版本字符串、HEX校验和、HEX与BIN/AXF加载内容及启动向量；随后删除临时工程、日志和临时输出。",
+      "已有可见UV4窗口不等于命令行构建入口不可用；自动构建使用隐藏进程并等待该进程完成，不操作用户当前打开的窗口。"
+    ],
+    "isolated_build_example": "在同目录临时工程中设置独立 OutputDirectory/ListingPath 后执行：& 'E:\\keil_stm32\\UV4\\UV4.exe' -r .\\<临时工程>.uvprojx -t smart_watch -o <独立日志路径> -j0",
+    "image": "code/Build/Objects/smart_watch.hex",
+    "debug_image": "code/Build/Objects/smart_watch.axf",
+    "source_set": "WATCH_FIRMWARE_SOURCES",
+    "linker_script": "code/Start/stm32f411_flash.sct",
+    "build_result": "2026-11-28 Codex隔离Keil重建0错误0警告；Code47500/RO3872/RW128/ZI65528，HEX/AXF加载51504字节一致，SP0x20010078，版本和源码摘要已核对。",
+    "local_commit": "25741216fbf77baf8f89cb536f0e1cc4424ac180 / main，未推送；10403项主机联合检查通过。",
+    "bin_sha256": "45c7f98a2b69e5a36e715c985342bb1803133ebfde096a4727527c647db70cc4",
+    "device_pack": "Keil.STM32F4xx_DFP.3.1.1",
+    "device_pack_status": "2026-11-05：113个包文件逐字节一致，cpackget登记3.1.1；当前工程已能识别并构建F411CE",
+    "feature_groups": "F00工程基础加功能表14个F组，共160项文件；归属见project/memory/structure.md",
+    "binary_image": "code/Build/Objects/smart_watch.bin",
+    "debugger": "ST-LINK/SWD；标准HEX/AXF/BIN为F05-P02-20261128-01。功能菜单新增ACTIVITY，本地设置5～120分钟及启停，保存后应用；定时提醒优先。",
+    "p01_remote_commit": "0c0ed8e15d22625c7fe06bc1b16f09972abd8cad / main",
+    "project_entries": 160,
+    "target_compile_items": 57,
+    "view_only_kotlin_files": 7,
+    "vendor_hal": {
+      "version": "1.8.5",
+      "source_commit": "b6f0ed3829f3829eb358a2e7417d80bba1a42db7",
+      "source_url": "https://github.com/STMicroelectronics/stm32f4xx-hal-driver/tree/b6f0ed3829f3829eb358a2e7417d80bba1a42db7",
+      "license": "code/Library/LICENSE_ST_HAL_UPSTREAM.md"
+    },
+    "p02_remote_commit": "fb6fc2f9214e95728754c75c03e2f1622991625c / main",
+    "p03_remote_commit": "dc4523e87ac25e7f2bd5e93d556f8eb32b032ab7 / main",
+    "accepted_remote_commit": "43b6fa26c85567c51320cb181524b77a1b30dbe6 / codex/hardware-interfaces-20261119",
+    "accepted_firmware_version": "F08-P01-20261119-02",
+    "name_setup": {
+      "version": "F06-NAME-20261116-02",
+      "status": "2026-11-16用户确认02版MODULE ACK OK；普通标准镜像已恢复，等待NORM档烧录及手机扫描核实名称和断电保存",
+      "image": "code/Build/Objects/smart_watch_F06-NAME-20261116-02.hex",
+      "standard_image_override": false,
+      "normal_backup": "code/Build/Objects/smart_watch_F06-P01-20261115-01.hex",
+      "bin_sha256": "66dfc821aaea65a334a7d9043639fc640c4f7e70a5360edb615bef5df9b9390a"
+    },
+    "ble_transport_pending": {
+      "version": "F06-P01-20261115-01",
+      "image": "code/Build/Objects/smart_watch_F06-P01-20261115-01.hex",
+      "bin_sha256": "bbf2c7ae1b7544ae31ca1aa807dec063c0eda404efd3494f495af5a60bfc200c",
+      "status": "独立保留普通验收镜像；双向透传未完整验收，原聊天负责，不放行P02"
+    },
+    "firmware_version": "UI-MENU-20261122-01",
+    "acceptance_image": "code/Build/Objects/smart_watch_UI-MENU-20261122-01.hex",
+    "battery_divider": {
+      "top_ohms": 97800,
+      "bottom_ohms": 106700,
+      "gain_ppm": 1000000,
+      "offset_mv": 0,
+      "status": "台架实测上97.8k/下106.7k；3.86V点万用表与BAT3863mV差+3mV，增益1/偏移0保留；PCB100k/100k换件须重校"
+    },
+    "previous_accepted_firmware": {
+      "version": "F04-P02-20261115-05",
+      "remote": "5096119faf5acfad2c55a49079c693316db66b56 / main"
+    },
+    "accepted_scope": "F08-P01当前台架单点电压与关机接口；不表示F06、充电、低电区间或整机性能通过",
+    "ppg_acceptance": {
+      "version": "F13-P01-20261117-01",
+      "local_commit": "cea2478f365b80f08f04e99dfb790a44ec51ad65",
+      "image": "code/Build/Objects/smart_watch_F13-P01-20261117-01.hex",
+      "bin_sha256": "e198e901dfc1a0cbcf2e159dc7d0370e9865371f79f4d4e91a063f00450fa094",
+      "status": "F13-P01身份、原始采样、覆盖响应、断线恢复及远端保存闭环",
+      "remote_snapshot": "43b6fa26c85567c51320cb181524b77a1b30dbe6",
+      "branch": "codex/hardware-interfaces-20261119"
+    },
+    "hardware_acceptance_snapshot": {
+      "branch": "codex/hardware-interfaces-20261119",
+      "sha": "43b6fa26c85567c51320cb181524b77a1b30dbe6",
+      "main_unchanged": "f0a2f4ee8efe904d6cc7fd5ecec095047d8d1504",
+      "status": "远端refs与对应固件历史源码已核对；含既有未闭环BLE诊断，未合并main",
+      "latest_record_commit": "26292489a91fd79af4b3b10c3b8b3c81142cd1d9"
+    },
+    "adc_acceptance": {
+      "version": "F08-P01-20261119-02",
+      "source_commit": "62010a3456421843359f604dac137ad07eb8384c",
+      "image": "code/Build/Objects/smart_watch_F08-P01-20261119-02.hex",
+      "bin_sha256": "0b63ae319417e137f6f07eb7743e5a6f1bc6b332ac35bfaa97c519934b896735",
+      "status": "已闭环；分压实际97.8k/106.7k、3.86V点+3mV及关机PA1/3V3均0V"
+    },
+    "ppg_irq_acceptance": {
+      "version": "F13-INT-20261119-01",
+      "pin": "PB1 / EXTI1 falling, internal weak pullup",
+      "status": "2026-11-19 N/IRQ增长、P变化、断INT后IRQ停/N继续、接回无需复位恢复均获用户确认；运行时接口通过，STOP未验证",
+      "source_commit": "c400ca7",
+      "local_only": false,
+      "remote_snapshot": "d1f7d996c0fcf7608669ff886bd1aa7ae8bc37f5",
+      "branch": "codex/hardware-interfaces-20261119"
+    },
+    "mpu_irq_probe": {
+      "version": "F03-INT-20261119-01",
+      "source_commit": "baf86e0e9fb2a071fae57e6d94c25d923e28a410",
+      "mpu_pin": "PB0/EXTI0 rising, internal pulldown",
+      "key_pin": "PA0 input polling, no EXTI0",
+      "status": "2026-11-19运行时N/IRQ、断PB0后IRQ停/N继续、KEY的K独立、接回自动恢复及PPG N/IRQ增长均获用户确认；不表示STOP或F03-P02实走通过",
+      "local_only": false,
+      "remote_snapshot": "26292489a91fd79af4b3b10c3b8b3c81142cd1d9",
+      "branch": "codex/hardware-interfaces-20261119"
+    },
+    "source_firmware_version": "UI-MENU-20261122-01",
+    "pending_build": {
+      "version": "UI-MENU-20261122-01",
+      "source_base": "f0a9c4b",
+      "source_set_sha256": "ca075a906262b72d8a960da396a0ad2b17a1c09a6a5b1589f28174be1e0ec020",
+      "source_digest_method": "3项源码按路径排序，每行相对路径+空格+原始字节SHA256，以LF连接；对UTF-8文本取SHA256",
+      "scope": "只整合UI和按键命令分发；F08-P02电量估算未实现，其他功能算法与存储格式不变",
+      "default_page": "HOME",
+      "status": "真实构建通过、命名固件已保留；新版实物仅部分通过。2026-11-23用户确认弱振已解决；屏幕异常重启仍待复测。"
+    },
+    "local_acceptance": {
+      "version": "F07-P02-20261121-01",
+      "date": "2026-11-21",
+      "source_commit": "8e01fddd772d744f1b33627d6ac3a6f9f2d50114",
+      "record_commit": "1e01ac0195c7377e0ab60548bfaf63850e08f407",
+      "branch": "main",
+      "status": "用户逐项确认默认、草稿、保存1/2、重读与两轮完全断电保持及LED正常；8字节诊断载荷正常路径通过",
+      "limits": "写入中断/故障、CRC/未知数据/代号及128字节载荷只有软件模拟证据",
+      "github_status": "待推送",
+      "bin_sha256": "03e93781fa0f280d5deaeb5822e3c32f2aa6c5e9f292f575f0b211a2600700c7"
+    }
+  },
+  "battery_estimate_acceptance": {
+    "version": "F08-P02-20261122-01",
+    "status": "等待硬件验证",
+    "branch": "main",
+    "source_commit": "9d5d8e157fc6fe27b1cdea3815d3d370cbe2926a",
+    "github_status": "待推送",
+    "prebuild_source_sha256": "8f0643d55d4e9d79e6267dd36c65beb5d994a61c39ee3d3d8001c3caa53a6cb6",
+    "build_result": "Keil smart_watch隔离重建；0错误0警告；HEX与AXF加载42488字节一致",
+    "hex": "code/Build/Objects/smart_watch_F08-P02-20261122-01.hex",
+    "axf": "code/Build/Objects/smart_watch_F08-P02-20261122-01.axf",
+    "bin_sha256": "3b2d617f5ee6a25d86d3f05e26f52046e5c0149ca5ce00108204791053c03762",
+    "source_changes": [
+      "code/Application/battery_service.c",
+      "code/Application/battery_service.h",
+      "code/Application/watch_ui.c",
+      "code/Application/watch_ui.h",
+      "code/User/board_config.h",
+      "code/User/main.c"
+    ]
+  },
+  "source_list": "code/sources.cmake",
+  "host_build_rules": "code/CMakeLists.txt",
+  "build_rules": "code/smart_watch.uvprojx",
+  "task_plan": "plan/progress/development_plan.xlsx",
+  "task_sheets": [
+    "功能总览",
+    "任务计划"
+  ],
+  "structure_registry": "project/memory/structure.md",
+  "hardware_design": {
+    "project": "plan/design/eda/smart_watch.eprj3",
+    "revision": "R0",
+    "editor": "嘉立创EDA专业版4.1.105",
+    "status": "模块逻辑接口草稿，未绑定物理封装，禁止直接制板",
+    "pages": 4,
+    "components": 23,
+    "net_count": 19,
+    "connected_pins": 78,
+    "validation": "关闭重开回读、总网表精确连接核对及四页导出检查通过；23个MISSFOOTPRINT、1个SHOWDANDLING及1个CHECKFLOATPIN保留",
+    "public_branch": "codex/hardware-interfaces-20261119",
+    "remote_commit": "e501ee0afeeb9889cff2741a5fc615b6669bd155",
+    "local_commit": "a298f73756a76a5b1253f0bb5ae1646ddf1d02eb"
+  },
+  "reminder_acceptance": {
+    "version": "F02-P02-20261128-01",
+    "status": "正常路径实物通过，远端保存暂缓",
+    "source_commit": "51904c6abcbdf56f3f1ca57b04af4d2943a4494a",
+    "source_digest": "2cb4b2fc6186e4d03ab3c2fa0756dd7c1457fe8cb5d4dbf61a5600fb3699cfbe",
+    "image": "code/Build/Objects/smart_watch_F02-P02-20261128-01.hex",
+    "bin_sha256": "829a0694d4203b3a881abf24a347c5908d568245b90510f4a0cca4e72dac9d6b",
+    "limitations": "仅RAM一次性提醒。RTC失效/非法时间、跳变、马达忙及故障、回绕只有软件证据；重启OFF未单独实测。",
+    "hardware_result": "2026-11-28用户在F02-P02-20261128-01逐项确认：REMINDER入口、30秒设置及到时亮屏/振动、KEY确认后停止且至少15秒不重播、到时前SOS取消并越过原DUE不振动、约10秒自动结束为DONE且不重播、离页回主页仍到时唤醒且KEY停止不切页。正常路径实物验收通过。RTC失效/非法时间、校时跳变、马达忙及故障、回绕仍只有软件证据；重启OFF未单独实测。"
+  },
+  "reminder_settings_acceptance": {
+    "version": "F02-P03-20261128-01",
+    "status": "正常路径实物通过，远端保存暂缓",
+    "source_commit": "11a1f6ad785739948c04f29f8462f4d46065da21",
+    "source_digest": "ae55d66537751870749cd004688a9aceaf5769dc4b28d610d3579a4d118a4f80",
+    "image": "code/Build/Objects/smart_watch_F02-P03-20261128-01.hex",
+    "bin_sha256": "cba2ddf8cbc9debf6fbc92077fc1c721202edc256bfb15a042ed3c8c968e1b5a",
+    "payload": "v2: version=2, diagnostic_counter, reminder_delay_seconds, reserved=0; 16-byte little-endian; v1 compatible",
+    "limits": "只保存30～300秒延时配置；到时目标只存RAM，重启不自动提醒。写入中断、逐字节截断、故障及未知格式保护、代号回绕仍仅有软件模拟证据，不作为实物通过。",
+    "hardware_result": "2026-11-28，F02-P03-20261128-01正常路径实物通过：初始LEGACY/SET30/SAVED--；KEY改60不自动保存，长按MENU提交为SAVED60；草稿90后长按SOS回读恢复60；完全断电5秒后电池开机为OFF/LOADED/SET60/SAVED60且不自振；按回读60秒到时亮屏振动并KEY停止。原COUNT2保留；参数页保存COUNT3后提醒SAVED仍60，再保存提醒90后COUNT仍3。最终已保存COUNT3、提醒延时90秒。"
+  },
+  "pedometer_partial_acceptance": {
+    "version": "F02-P03-20261128-01",
+    "date": "2026-11-28",
+    "source_commit": "11a1f6ad785739948c04f29f8462f4d46065da21",
+    "result": "用户确认静置30秒不增步，以及MENU长按后STEPS0/COUNT CLEARED/READY。",
+    "limits": "清零前和断线前具体步数未报，不认定非零清零/非零保数。真实步行误差仍待焊装后验，不放行日汇总。",
+    "disconnect_result": "随后在同版STEPS页只拔GY-521的SDA支线约3秒，用户确认WAIT SENSOR/CHECK SENSOR、步数保持且界面和LED运行；接回原PB7且不复位/断电约3秒后恢复MPU ONLINE/READY，步数不清零或跳增。该版断接恢复通过；断线前具体步数未报，不扩写为已验证非零计数保持。"
+  },
+  "daily_step_history": {
+    "version": "F03-P03-20261128-01",
+    "source_commit": "0456377a150dcae958a18762be928627277b85c5",
+    "source_digest": "9b7a23ce57645f76db74b59770a8c5e7807ba5a05a00a7951e5bcdadb94c7092",
+    "image": "code/Build/Objects/smart_watch_F03-P03-20261128-01.hex",
+    "bin_sha256": "6092cfc69352f04b30c3428361ad7ab82948bab7302f6475e9db202b42913495",
+    "status": "软件检查和目标构建通过，实物集中后置",
+    "record_type": 2,
+    "semantics": "UTC+8日界UTC与当日已观察步数绝对快照，同日取最大ID而非求和。始终PARTIAL。",
+    "limits": "恢复中/无有效时间/日期回拨的增量不倒填。掉电可丢失未提交窗口。新手机历史入口待APP-05统一交接；GetStatus仍为SESSION。"
+  },
+  "activity_implementation": {
+    "version": "F05-P02-20261128-01",
+    "source_commit": "25741216fbf77baf8f89cb536f0e1cc4424ac180",
+    "source_digest": "62217a7ba4fe684ccccd64e2600aaacb1b0e7eed3f0e92993f77df34889ac29e",
+    "image": "code/Build/Objects/smart_watch_F05-P02-20261128-01.hex",
+    "bin_sha256": "45c7f98a2b69e5a36e715c985342bb1803133ebfde096a4727527c647db70cc4",
+    "status": "软件与构建通过，实物集中后置",
+    "settings": "v3: 24-byte little-endian, version/counter/reminder_seconds/activity_minutes/enabled/reserved. v1/v2 compatible.",
+    "limits": "无新确认步数且传感器持续有效才算低活动；不是坐姿/佩戴检测。旧配置默认关闭，实走/佩戴和并发尚未实测。手机设置帧和入口待APP-04统一交接。"
+  }
+}

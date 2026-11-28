@@ -6,6 +6,11 @@
 !/registry.md
 !/code/
 !/plan/
+!/project/
+/project/*
+!/project/config/
+/project/config/*
+!/project/config/source_manifest.json
 /plan/*
 !/plan/bom.xlsx
 !/plan/task.md
