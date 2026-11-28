@@ -13,6 +13,7 @@ typedef struct {
 } phone_sync_state_t;
 watch_status_t phone_sync_get_state(phone_sync_state_t *state);
 /* 每5ms调用：至多读16字节、发送16字节；SetTime读回分至下一轮。
+ * GetSettings读取已提交配置，SetSettings等待双槽提交及回读后才成功。
  * 所有收发均由本模块独占，不混入裸文本或原始回显。 */
 watch_status_t phone_sync_process(void);
 #if WATCH_F06_STATUS_SILENCE_TEST

@@ -1,6 +1,6 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：F05-P02-20261128-01
+ * 版本：F06-P03-20261128-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
@@ -51,7 +51,7 @@ static const char firmware_version[] = "F06-NAME-20261116-02";
 #elif WATCH_F06_STATUS_SILENCE_TEST
 static const char firmware_version[] = "F06-STALE-TEST-20261128-01";
 #else
-static const char firmware_version[] = "F05-P02-20261128-02";
+static const char firmware_version[] = "F06-P03-20261128-01";
 #endif
 
 /**

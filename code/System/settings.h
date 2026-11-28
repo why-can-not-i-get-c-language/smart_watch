@@ -25,6 +25,8 @@ watch_status_t settings_config_load(settings_config_t *config);
 watch_status_t settings_config_save_counter(uint32_t counter);
 watch_status_t settings_config_save_reminder(uint32_t delay_seconds);
 watch_status_t settings_config_save_activity(uint32_t minutes, bool enabled);
+/* 一笔事务保存全部提醒配置，保留最新诊断计数；OK仍仅表示入队。 */
+watch_status_t settings_config_save_reminders(uint32_t delay_seconds, uint32_t minutes, bool enabled);
 /* F07-P02双槽参数持久化状态 */
 typedef struct {
     bool ready;

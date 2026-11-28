@@ -259,6 +259,18 @@ watch_status_t settings_config_load(settings_config_t *config)
     return WATCH_OK;
 }
 
+static watch_status_t save_config(const settings_config_t *config)
+{
+    uint8_t bytes[24];
+    write32(bytes, 3U);
+    write32(bytes + 4U, config->diagnostic_counter);
+    write32(bytes + 8U, config->reminder_delay_seconds);
+    write32(bytes + 12U, config->activity_minutes);
+    write32(bytes + 16U, config->activity_enabled ? 1U : 0U);
+    write32(bytes + 20U, 0U);
+    return settings_save(bytes, sizeof(bytes));
+}
+
 static watch_status_t save_config_property(uint32_t value, unsigned property, bool enabled)
 {
     if ((property == 1U && !reminder_delay_valid(value)) ||
@@ -270,14 +282,21 @@ static watch_status_t save_config_property(uint32_t value, unsigned property, bo
     if (property == 1U) config.reminder_delay_seconds = value;
     else if (property == 2U) { config.activity_minutes = value; config.activity_enabled = enabled; }
     else config.diagnostic_counter = value;
-    uint8_t bytes[24];
-    write32(bytes, 3U);
-    write32(bytes + 4U, config.diagnostic_counter);
-    write32(bytes + 8U, config.reminder_delay_seconds);
-    write32(bytes + 12U, config.activity_minutes);
-    write32(bytes + 16U, config.activity_enabled ? 1U : 0U);
-    write32(bytes + 20U, 0U);
-    return settings_save(bytes, sizeof(bytes));
+    return save_config(&config);
+}
+
+watch_status_t settings_config_save_reminders(uint32_t delay_seconds, uint32_t minutes, bool enabled)
+{
+    if (!reminder_delay_valid(delay_seconds) || !activity_minutes_valid(minutes))
+        return WATCH_INVALID_ARGUMENT;
+    if (state.busy || !state.ready) return WATCH_NOT_READY;
+    settings_config_t config;
+    watch_status_t status = settings_config_load(&config);
+    if (status != WATCH_OK) return status;
+    config.reminder_delay_seconds = delay_seconds;
+    config.activity_minutes = minutes;
+    config.activity_enabled = enabled;
+    return save_config(&config);
 }
 
 watch_status_t settings_config_save_counter(uint32_t counter)

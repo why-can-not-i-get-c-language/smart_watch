@@ -7,14 +7,17 @@
 #include "pedometer.h"
 #include "mpu6050.h"
 #include "battery_adc.h"
+#include "settings.h"
 #include <string.h>
 #include <limits.h>
 
-enum { CMD_INFO = 1, CMD_STATUS = 2, CMD_TIME = 3 };
+enum { CMD_INFO = 1, CMD_STATUS = 2, CMD_TIME = 3, CMD_GET_SETTINGS = 4, CMD_SET_SETTINGS = 5 };
 enum { OK = 0, BAD_LENGTH, BAD_VALUE, UNSUPPORTED, NOT_READY, IO_ERROR,
-       BUSY, SEQ_CONFLICT, REQUEST_EXPIRED, INTERNAL, TIMEOUT };
+       BUSY, SEQ_CONFLICT, REQUEST_EXPIRED, INTERNAL, TIMEOUT, CONFIG_CONFLICT };
 enum { DATA_UNSUPPORTED = 0, DATA_MISSING, DATA_VALID, DATA_INVALID, DATA_STALE };
-enum { IDLE = 0, EXECUTE, READBACK };
+enum { IDLE = 0, EXECUTE, READBACK, SETTINGS_READBACK };
+#define SETTINGS_REPLY_BYTES 26U
+#define SETTINGS_TIMEOUT_MS 3000U
 #define TX_SLOTS 4U
 #define UTC_MIN 946684800UL
 #define UTC_MAX 4102444799UL
@@ -33,6 +36,8 @@ static uint8_t firmware_length, phase;
 static uint32_t completed_ms, uart_errors, target_utc, last_tx_ms, written_ms;
 static bool initialized, cache_present, tx_started;
 static phone_sync_state_t state;
+static uint32_t settings_started_ms, settings_expected_generation;
+static settings_config_t settings_candidate;
 #if WATCH_F06_STATUS_SILENCE_TEST
 static bool status_silence_test, request_silenced;
 static uint32_t status_silence_deadline;
@@ -57,6 +62,11 @@ static uint32_t get32(const uint8_t *p)
 {
     return (uint32_t)p[0] | (uint32_t)p[1] << 8U |
            (uint32_t)p[2] << 16U | (uint32_t)p[3] << 24U;
+}
+
+static uint16_t get16(const uint8_t *p)
+{
+    return (uint16_t)((uint16_t)p[0] | (uint16_t)((uint16_t)p[1] << 8U));
 }
 
 static uint8_t wire_error(watch_status_t result)
@@ -225,8 +235,59 @@ static void status_payload(uint8_t data[42], uint32_t now)
                        (battery.sample_count == 0U && result == WATCH_OK) ? DATA_MISSING : DATA_INVALID; }
 }
 
+/* 只报告已提交缓存或明确默认值；保存中不把候选值当成成功读回。 */
+static uint8_t settings_snapshot(settings_state_t *store, settings_config_t *config)
+{
+    watch_status_t result = settings_get_state(store);
+    if (result != WATCH_OK) return wire_error(result);
+    if (store->busy) return BUSY;
+    if (!store->ready) return NOT_READY;
+    return wire_error(settings_config_load(config));
+}
+
+static void finish_settings(const settings_state_t *store, const settings_config_t *config, uint32_t now)
+{
+    uint8_t data[SETTINGS_REPLY_BYTES] = {0};
+    data[0] = 1U; /* 线上配置结构版本；不是Flash载荷版本。 */
+    data[1] = (uint8_t)((store->valid && store->length >= 16U ? 1U : 0U) |
+                       (store->valid && store->length == 24U ? 2U : 0U));
+    put32(data + 4U, store->generation);
+    put16(data + 8U, (uint16_t)config->reminder_delay_seconds);
+    put16(data + 10U, (uint16_t)config->activity_minutes);
+    data[12] = config->activity_enabled ? 1U : 0U;
+    put16(data + 14U, SETTINGS_REMINDER_MIN_SECONDS);
+    put16(data + 16U, SETTINGS_REMINDER_MAX_SECONDS);
+    put16(data + 18U, SETTINGS_REMINDER_STEP_SECONDS);
+    put16(data + 20U, SETTINGS_ACTIVITY_MIN_MINUTES);
+    put16(data + 22U, SETTINGS_ACTIVITY_MAX_MINUTES);
+    put16(data + 24U, SETTINGS_ACTIVITY_STEP_MINUTES);
+    finish(OK, data, sizeof(data), now);
+}
+
 static void execute(uint32_t now)
 {
+    if (phase == SETTINGS_READBACK) {
+        settings_state_t store;
+        settings_config_t config;
+        uint8_t error = settings_snapshot(&store, &config);
+        if (error == BUSY || error == NOT_READY) {
+            /* 超时只结束协议等待，不取消可能已经开始的Flash事务。 */
+            if ((uint32_t)(now - settings_started_ms) >= SETTINGS_TIMEOUT_MS)
+                finish(TIMEOUT, NULL, 0U, now);
+            return;
+        }
+        if (error == OK && store.last_save_status != WATCH_OK)
+            error = wire_error(store.last_save_status);
+        if (error == OK && (!store.valid || store.length != 24U ||
+            store.generation != settings_expected_generation ||
+            config.reminder_delay_seconds != settings_candidate.reminder_delay_seconds ||
+            config.activity_minutes != settings_candidate.activity_minutes ||
+            config.activity_enabled != settings_candidate.activity_enabled ||
+            config.diagnostic_counter != settings_candidate.diagnostic_counter)) error = IO_ERROR;
+        if (error == OK) finish_settings(&store, &config, now);
+        else finish(error, NULL, 0U, now);
+        return;
+    }
     if (phase == READBACK) {
         if ((uint32_t)(now - written_ms) < 5U) { return; }
         uint32_t actual = 0U;
@@ -245,6 +306,8 @@ static void execute(uint32_t now)
         uint8_t data[52] = {0};
         memcpy(data, uid_bytes, sizeof(uid_bytes));
         put16(data + 12U, 1U);  /* 项目核心板加模块；硬件修订号仍为未知0 */
+        /* 现有App严格拒绝bit9以上能力位，保留原字段以兼容正常连接。
+         * 参数支持通过GetSettings查询，旧固件会返回UNSUPPORTED。 */
         put32(data + 16U, 0x1FU);
         data[20] = firmware_length;
         memcpy(data + 21U, firmware_version, firmware_length);
@@ -253,6 +316,38 @@ static void execute(uint32_t now)
         if (request.length != 0U) { finish(BAD_LENGTH, NULL, 0U, now); return; }
         uint8_t data[42]; status_payload(data, now);
         finish(OK, data, sizeof(data), now);
+    } else if (request.command == CMD_GET_SETTINGS) {
+        if (request.length != 0U) { finish(BAD_LENGTH, NULL, 0U, now); return; }
+        settings_state_t store;
+        settings_config_t config;
+        uint8_t error = settings_snapshot(&store, &config);
+        if (error == OK) finish_settings(&store, &config, now);
+        else finish(error, NULL, 0U, now);
+    } else if (request.command == CMD_SET_SETTINGS) {
+        if (request.length != 12U) { finish(BAD_LENGTH, NULL, 0U, now); return; }
+        const uint8_t *p = request.payload;
+        uint32_t delay = get16(p + 2U), minutes = get16(p + 4U);
+        if (p[0] != 1U || p[1] != 0U || p[6] > 1U || p[7] != 0U ||
+            delay < SETTINGS_REMINDER_MIN_SECONDS || delay > SETTINGS_REMINDER_MAX_SECONDS ||
+            delay % SETTINGS_REMINDER_STEP_SECONDS != 0U ||
+            minutes < SETTINGS_ACTIVITY_MIN_MINUTES || minutes > SETTINGS_ACTIVITY_MAX_MINUTES ||
+            minutes % SETTINGS_ACTIVITY_STEP_MINUTES != 0U) {
+            finish(BAD_VALUE, NULL, 0U, now); return;
+        }
+        settings_state_t store;
+        uint8_t error = settings_snapshot(&store, &settings_candidate);
+        if (error != OK) { finish(error, NULL, 0U, now); return; }
+        if (get32(p + 8U) != store.generation) {
+            finish(CONFIG_CONFLICT, NULL, 0U, now); return;
+        }
+        watch_status_t result = settings_config_save_reminders(delay, minutes, p[6] != 0U);
+        if (result != WATCH_OK) { finish(wire_error(result), NULL, 0U, now); return; }
+        settings_candidate.reminder_delay_seconds = delay;
+        settings_candidate.activity_minutes = minutes;
+        settings_candidate.activity_enabled = p[6] != 0U;
+        settings_expected_generation = store.valid ? store.generation + 1U : 1U;
+        settings_started_ms = now;
+        phase = SETTINGS_READBACK;
     } else if (request.command == CMD_TIME) {
         if (request.length != 4U) { finish(BAD_LENGTH, NULL, 0U, now); return; }
         target_utc = get32(request.payload);
