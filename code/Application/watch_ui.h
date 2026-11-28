@@ -11,7 +11,10 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms);
 /* 返回最近的保存/取消状态：WATCH_NOT_READY初始，WATCH_OK保存成功，其他为具体错误码。 */
 watch_status_t watch_ui_get_action_status(void);
 /* HOME为默认时间页，时间页MENU短按或KEY长按进入功能菜单（STEPS/HISTORY/TOOLS）。
- * 功能菜单：KEY短按下一项，SOS短按上一项，MENU短按进入选定项，KEY长按返回HOME。
+ * 功能菜单STEPS/HISTORY/REMINDER/TOOLS：KEY短按下一项，SOS短按上一项，
+ * MENU短按进入选定项，KEY长按返回HOME。
+ * REMINDER页MENU短按设30秒后一次性提醒，KEY确认或SOS取消；仅本次开机有效。
+ * 提醒到时唤醒，KEY/SOS在任意页停止并消费整次手势，不改编辑草稿。
  * TOOLS菜单8项（BATTERY/PPG/MPU/WRIST/BLE/HAPTIC/PARAMETERS/FLASH），滚屏显示标题和页脚。
  * TOOLS菜单：KEY/SOS短按上下滚动，MENU短按进入，KEY长按返回功能菜单。
  * 各功能详情页保留原有MENU/SOS操作，KEY长按返回拥有菜单。

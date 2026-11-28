@@ -15,6 +15,7 @@
 #include "w25q64.h"
 #include "settings.h"
 #include "record_store.h"
+#include "reminder.h"
 #include <string.h>
 #include <math.h>
 
@@ -48,7 +49,7 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 /* 导航层级与选项，不影响现有ui_phase_t状态机。 */
 typedef enum { NAV_HOME=0, NAV_FUNCTION_MENU, NAV_TOOLS_MENU, NAV_DETAIL } nav_level_t;
-typedef enum { FUNC_STEPS=0, FUNC_HISTORY, FUNC_TOOLS, FUNC_COUNT } function_item_t;
+typedef enum { FUNC_STEPS=0, FUNC_HISTORY, FUNC_REMINDER, FUNC_TOOLS, FUNC_COUNT } function_item_t;
 typedef enum { TOOL_BAT=0, TOOL_PPG, TOOL_MPU, TOOL_WRIST, TOOL_BLE, TOOL_HAPTIC, TOOL_PARAMETERS, TOOL_FLASH, TOOL_COUNT } tool_item_t;
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
@@ -78,6 +79,7 @@ static uint8_t keys_blocked;
 
 /* 电池工具页：在汇总/ADC详情间切换。 */
 static bool battery_show_summary = true;
+static watch_status_t reminder_action_status = WATCH_OK;
 
 /* 编辑状态机 */
 static rtc_calendar_t edit_draft;
@@ -632,10 +634,41 @@ static void draw_function_menu(void)
     text(2U, 0U, "MENU K HOLD HOME");
     text(2U, 8U, "KEY NEXT SOS PREV");
     /* 使用现有字库中的加号标出选中项。 */
-    text(2U, 20U, function_selection == FUNC_STEPS ? "+ STEPS" : "  STEPS");
-    text(2U, 32U, function_selection == FUNC_HISTORY ? "+ HISTORY" : "  HISTORY");
-    text(2U, 44U, function_selection == FUNC_TOOLS ? "+ TOOLS" : "  TOOLS");
+    text(2U, 16U, function_selection == FUNC_STEPS ? "+ STEPS" : "  STEPS");
+    text(2U, 26U, function_selection == FUNC_HISTORY ? "+ HISTORY" : "  HISTORY");
+    text(2U, 36U, function_selection == FUNC_REMINDER ? "+ REMINDER" : "  REMINDER");
+    text(2U, 46U, function_selection == FUNC_TOOLS ? "+ TOOLS" : "  TOOLS");
     text(2U, 56U, "MENU SELECT");
+}
+
+static void draw_reminder_detail(void)
+{
+    reminder_state_t st;
+    (void)reminder_get_state(&st);
+    static const char *labels[] = {"OFF", "ARMED", "STARTING", "RINGING",
+        "STOPPING", "DONE", "CANCELLED", "MISSED", "ERROR"};
+    text(2U, 0U, "REMINDER K HOLD BACK");
+    text(2U, 8U, "STATE");
+    text(38U, 8U, labels[st.phase <= REMINDER_ERROR ? st.phase : REMINDER_ERROR]);
+    rtc_calendar_t local;
+    text(2U, 16U, "DUE");
+    if (st.target_utc != 0U && time_utc_to_local(st.target_utc, &local) == WATCH_OK) {
+        fixed_number(26U, 16U, local.hour, 2U); text(38U, 16U, ":");
+        fixed_number(44U, 16U, local.minute, 2U); text(56U, 16U, ":");
+        fixed_number(62U, 16U, local.second, 2U);
+    } else { text(26U, 16U, "--"); }
+    text(2U, 24U, "MENU ARM +30 SEC");
+    text(2U, 32U, "KEY ACK SOS CANCEL");
+    text(2U, 40U, "RAM ONLY NO SAVE");
+    uint32_t utc = 0U;
+    watch_status_t clock = time_service_get(&utc);
+    const char *hint = clock != WATCH_OK ? "SET TIME ON HOME" :
+        reminder_action_status == WATCH_INVALID_ARGUMENT ? "BAD TIME TRY AGAIN" :
+        reminder_action_status != WATCH_OK ? "BUSY OR ERROR RETRY" :
+        st.phase == REMINDER_ERROR ? "CHECK TIME OR MOTOR" :
+        st.phase == REMINDER_MISSED ? "MISSED ARM AGAIN" : "ONE SHOT 10 SEC";
+    text(2U, 48U, hint);
+    text(2U, 56U, "K HOLD BACK");
 }
 
 static void draw_tools_menu(void)
@@ -737,6 +770,8 @@ static void draw(uint32_t now_ms)
             draw_steps_detail(now_ms);
         } else if (function_selection == FUNC_HISTORY) {
             draw_history_detail(now_ms);
+        } else if (function_selection == FUNC_REMINDER) {
+            draw_reminder_detail();
         } else if (function_selection == FUNC_TOOLS) {
             if (tool_selection == TOOL_BAT) { draw_battery_detail(); }
             else if (tool_selection == TOOL_PPG) { draw_ppg_detail(); }
@@ -769,6 +804,15 @@ static void draw(uint32_t now_ms)
         if (svc.status == WATCH_OK && svc.battery.valid && svc.low_known && svc.low) {
             memset(frame, 0, SSD1306_WIDTH);
             text(2U, 0U, "LOW BAT CHARGE");
+        }
+    }
+    /* 提醒覆盖提示，不改变导航或编辑草稿；自检画面保留。 */
+    if (phase == UI_NORMAL || phase == UI_EDIT) {
+        reminder_state_t st;
+        (void)reminder_get_state(&st);
+        if (st.owns_haptic) {
+            memset(frame, 0, SSD1306_WIDTH);
+            text(2U, 0U, st.phase == REMINDER_STOPPING ? "REMINDER STOPPING" : "REMINDER KEY ACK");
         }
     }
 }
@@ -911,6 +955,23 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
                 }
             } else { return; }
             action_status=history_action_status;last_refresh_ms=now_ms-1000U;return;
+        } else if (function_selection == FUNC_REMINDER) {
+            if ((event & BUTTON_SOS_SHORT) != 0U) {
+                reminder_action_status = reminder_cancel();
+            } else if ((event & BUTTON_BOARD_SHORT) != 0U) {
+                reminder_action_status = reminder_cancel();
+            } else if ((event & BUTTON_MENU_SHORT) != 0U &&
+                       (event & (BUTTON_MENU_LONG | BUTTON_SOS_LONG)) == 0U) {
+                uint32_t utc = 0U;
+                reminder_action_status = time_service_get(&utc);
+                if (reminder_action_status == WATCH_OK) {
+                    reminder_action_status = utc > UINT32_MAX - 30U ? WATCH_INVALID_ARGUMENT :
+                        reminder_set(utc + 30U);
+                }
+            }
+            action_status = reminder_action_status;
+            last_refresh_ms = now_ms - 1000U;
+            return;
         } else if (function_selection == FUNC_STEPS) {
             if ((event & BUTTON_MENU_LONG) != 0U && (event & BUTTON_SOS_LONG) == 0U &&
                 (event & BUTTON_BOARD_LONG) == 0U) {
@@ -1055,6 +1116,17 @@ uint32_t watch_ui_filter_buttons(uint32_t events, uint32_t now_ms)
         uint32_t group = (events >> (4U * key)) & 15U;
         if (group != 0U) { present |= (uint8_t)(1U << key); }
         if ((group & 1U) != 0U) { keys_down |= (uint8_t)(1U << key); }
+    }
+    reminder_state_t reminder;
+    (void)reminder_get_state(&reminder);
+    if (reminder.owns_haptic && present != 0U) {
+        /* 到时提示优先于编辑/导航；完整消费手势，松手不另触发页面动作。 */
+        keys_blocked |= (uint8_t)(keys_down | present);
+        if ((events & (BUTTON_BOARD_PRESS | BUTTON_BOARD_SHORT | BUTTON_BOARD_LONG |
+                       BUTTON_SOS_PRESS | BUTTON_SOS_SHORT | BUTTON_SOS_LONG)) != 0U) {
+            reminder_action_status = reminder_cancel();
+            last_refresh_ms = now_ms - 1000U;
+        }
     }
     if (present != 0U && (phase == UI_NORMAL || phase == UI_EDIT)) {
         /* 逻辑已唤醒但新帧尚未开屏时，按键仍只用于唤醒。 */

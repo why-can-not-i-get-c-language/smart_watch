@@ -1,6 +1,6 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：F06-P02-20261123-01
+ * 版本：F02-P02-20261128-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
@@ -40,13 +40,14 @@
 #include "battery_service.h"
 #include "settings.h"
 #include "record_store.h"
+#include "reminder.h"
 #include <stdint.h>
 #include <string.h>
 
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F06-P02-20261123-01";
+static const char firmware_version[] = "F02-P02-20261128-01";
 #endif
 
 /**
@@ -116,6 +117,7 @@ typedef struct {
     volatile battery_adc_state_t battery_adc;
     volatile watch_status_t battery_service_status;
     volatile battery_service_state_t battery_service;
+    volatile reminder_state_t reminder;
 } diag_state_t;
 
 static volatile diag_state_t diag = {0};
@@ -123,6 +125,7 @@ static uint32_t haptic_last_retry_ms;
 
 /* 低电提醒episode标志：确认进入低电时唤醒屏幕一次，确认恢复后复位。 */
 static bool low_battery_notified;
+static uint32_t reminder_last_trigger_count;
 
 /* LED timing state */
 static volatile uint32_t startup_baseline = 0;
@@ -289,6 +292,9 @@ static void button_poll_task(void *ctx)
         /* 导航和详情功能由UI负责；本分发点独占振动命令。 */
         bool was_haptic = watch_ui_haptic_active();
         watch_ui_notify_button(events, now);
+        reminder_state_t reminder;
+        (void)reminder_get_state(&reminder);
+        if (reminder.owns_haptic) { return; }
         /* 振动命令：仅当进入前已在HAPTIC页、事件后仍在HAPTIC页且不是KEY长按返回时才执行命令。 */
         if (was_haptic && !watch_ui_haptic_active()) {
             diag.haptic_request_status = tm6605_stop();
@@ -335,9 +341,20 @@ static void haptic_update_task(void *ctx)
     (void)ctx;
     uint32_t now = board_millis();
     diag.haptic_process_status = tm6605_process(now);
+    /* RTC真值驱动一次性提醒；驱动和提醒分别记录入队、ACK与失败。 */
+    uint32_t utc = 0U;
+    if (time_service_get(&utc) != WATCH_OK) { utc = 0U; }
+    (void)reminder_update(utc);
+    reminder_state_t reminder;
+    (void)reminder_get_state(&reminder);
+    diag.reminder = reminder;
+    if (reminder.trigger_count != reminder_last_trigger_count) {
+        reminder_last_trigger_count = reminder.trigger_count;
+        watch_ui_wake(now);
+    }
     tm6605_state_t current;
     tm6605_get_state(&current);
-    if (!current.ready && !current.busy &&
+    if (!reminder.owns_haptic && !current.ready && !current.busy &&
         (uint32_t)(now - haptic_last_retry_ms) >= WATCH_HAPTIC_RETRY_MS) {
         diag.haptic_request_status = tm6605_init();
         haptic_last_retry_ms = now;
@@ -553,6 +570,8 @@ int main(void)
     (void)wrist_wake_reset();
     (void)battery_adc_init();
     (void)battery_service_init();
+    reminder_init();
+    reminder_last_trigger_count = 0U;
     low_battery_notified = false;
     (void)settings_init();
     (void)record_store_init();
