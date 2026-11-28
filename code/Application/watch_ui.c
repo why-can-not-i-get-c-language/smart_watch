@@ -696,7 +696,7 @@ static void draw_activity_detail(void)
     if (st.config_persisted) { number(38U, 32U, st.saved_minutes); text(68U, 32U, st.saved_enabled ? "ON" : "OFF"); }
     else text(38U, 32U, "--");
     text(2U, 40U, "STORE"); text(38U, 40U, stores[st.store_phase <= REMINDER_STORE_ERROR ? st.store_phase : REMINDER_STORE_ERROR]);
-    text(2U, 48U, "KEY +5 MENU ON OFF");
+    text(2U, 48U, st.test_active ? "TEST 15 SEC" : "KEY +5 MENU ON OFF");
     text(2U, 56U, st.store_phase == REMINDER_STORE_ERROR ? "KEEP DATA SOS READ" :
         activity_action_status != WATCH_OK ? "BUSY SOS HOLD READ" : "MH SAVE SOS HOLD READ");
 }
@@ -1072,7 +1072,10 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
                 activity_draft_enabled = st.saved_enabled;
                 activity_draft_loaded = true;
             }
-            if ((event & BUTTON_SOS_LONG) != 0U) {
+            if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_SOS_SHORT) != 0U &&
+                (event & (BUTTON_MENU_LONG | BUTTON_SOS_LONG | BUTTON_BOARD_LONG)) == 0U) {
+                activity_action_status = activity_start_test(15U);
+            } else if ((event & BUTTON_SOS_LONG) != 0U) {
                 activity_action_status = activity_reload_settings();
                 if (activity_action_status == WATCH_OK) activity_draft_loaded = false;
             } else if ((event & BUTTON_SOS_SHORT) != 0U) {

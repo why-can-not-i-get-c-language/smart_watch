@@ -9,8 +9,9 @@ typedef enum { MOTOR_IDLE, MOTOR_START, MOTOR_RING, MOTOR_STOP } motor_phase_t;
 static activity_state_t current;
 static motor_phase_t motor_phase;
 static bool have_baseline, store_seen, save_pending, last_valid, last_empty;
+static bool test_active;
 static uint32_t last_steps, last_ms, window_started_ms, pending_since, motor_since;
-static uint32_t generation, candidate_minutes, save_generation;
+static uint32_t generation, candidate_minutes, save_generation, test_duration_ms;
 static bool candidate_enabled;
 static watch_status_t last_load_status;
 static watch_status_t after_stop_status;
@@ -22,10 +23,11 @@ void activity_init(void)
     current.store_status = WATCH_NOT_READY;
     motor_phase = MOTOR_IDLE;
     have_baseline = store_seen = save_pending = false;
+    test_active = false;
     last_valid = last_empty = false;
     last_load_status = WATCH_NOT_READY;
     after_stop_status = WATCH_OK;
-    generation = save_generation = candidate_minutes = 0U;
+    generation = save_generation = candidate_minutes = test_duration_ms = 0U;
     candidate_enabled = false;
     last_steps = last_ms = window_started_ms = pending_since = motor_since = 0U;
 }
@@ -88,6 +90,22 @@ watch_status_t activity_save_config(uint32_t minutes, bool enabled)
     return status;
 }
 
+watch_status_t activity_start_test(uint32_t seconds)
+{
+    if (seconds == 0U || seconds > 60U) return WATCH_INVALID_ARGUMENT;
+    if (!current.config_ready || save_pending || current.owns_haptic || current.pending) {
+        return WATCH_NOT_READY;
+    }
+    test_duration_ms = seconds * 1000U;
+    test_active = true;
+    current.test_active = true;
+    current.latched = false;
+    current.pending = false;
+    current.motor_status = WATCH_OK;
+    have_baseline = false;
+    return WATCH_OK;
+}
+
 watch_status_t activity_reload_settings(void)
 {
     if (save_pending) return WATCH_NOT_READY;
@@ -108,7 +126,7 @@ watch_status_t activity_update(uint32_t now_ms, uint32_t steps, bool *remind)
 {
     if (remind == NULL) return WATCH_INVALID_ARGUMENT;
     *remind = false;
-    if (!current.enabled || !current.config_ready) return WATCH_NOT_READY;
+    if ((!current.enabled && !test_active) || !current.config_ready) return WATCH_NOT_READY;
     if (!have_baseline || steps != last_steps || (uint32_t)(now_ms - last_ms) > 1000U) {
         have_baseline = true;
         window_started_ms = now_ms;
@@ -119,7 +137,8 @@ watch_status_t activity_update(uint32_t now_ms, uint32_t steps, bool *remind)
     last_steps = steps;
     last_ms = now_ms;
     current.idle_ms = now_ms - window_started_ms;
-    if (!current.latched && current.idle_ms >= current.minutes * 60000U) {
+    uint32_t limit_ms = test_active ? test_duration_ms : current.minutes * 60000U;
+    if (!current.latched && current.idle_ms >= limit_ms) {
         current.latched = true;
         current.pending = true;
         pending_since = now_ms;
@@ -146,8 +165,9 @@ watch_status_t activity_acknowledge(void)
 watch_status_t activity_process(uint32_t now_ms, bool sensor_valid, uint32_t steps, bool allow_haptic)
 {
     sync_config();
+    current.test_active = test_active;
     bool due = false;
-    if (!sensor_valid || !current.enabled || !current.config_ready) {
+    if (!sensor_valid || (!current.enabled && !test_active) || !current.config_ready) {
         have_baseline = false;
         current.idle_ms = 0U;
         current.pending = false;
@@ -210,6 +230,10 @@ watch_status_t activity_process(uint32_t now_ms, bool sensor_valid, uint32_t ste
                 current.motor_status = status;
             }
         }
+    }
+    if (test_active && !current.pending && !current.owns_haptic && current.latched) {
+        test_active = false;
+        current.test_active = false;
     }
     current.phase = current.owns_haptic ? (motor_phase == MOTOR_STOP ? ACTIVITY_STOPPING :
         motor_phase == MOTOR_START ? ACTIVITY_STARTING : ACTIVITY_RINGING) :

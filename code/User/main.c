@@ -49,7 +49,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F05-P02-20261128-01";
+static const char firmware_version[] = "F05-P02-20261128-02";
 #endif
 
 /**

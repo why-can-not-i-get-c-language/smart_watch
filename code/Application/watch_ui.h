@@ -18,6 +18,7 @@ watch_status_t watch_ui_get_action_status(void);
  * 重启只恢复已保存延时，不自动恢复或设定提醒。
  * ACTIVITY页KEY短按调整5..120分钟（5分钟步长），MENU短按切使能草稿；
  * MENU长按保存并应用，SOS短按确认，SOS长按重读。旧配置默认关闭。
+ * ACTIVITY页同时短按MENU+SOS启动一次不保存的15秒快速测试窗口。
  * 低活动通知每个静止窗口一次，活动后复位；定时提醒优先，可抢占低活动序列。
  * 提醒到时唤醒，KEY/SOS在任意页停止并消费整次手势，不改编辑草稿。
  * TOOLS菜单8项（BATTERY/PPG/MPU/WRIST/BLE/HAPTIC/PARAMETERS/FLASH），滚屏显示标题和页脚。
