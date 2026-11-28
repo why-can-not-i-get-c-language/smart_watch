@@ -1237,7 +1237,13 @@ uint32_t watch_ui_filter_buttons(uint32_t events, uint32_t now_ms)
     (void)reminder_get_state(&reminder);
     activity_state_t activity;
     (void)activity_get_state(&activity);
-    if ((reminder.owns_haptic || activity.owns_haptic || activity.pending) && present != 0U) {
+    if (activity.pending && !reminder.owns_haptic && !activity.owns_haptic &&
+        (events & (BUTTON_BOARD_PRESS | BUTTON_BOARD_SHORT | BUTTON_BOARD_LONG |
+                   BUTTON_SOS_PRESS | BUTTON_SOS_SHORT | BUTTON_SOS_LONG)) != 0U) {
+        /* 尚未播放的低优先级通知可一并取消，但不能吞掉手动马达的停止键。 */
+        activity_action_status = activity_acknowledge();
+    }
+    if ((reminder.owns_haptic || activity.owns_haptic) && present != 0U) {
         /* 到时提示优先于编辑/导航；完整消费手势，松手不另触发页面动作。 */
         keys_blocked |= (uint8_t)(keys_down | present);
         if ((events & (BUTTON_BOARD_PRESS | BUTTON_BOARD_SHORT | BUTTON_BOARD_LONG |
