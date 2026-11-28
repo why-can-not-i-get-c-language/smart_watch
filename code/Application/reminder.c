@@ -59,7 +59,7 @@ static void sync_settings(void)
     store_last_empty = st.empty;
     store_last_load_status = st.last_load_status;
     current.store_ready = status == WATCH_OK;
-    current.delay_persisted = status == WATCH_OK && st.valid && st.length == 16U;
+    current.delay_persisted = status == WATCH_OK && st.valid && st.length >= 16U;
     current.saved_delay_seconds = status == WATCH_OK ? config.reminder_delay_seconds : 0U;
     current.store_status = status;
     if (saving) {
@@ -187,6 +187,11 @@ watch_status_t reminder_update(uint32_t utc_seconds)
         /* 先消费本次到时，再请求驱动；失败也不在后续调度中自动重播。 */
         current.phase = REMINDER_ERROR;
         current.status = tm6605_alert(REMINDER_RING_MS);
+        /* 未受理的忙/短段保护间隔可在原5秒宽限内等待；不等于重播已受理命令。 */
+        if (current.status == WATCH_NOT_READY) {
+            current.phase = REMINDER_ARMED;
+            return current.status;
+        }
         if (current.status == WATCH_OK) {
             current.phase = REMINDER_STARTING;
             current.owns_haptic = true;

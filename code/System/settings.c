@@ -216,6 +216,12 @@ static bool reminder_delay_valid(uint32_t seconds)
         seconds % SETTINGS_REMINDER_STEP_SECONDS == 0U;
 }
 
+static bool activity_minutes_valid(uint32_t minutes)
+{
+    return minutes >= SETTINGS_ACTIVITY_MIN_MINUTES && minutes <= SETTINGS_ACTIVITY_MAX_MINUTES &&
+        minutes % SETTINGS_ACTIVITY_STEP_MINUTES == 0U;
+}
+
 watch_status_t settings_config_load(settings_config_t *config)
 {
     if (config == NULL) return WATCH_INVALID_ARGUMENT;
@@ -223,49 +229,68 @@ watch_status_t settings_config_load(settings_config_t *config)
     if (!state.ready) return WATCH_NOT_READY;
     if (state.empty && !state.valid) {
         config->reminder_delay_seconds = SETTINGS_REMINDER_MIN_SECONDS;
+        config->activity_minutes = 30U;
         return WATCH_OK;
     }
-    uint8_t bytes[16];
-    if (state.length != 8U && state.length != sizeof(bytes)) return WATCH_INVALID_DATA;
+    uint8_t bytes[24];
+    if (state.length != 8U && state.length != 16U && state.length != sizeof(bytes)) return WATCH_INVALID_DATA;
     watch_status_t status = settings_load(bytes, state.length);
     if (status != WATCH_OK) return status;
     uint32_t version = read32(bytes);
     uint32_t delay = SETTINGS_REMINDER_MIN_SECONDS;
+    uint32_t minutes = 30U, enabled = 0U;
     if (state.length == 8U) {
         if (version != 1U) return WATCH_INVALID_DATA;
-    } else {
+    } else if (state.length == 16U) {
         delay = read32(bytes + 8U);
         if (version != 2U || read32(bytes + 12U) != 0U || !reminder_delay_valid(delay))
             return WATCH_INVALID_DATA;
+    } else {
+        delay = read32(bytes + 8U);
+        minutes = read32(bytes + 12U);
+        enabled = read32(bytes + 16U);
+        if (version != 3U || read32(bytes + 20U) != 0U || !reminder_delay_valid(delay) ||
+            !activity_minutes_valid(minutes) || enabled > 1U) return WATCH_INVALID_DATA;
     }
     config->diagnostic_counter = read32(bytes + 4U);
     config->reminder_delay_seconds = delay;
+    config->activity_minutes = minutes;
+    config->activity_enabled = enabled != 0U;
     return WATCH_OK;
 }
 
-static watch_status_t save_config_property(uint32_t value, bool reminder)
+static watch_status_t save_config_property(uint32_t value, unsigned property, bool enabled)
 {
-    if (reminder && !reminder_delay_valid(value)) return WATCH_INVALID_ARGUMENT;
+    if ((property == 1U && !reminder_delay_valid(value)) ||
+        (property == 2U && !activity_minutes_valid(value))) return WATCH_INVALID_ARGUMENT;
     if (state.busy || !state.ready) return WATCH_NOT_READY;
     settings_config_t config;
     watch_status_t status = settings_config_load(&config);
     if (status != WATCH_OK) return status;
-    if (reminder) config.reminder_delay_seconds = value;
+    if (property == 1U) config.reminder_delay_seconds = value;
+    else if (property == 2U) { config.activity_minutes = value; config.activity_enabled = enabled; }
     else config.diagnostic_counter = value;
-    uint8_t bytes[16];
-    write32(bytes, 2U);
+    uint8_t bytes[24];
+    write32(bytes, 3U);
     write32(bytes + 4U, config.diagnostic_counter);
     write32(bytes + 8U, config.reminder_delay_seconds);
-    write32(bytes + 12U, 0U);
+    write32(bytes + 12U, config.activity_minutes);
+    write32(bytes + 16U, config.activity_enabled ? 1U : 0U);
+    write32(bytes + 20U, 0U);
     return settings_save(bytes, sizeof(bytes));
 }
 
 watch_status_t settings_config_save_counter(uint32_t counter)
 {
-    return save_config_property(counter, false);
+    return save_config_property(counter, 0U, false);
 }
 
 watch_status_t settings_config_save_reminder(uint32_t delay_seconds)
 {
-    return save_config_property(delay_seconds, true);
+    return save_config_property(delay_seconds, 1U, false);
+}
+
+watch_status_t settings_config_save_activity(uint32_t minutes, bool enabled)
+{
+    return save_config_property(minutes, 2U, enabled);
 }

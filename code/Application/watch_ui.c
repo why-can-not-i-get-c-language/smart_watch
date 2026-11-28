@@ -7,6 +7,7 @@
 #include "max30102.h"
 #include "pedometer.h"
 #include "daily_steps.h"
+#include "activity.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
 #include "battery_service.h"
@@ -50,7 +51,7 @@ typedef enum { EDIT_YEAR=0, EDIT_MONTH, EDIT_DAY, EDIT_HOUR, EDIT_MINUTE, EDIT_S
 
 /* 导航层级与选项，不影响现有ui_phase_t状态机。 */
 typedef enum { NAV_HOME=0, NAV_FUNCTION_MENU, NAV_TOOLS_MENU, NAV_DETAIL } nav_level_t;
-typedef enum { FUNC_STEPS=0, FUNC_HISTORY, FUNC_REMINDER, FUNC_TOOLS, FUNC_COUNT } function_item_t;
+typedef enum { FUNC_STEPS=0, FUNC_HISTORY, FUNC_REMINDER, FUNC_ACTIVITY, FUNC_TOOLS, FUNC_COUNT } function_item_t;
 typedef enum { TOOL_BAT=0, TOOL_PPG, TOOL_MPU, TOOL_WRIST, TOOL_BLE, TOOL_HAPTIC, TOOL_PARAMETERS, TOOL_FLASH, TOOL_COUNT } tool_item_t;
 
 static uint8_t frame[SSD1306_FRAME_SIZE];
@@ -58,6 +59,7 @@ static ui_phase_t phase;
 /* 默认首页HOME（时间+会话步数+电池），MENU短按或KEY长按进入功能菜单。 */
 static nav_level_t nav_level = NAV_HOME;
 static function_item_t function_selection = FUNC_STEPS;
+static unsigned function_scroll_offset;
 static tool_item_t tool_selection = TOOL_BAT;
 static unsigned tool_scroll_offset = 0U;
 static uint32_t motion_key_count;
@@ -84,6 +86,9 @@ static bool battery_show_summary = true;
 static watch_status_t reminder_action_status = WATCH_OK;
 static uint32_t reminder_draft_seconds = SETTINGS_REMINDER_MIN_SECONDS;
 static bool reminder_draft_loaded;
+static bool activity_draft_loaded, activity_draft_enabled;
+static uint32_t activity_draft_minutes = 30U;
+static watch_status_t activity_action_status = WATCH_OK;
 
 /* 编辑状态机 */
 static rtc_calendar_t edit_draft;
@@ -658,12 +663,42 @@ static void draw_function_menu(void)
 {
     text(2U, 0U, "MENU K HOLD HOME");
     text(2U, 8U, "KEY NEXT SOS PREV");
-    /* 使用现有字库中的加号标出选中项。 */
-    text(2U, 16U, function_selection == FUNC_STEPS ? "+ STEPS" : "  STEPS");
-    text(2U, 26U, function_selection == FUNC_HISTORY ? "+ HISTORY" : "  HISTORY");
-    text(2U, 36U, function_selection == FUNC_REMINDER ? "+ REMINDER" : "  REMINDER");
-    text(2U, 46U, function_selection == FUNC_TOOLS ? "+ TOOLS" : "  TOOLS");
+    static const char *items[] = {"STEPS", "HISTORY", "REMINDER", "ACTIVITY", "TOOLS"};
+    if (function_selection < function_scroll_offset) function_scroll_offset = function_selection;
+    else if (function_selection >= function_scroll_offset + 4U) function_scroll_offset = function_selection - 3U;
+    for (unsigned i = function_scroll_offset; i < FUNC_COUNT && i < function_scroll_offset + 4U; ++i) {
+        unsigned y = 16U + (i - function_scroll_offset) * 10U;
+        text(2U, y, i == function_selection ? "+ " : "  ");
+        text(14U, y, items[i]);
+    }
     text(2U, 56U, "MENU SELECT");
+}
+
+static void draw_activity_detail(void)
+{
+    activity_state_t st;
+    (void)activity_get_state(&st);
+    if (!activity_draft_loaded && st.config_ready) {
+        activity_draft_minutes = st.saved_minutes;
+        activity_draft_enabled = st.saved_enabled;
+        activity_draft_loaded = true;
+    }
+    static const char *labels[] = {"OFF", "WAIT SENSOR", "TRACKING", "WAIT MOTOR",
+        "STARTING", "RINGING", "STOPPING", "NOTIFIED", "ERROR", "LOADING"};
+    static const char *stores[] = {"LOADING", "DEFAULT", "LEGACY", "LOADED", "SAVING", "SAVED", "ERROR"};
+    text(2U, 0U, "ACTIVITY K HOLD BACK");
+    text(2U, 8U, "STATE"); text(38U, 8U, labels[st.phase <= ACTIVITY_LOADING ? st.phase : ACTIVITY_ERROR]);
+    text(2U, 16U, "IDLE"); number(32U, 16U, st.idle_ms / 60000U > 999U ? 999U : st.idle_ms / 60000U);
+    text(56U, 16U, "OF"); number(74U, 16U, st.minutes); text(98U, 16U, "MIN");
+    text(2U, 24U, "SET"); number(26U, 24U, activity_draft_minutes);
+    text(50U, 24U, "MIN"); text(80U, 24U, activity_draft_enabled ? "ON" : "OFF");
+    text(2U, 32U, "SAVED");
+    if (st.config_persisted) { number(38U, 32U, st.saved_minutes); text(68U, 32U, st.saved_enabled ? "ON" : "OFF"); }
+    else text(38U, 32U, "--");
+    text(2U, 40U, "STORE"); text(38U, 40U, stores[st.store_phase <= REMINDER_STORE_ERROR ? st.store_phase : REMINDER_STORE_ERROR]);
+    text(2U, 48U, "KEY +5 MENU ON OFF");
+    text(2U, 56U, st.store_phase == REMINDER_STORE_ERROR ? "KEEP DATA SOS READ" :
+        activity_action_status != WATCH_OK ? "BUSY SOS HOLD READ" : "MH SAVE SOS HOLD READ");
 }
 
 static void draw_reminder_detail(void)
@@ -806,6 +841,8 @@ static void draw(uint32_t now_ms)
             draw_history_detail(now_ms);
         } else if (function_selection == FUNC_REMINDER) {
             draw_reminder_detail();
+        } else if (function_selection == FUNC_ACTIVITY) {
+            draw_activity_detail();
         } else if (function_selection == FUNC_TOOLS) {
             if (tool_selection == TOOL_BAT) { draw_battery_detail(); }
             else if (tool_selection == TOOL_PPG) { draw_ppg_detail(); }
@@ -847,6 +884,13 @@ static void draw(uint32_t now_ms)
         if (st.owns_haptic) {
             memset(frame, 0, SSD1306_WIDTH);
             text(2U, 0U, st.phase == REMINDER_STOPPING ? "REMINDER STOPPING" : "REMINDER KEY ACK");
+        } else {
+            activity_state_t activity;
+            (void)activity_get_state(&activity);
+            if (activity.owns_haptic) {
+                memset(frame, 0, SSD1306_WIDTH);
+                text(2U, 0U, activity.phase == ACTIVITY_STOPPING ? "ACTIVITY STOPPING" : "MOVE KEY ACK");
+            }
         }
     }
 }
@@ -1020,6 +1064,33 @@ void watch_ui_notify_button(uint32_t event, uint32_t now_ms)
             action_status = reminder_action_status;
             last_refresh_ms = now_ms - 1000U;
             return;
+        } else if (function_selection == FUNC_ACTIVITY) {
+            activity_state_t st;
+            (void)activity_get_state(&st);
+            if (!activity_draft_loaded && st.config_ready) {
+                activity_draft_minutes = st.saved_minutes;
+                activity_draft_enabled = st.saved_enabled;
+                activity_draft_loaded = true;
+            }
+            if ((event & BUTTON_SOS_LONG) != 0U) {
+                activity_action_status = activity_reload_settings();
+                if (activity_action_status == WATCH_OK) activity_draft_loaded = false;
+            } else if ((event & BUTTON_SOS_SHORT) != 0U) {
+                activity_action_status = activity_acknowledge();
+            } else if ((event & BUTTON_MENU_LONG) != 0U) {
+                activity_action_status = activity_draft_loaded ?
+                    activity_save_config(activity_draft_minutes, activity_draft_enabled) : WATCH_NOT_READY;
+            } else if ((event & BUTTON_BOARD_SHORT) != 0U) {
+                activity_draft_minutes = activity_draft_minutes >= SETTINGS_ACTIVITY_MAX_MINUTES ?
+                    SETTINGS_ACTIVITY_MIN_MINUTES : activity_draft_minutes + SETTINGS_ACTIVITY_STEP_MINUTES;
+                activity_draft_loaded = true; activity_action_status = WATCH_OK;
+            } else if ((event & BUTTON_MENU_SHORT) != 0U) {
+                activity_draft_enabled = !activity_draft_enabled;
+                activity_draft_loaded = true; activity_action_status = WATCH_OK;
+            }
+            action_status = activity_action_status;
+            last_refresh_ms = now_ms - 1000U;
+            return;
         } else if (function_selection == FUNC_STEPS) {
             if ((event & BUTTON_MENU_SHORT) != 0U && (event & BUTTON_MENU_LONG) == 0U &&
                 (event & (BUTTON_SOS_LONG | BUTTON_BOARD_LONG)) == 0U) {
@@ -1164,12 +1235,15 @@ uint32_t watch_ui_filter_buttons(uint32_t events, uint32_t now_ms)
     }
     reminder_state_t reminder;
     (void)reminder_get_state(&reminder);
-    if (reminder.owns_haptic && present != 0U) {
+    activity_state_t activity;
+    (void)activity_get_state(&activity);
+    if ((reminder.owns_haptic || activity.owns_haptic || activity.pending) && present != 0U) {
         /* 到时提示优先于编辑/导航；完整消费手势，松手不另触发页面动作。 */
         keys_blocked |= (uint8_t)(keys_down | present);
         if ((events & (BUTTON_BOARD_PRESS | BUTTON_BOARD_SHORT | BUTTON_BOARD_LONG |
                        BUTTON_SOS_PRESS | BUTTON_SOS_SHORT | BUTTON_SOS_LONG)) != 0U) {
-            reminder_action_status = reminder_cancel();
+            if (reminder.owns_haptic) reminder_action_status = reminder_cancel();
+            if (activity.owns_haptic || activity.pending) activity_action_status = activity_acknowledge();
             last_refresh_ms = now_ms - 1000U;
         }
     }

@@ -1,6 +1,6 @@
 /**
  * UI整合与菜单导航 - STM32F411CEU6
- * 版本：F03-P03-20261128-01
+ * 版本：F05-P02-20261128-01
  * 行为：
  *  - 上电三短闪后自检序列：全白/棋盘/四角标记/关屏/打开
  *  - 默认HOME（时间+会话步数+电池mV+EST百分比），MENU短按或KEY长按进功能菜单
@@ -36,6 +36,7 @@
 #include "max30102.h"
 #include "pedometer.h"
 #include "daily_steps.h"
+#include "activity.h"
 #include "wrist_wake.h"
 #include "battery_adc.h"
 #include "battery_service.h"
@@ -48,7 +49,7 @@
 #if WATCH_BLE_NAME_SETUP
 static const char firmware_version[] = "F06-NAME-20261116-02";
 #else
-static const char firmware_version[] = "F03-P03-20261128-01";
+static const char firmware_version[] = "F05-P02-20261128-01";
 #endif
 
 /**
@@ -127,6 +128,7 @@ static uint32_t haptic_last_retry_ms;
 /* 低电提醒episode标志：确认进入低电时唤醒屏幕一次，确认恢复后复位。 */
 static bool low_battery_notified;
 static uint32_t reminder_last_trigger_count;
+static uint32_t activity_last_notification;
 
 /* LED timing state */
 static volatile uint32_t startup_baseline = 0;
@@ -302,7 +304,9 @@ static void button_poll_task(void *ctx)
         watch_ui_notify_button(events, now);
         reminder_state_t reminder;
         (void)reminder_get_state(&reminder);
-        if (reminder.owns_haptic) { return; }
+        activity_state_t activity;
+        (void)activity_get_state(&activity);
+        if (reminder.owns_haptic || activity.owns_haptic) { return; }
         /* 振动命令：仅当进入前已在HAPTIC页、事件后仍在HAPTIC页且不是KEY长按返回时才执行命令。 */
         if (was_haptic && !watch_ui_haptic_active()) {
             diag.haptic_request_status = tm6605_stop();
@@ -352,17 +356,34 @@ static void haptic_update_task(void *ctx)
     /* RTC真值驱动一次性提醒；驱动和提醒分别记录入队、ACK与失败。 */
     uint32_t utc = 0U;
     if (time_service_get(&utc) != WATCH_OK) { utc = 0U; }
-    (void)reminder_update(utc);
     reminder_state_t reminder;
+    (void)reminder_get_state(&reminder);
+    bool scheduled_priority = reminder.owns_haptic ||
+        (reminder.phase == REMINDER_ARMED && utc >= reminder.target_utc);
+    mpu6050_state_t motion;
+    pedometer_status_t counter;
+    mpu6050_get_state(&motion);
+    (void)pedometer_get_state(&counter);
+    bool observed = motion.sample.valid &&
+        (counter.state == PEDOMETER_READY || counter.state == PEDOMETER_VERIFYING);
+    (void)activity_process(now, observed, counter.step_count, !scheduled_priority);
+    activity_state_t activity;
+    (void)activity_get_state(&activity);
+    /* 先让低优先级序列确认停止，再执行到时提醒，避免忙返回消耗一次性提醒。 */
+    if (!activity.owns_haptic) (void)reminder_update(utc);
     (void)reminder_get_state(&reminder);
     diag.reminder = reminder;
     if (reminder.trigger_count != reminder_last_trigger_count) {
         reminder_last_trigger_count = reminder.trigger_count;
         watch_ui_wake(now);
     }
+    if (activity.notification_count != activity_last_notification) {
+        activity_last_notification = activity.notification_count;
+        watch_ui_wake(now);
+    }
     tm6605_state_t current;
     tm6605_get_state(&current);
-    if (!reminder.owns_haptic && !current.ready && !current.busy &&
+    if (!reminder.owns_haptic && !activity.owns_haptic && !current.ready && !current.busy &&
         (uint32_t)(now - haptic_last_retry_ms) >= WATCH_HAPTIC_RETRY_MS) {
         diag.haptic_request_status = tm6605_init();
         haptic_last_retry_ms = now;
@@ -579,7 +600,9 @@ int main(void)
     (void)battery_adc_init();
     (void)battery_service_init();
     reminder_init();
+    activity_init();
     reminder_last_trigger_count = 0U;
+    activity_last_notification = 0U;
     low_battery_notified = false;
     (void)settings_init();
     (void)record_store_init();
