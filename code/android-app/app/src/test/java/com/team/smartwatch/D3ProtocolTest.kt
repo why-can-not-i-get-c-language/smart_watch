@@ -154,7 +154,7 @@ class D3ProtocolTest {
     }
 
     @Test
-    fun liveSnapshotTracksVerifiedReadbacksAndClearsOnFailureOrDisconnect() = runBlocking {
+    fun liveSnapshotSurvivesAutoFailureAndClearsOnManualFailureOrDisconnect() = runBlocking {
         val wall = 1_795_219_200_000L
         var elapsed = 0L
         var clockValue = wall / 1_000L - 20L
@@ -230,6 +230,10 @@ class D3ProtocolTest {
 
         failRead = true
         watch.autoRefresh()
+        awaitOperation()
+        assertEquals(calibrated, watch.snapshot)
+        assertEquals("手表读写失败", watch.message)
+        watch.refresh()
         awaitOperation()
         assertNull(watch.snapshot)
         failRead = false

@@ -75,8 +75,9 @@ internal class D3Watch(
     }
 
     fun autoRefresh() {
-        if (rawUsed || unconfirmed || identity?.supports(D3Command.STATUS) != true) return
-        perform { queryStatus(keepSnapshot = true) }
+        val canReadStatus = identity?.supports(D3Command.STATUS) ?: (snapshot != null)
+        if (rawUsed || unconfirmed || !canReadStatus) return
+        perform(keepSnapshotOnFailure = true) { queryStatus(keepSnapshot = true) }
     }
 
     private suspend fun waitForQuietLink() {
@@ -88,10 +89,10 @@ internal class D3Watch(
         rawUsed = false
     }
 
-    private suspend fun ensureIdentity() {
+    private suspend fun ensureIdentity(keepSnapshot: Boolean = false) {
         if (identity != null && !client.needsIdentity) return
         identity = null
-        snapshot = null
+        if (!keepSnapshot) snapshot = null
         client.newSession()
         message = "正在读取设备信息"
         val reply = client.request(D3Command.INFO)
@@ -99,7 +100,7 @@ internal class D3Watch(
     }
 
     private suspend fun queryStatus(keepSnapshot: Boolean = false): Pair<D3Reply, D3Status> {
-        ensureIdentity()
+        ensureIdentity(keepSnapshot)
         require(identity?.supports(D3Command.STATUS) == true) { "手表未声明状态查询能力" }
         message = "正在查询手表状态"
         if (!keepSnapshot) snapshot = null
@@ -201,7 +202,7 @@ internal class D3Watch(
         onUnconfirmedChanged(value)
     }
 
-    private fun perform(operation: suspend () -> Unit) {
+    private fun perform(keepSnapshotOnFailure: Boolean = false, operation: suspend () -> Unit) {
         if (!canRefresh) return
         busy = true
         job = scope.launch {
@@ -210,7 +211,7 @@ internal class D3Watch(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: RuntimeException) {
-                snapshot = null
+                if (!keepSnapshotOnFailure) snapshot = null
                 if (error is D3DeviceError && error.code == 4) identity = null
                 if (connected) message = error.message ?: "D3 请求失败"
             } finally {

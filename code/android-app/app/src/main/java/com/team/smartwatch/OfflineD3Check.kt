@@ -18,20 +18,34 @@ internal suspend fun checkOfflineD3(pendingCalibration: Boolean = false) = corou
     )
     var step = 0
     var elapsed = 0L
+    var session = 0x11223344L
+    var followupReply: (D3Frame) -> ByteArray? = { error("未安排后续 D3 应答") }
+
+    fun decode(wire: ByteArray): D3Frame {
+        var frame: D3Frame? = null
+        D3FrameReader().feed(wire, elapsed) { frame = it }
+        return checkNotNull(frame)
+    }
     val now = 1_795_219_200_000L
     val expectedWrites = if (pendingCalibration) 2 else pairs.size
     lateinit var client: D3Client
     client = D3Client(write = { bytes ->
-        check(step < expectedWrites) { "当前连接不应再写入 D3 请求" }
-        val (request, response) = pairs[step++]
-        check(bytes.serialHex() == request) { "D3 请求样例不匹配" }
-        val wire = checkNotNull(serialPayload(response, hex = true))
-        for (offset in wire.indices step 16) {
-            elapsed += 5
-            client.receive(wire.copyOfRange(offset, minOf(offset + 16, wire.size)))
+        val wire = if (step < expectedWrites) {
+            val (request, response) = pairs[step++]
+            check(bytes.serialHex() == request) { "D3 请求样例不匹配" }
+            checkNotNull(serialPayload(response, hex = true))
+        } else {
+            val request = decode(bytes)
+            followupReply(request)?.let { request.copy(response = true, payload = it).encode() }
+        }
+        if (wire != null) {
+            for (offset in wire.indices step 16) {
+                elapsed += 5
+                client.receive(wire.copyOfRange(offset, minOf(offset + 16, wire.size)))
+            }
         }
         true
-    }, clock = { D3Timestamp(elapsed, now + elapsed) }, nextSessionId = { 0x11223344L })
+    }, clock = { D3Timestamp(elapsed, now + elapsed) }, nextSessionId = { session++ }, responseTimeoutMs = 30L)
     val watch = D3Watch(this, client, { true }, pendingCalibration, {})
     watch.transportReady()
     coroutineContext.job.children.toList().joinAll()
@@ -51,4 +65,43 @@ internal suspend fun checkOfflineD3(pendingCalibration: Boolean = false) = corou
         check(watch.timeResult.orEmpty().startsWith("自动校时 · 低延迟校时已验证"))
     }
     check(step == expectedWrites)
+    if (pendingCalibration) return@coroutineScope
+
+    val previous = checkNotNull(watch.snapshot)
+    followupReply = { request ->
+        check(request.command == D3Command.STATUS.wire && request.session == 0x11223344L)
+        null
+    }
+    watch.autoRefresh()
+    coroutineContext.job.children.toList().joinAll()
+    check(watch.message.contains("超时") && watch.snapshot === previous)
+    check(previous.isFresh(previous.receivedElapsedMs + 45_000L))
+    elapsed = previous.receivedElapsedMs + 45_001L
+    check(watch.snapshot?.isFresh(elapsed) == false)
+
+    // An unready session can interrupt a refresh while the physical link stays open.
+    followupReply = { byteArrayOf(4) }
+    watch.autoRefresh()
+    coroutineContext.job.children.toList().joinAll()
+    check(watch.identity == null && watch.snapshot === previous)
+
+    val infoPayload = decode(checkNotNull(serialPayload(pairs[0].second, hex = true))).payload
+    val statusPayload = decode(checkNotNull(serialPayload(pairs[1].second, hex = true))).payload
+    followupReply = { request ->
+        check(request.session == 0x11223345L)
+        when (request.command) {
+            D3Command.INFO.wire -> infoPayload
+            D3Command.STATUS.wire -> statusPayload
+            else -> error("自动刷新不应执行校时")
+        }
+    }
+    watch.autoRefresh()
+    coroutineContext.job.children.toList().joinAll()
+    check(watch.message == "已读取手表状态")
+    check(watch.snapshot?.isFresh(elapsed) == true && watch.snapshot !== previous)
+
+    followupReply = { null }
+    watch.refresh()
+    coroutineContext.job.children.toList().joinAll()
+    check(watch.message.contains("超时") && watch.snapshot == null)
 }

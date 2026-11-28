@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.toList
 internal suspend fun checkOfflineInterfaces(report: (String) -> Unit) {
     checkOfflineD3()
     report("D3 样例通过 · 连接后自动校时及新序号读回")
+    report("LIVE-05 通过 · 自动刷新超时保留快照 · 45 秒过期 · 新应答恢复")
     if (BuildConfig.D3_FAULT_INJECTION) checkOfflineD3Faults(report)
     val device = OfflineWatchSession()
     val repository = WatchRepository(device, timeoutMillis = 1_000)
